@@ -281,11 +281,18 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
                   )
                 : system.isDesktop
                     ? const _DesktopDashboard()
-                    : Grid(
-                        crossAxisCount: columns,
-                        crossAxisSpacing: spacing,
-                        mainAxisSpacing: spacing,
-                        children: children,
+                    : Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          const _AccountInfoCard(),
+                          const SizedBox(height: 12),
+                          Grid(
+                            crossAxisCount: columns,
+                            crossAxisSpacing: spacing,
+                            mainAxisSpacing: spacing,
+                            children: children,
+                          ),
+                        ],
                       ),
           ),
         ),
