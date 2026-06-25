@@ -1,0 +1,78 @@
+<svg width="1680" height="1080" viewBox="0 0 1680 1080" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="MoneyFly Windows home">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#06101d"/>
+      <stop offset="100%" stop-color="#0b1829"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#25d0ff"/>
+      <stop offset="100%" stop-color="#33f0b2"/>
+    </linearGradient>
+  </defs>
+  <rect width="1680" height="1080" fill="url(#bg)"/>
+  <rect x="52" y="52" width="1576" height="956" rx="18" fill="#0d1928" stroke="#203a56"/>
+  <rect x="52" y="52" width="1576" height="46" fill="#101a28"/>
+  <text x="76" y="82" fill="#eef6ff" font-family="Segoe UI, Arial, sans-serif" font-size="16" font-weight="700">MoneyFly</text>
+  <rect x="1320" y="62" width="272" height="24" rx="12" fill="#12233c" stroke="#28486f"/>
+  <text x="1340" y="79" fill="#8ca2c5" font-family="Segoe UI, Arial, sans-serif" font-size="12">Start typing to search</text>
+
+  <rect x="70" y="122" width="260" height="864" rx="14" fill="#0f2035" stroke="#203956"/>
+  <text x="96" y="160" fill="#8ca2c5" font-family="Segoe UI, Arial, sans-serif" font-size="12">SHORTCUTS</text>
+  <g font-family="Segoe UI, Arial, sans-serif" font-size="14">
+    <rect x="88" y="178" width="224" height="38" rx="10" fill="#10283f"/><text x="110" y="202" fill="#eef6ff">Home</text>
+    <rect x="88" y="226" width="224" height="38" rx="10" fill="#0f2035" stroke="#203956"/><text x="110" y="250" fill="#c2d4ee">Devices</text>
+    <rect x="88" y="274" width="224" height="38" rx="10" fill="#0f2035" stroke="#203956"/><text x="110" y="298" fill="#c2d4ee">Package purchase</text>
+    <rect x="88" y="322" width="224" height="38" rx="10" fill="#0f2035" stroke="#203956"/><text x="110" y="346" fill="#c2d4ee">Logs</text>
+    <rect x="88" y="370" width="224" height="38" rx="10" fill="#0f2035" stroke="#203956"/><text x="110" y="394" fill="#c2d4ee">Settings</text>
+  </g>
+
+  <rect x="352" y="122" width="1262" height="864" rx="14" fill="#101f33" stroke="#21405f"/>
+  <text x="384" y="164" fill="#eef6ff" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700">Connection</text>
+  <text x="384" y="188" fill="#8ca2c5" font-family="Segoe UI, Arial, sans-serif" font-size="13">Windows shows TUN as a standalone toggle</text>
+
+  <rect x="384" y="226" width="376" height="142" rx="18" fill="#12233c" stroke="#294a73"/>
+  <text x="410" y="258" fill="#8ca2c5" font-family="Segoe UI, Arial, sans-serif" font-size="12">STATUS</text>
+  <text x="410" y="300" fill="#eef6ff" font-family="Segoe UI, Arial, sans-serif" font-size="30" font-weight="700">Connected</text>
+  <text x="410" y="330" fill="#6ef5c2" font-family="Segoe UI, Arial, sans-serif" font-size="14">TUN active, system proxy on</text>
+  <rect x="784" y="226" width="376" height="142" rx="18" fill="#12233c" stroke="#294a73"/>
+  <text x="810" y="258" fill="#8ca2c5" font-family="Segoe UI, Arial, sans-serif" font-size="12">DEVICE LIMIT</text>
+  <text x="810" y="300" fill="#eef6ff" font-family="Segoe UI, Arial, sans-serif" font-size="30" font-weight="700">2 / 3</text>
+  <text x="810" y="330" fill="#ffd48a" font-family="Segoe UI, Arial, sans-serif" font-size="14">This device can be removed remotely</text>
+  <rect x="1184" y="226" width="184" height="142" rx="18" fill="#12233c" stroke="#294a73"/>
+  <text x="1206" y="258" fill="#8ca2c5" font-family="Segoe UI, Arial, sans-serif" font-size="12">IP / LATENCY</text>
+  <text x="1206" y="294" fill="#eef6ff" font-family="Segoe UI, Arial, sans-serif" font-size="20" font-weight="700">198.51.100.24</text>
+  <text x="1206" y="322" fill="#8ca2c5" font-family="Segoe UI, Arial, sans-serif" font-size="14">42 ms</text>
+  <!-- Speed -->
+  <rect x="1382" y="226" width="178" height="142" rx="18" fill="#12233c" stroke="#294a73"/>
+  <text x="1404" y="258" fill="#8ca2c5" font-family="Segoe UI, Arial, sans-serif" font-size="12">↑ UPLOAD</text>
+  <text x="1404" y="288" fill="#33f0b2" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="700">1.2 MB/s</text>
+  <text x="1404" y="312" fill="#8ca2c5" font-family="Segoe UI, Arial, sans-serif" font-size="12">↓ DOWNLOAD</text>
+  <text x="1404" y="340" fill="#25d0ff" font-family="Segoe UI, Arial, sans-serif" font-size="16" font-weight="700">8.7 MB/s</text>
+  <!-- Duration -->
+  <rect x="1184" y="382" width="376" height="72" rx="16" fill="#10233b" stroke="#294a73"/>
+  <text x="1206" y="410" fill="#8ca2c5" font-family="Segoe UI, Arial, sans-serif" font-size="12">CONNECTED</text>
+  <text x="1206" y="440" fill="#eef6ff" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700">01:24:36</text>
+
+  <rect x="384" y="398" width="1176" height="74" rx="18" fill="#0f2035" stroke="#203956"/>
+  <rect x="404" y="416" width="104" height="38" rx="12" fill="url(#accent)"/>
+  <text x="436" y="441" fill="#04111a" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="700">RULE</text>
+  <rect x="518" y="416" width="104" height="38" rx="12" fill="#10283f"/><text x="548" y="441" fill="#c2d4ee" font-family="Segoe UI, Arial, sans-serif" font-size="14">GLOBAL</text>
+  <rect x="632" y="416" width="104" height="38" rx="12" fill="#10283f"/><text x="660" y="441" fill="#c2d4ee" font-family="Segoe UI, Arial, sans-serif" font-size="14">DIRECT</text>
+  <rect x="756" y="416" width="114" height="38" rx="12" fill="#102f31" stroke="#1f6d5a"/><text x="784" y="441" fill="#73f7c3" font-family="Segoe UI, Arial, sans-serif" font-size="14">TUN</text>
+
+  <circle cx="680" cy="690" r="136" fill="#0f2139" stroke="#294a73" stroke-width="8"/>
+  <path d="M624 690 L680 634 L736 690 L680 746 Z" fill="url(#accent)"/>
+  <text x="598" y="854" fill="#8ca2c5" font-family="Segoe UI, Arial, sans-serif" font-size="13">Big connection button with stateful feedback</text>
+
+  <rect x="900" y="556" width="560" height="286" rx="22" fill="#12233c" stroke="#294a73"/>
+  <text x="930" y="592" fill="#8ca2c5" font-family="Segoe UI, Arial, sans-serif" font-size="12">NODE SWITCHER</text>
+  <rect x="930" y="614" width="500" height="52" rx="14" fill="#0f2035" stroke="#203956"/>
+  <text x="954" y="647" fill="#eef6ff" font-family="Segoe UI, Arial, sans-serif" font-size="16">HK-02 Optimized</text>
+  <text x="1320" y="647" fill="#6ef5c2" font-family="Segoe UI, Arial, sans-serif" font-size="14">42 ms</text>
+  <rect x="930" y="676" width="500" height="52" rx="14" fill="#0f2035" stroke="#203956"/>
+  <text x="954" y="709" fill="#c2d4ee" font-family="Segoe UI, Arial, sans-serif" font-size="16">SG-01 Stable</text>
+  <text x="1320" y="709" fill="#8ca2c5" font-family="Segoe UI, Arial, sans-serif" font-size="14">53 ms</text>
+  <rect x="930" y="738" width="500" height="52" rx="14" fill="#0f2035" stroke="#203956"/>
+  <text x="954" y="771" fill="#c2d4ee" font-family="Segoe UI, Arial, sans-serif" font-size="16">JP-04</text>
+  <text x="1320" y="771" fill="#8ca2c5" font-family="Segoe UI, Arial, sans-serif" font-size="14">66 ms</text>
+</svg>

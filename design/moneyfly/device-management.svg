@@ -1,0 +1,64 @@
+<svg width="1800" height="1200" viewBox="0 0 1800 1200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="MoneyFly device management">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#07111f"/>
+      <stop offset="100%" stop-color="#091827"/>
+    </linearGradient>
+  </defs>
+  <rect width="1800" height="1200" fill="url(#bg)"/>
+  <rect x="72" y="72" width="1656" height="1056" rx="24" fill="#0d1928" stroke="#203956"/>
+  <text x="108" y="122" fill="#eef6ff" font-family="Inter, Arial, sans-serif" font-size="30" font-weight="700">Device management</text>
+  <text x="108" y="152" fill="#8ca2c5" font-family="Inter, Arial, sans-serif" font-size="14">Delete and remark devices from the backend, with confirmation before removal</text>
+  <rect x="108" y="188" width="1580" height="70" rx="18" fill="#12233c" stroke="#294a73"/>
+  <text x="138" y="230" fill="#8ca2c5" font-family="Inter, Arial, sans-serif" font-size="14">Search device, remark, system, client, IP, last seen, first bind, current device</text>
+
+  <rect x="108" y="282" width="1580" height="740" rx="20" fill="#101f33" stroke="#21405f"/>
+  <g font-family="Inter, Arial, sans-serif">
+    <text x="138" y="326" fill="#8ca2c5" font-size="13">NAME</text>
+    <text x="388" y="326" fill="#8ca2c5" font-size="13">SYSTEM</text>
+    <text x="522" y="326" fill="#8ca2c5" font-size="13">CLIENT</text>
+    <text x="720" y="326" fill="#8ca2c5" font-size="13">IP</text>
+    <text x="928" y="326" fill="#8ca2c5" font-size="13">LAST USED</text>
+    <text x="1114" y="326" fill="#8ca2c5" font-size="13">FIRST BIND</text>
+    <text x="1330" y="326" fill="#8ca2c5" font-size="13">REMARK</text>
+    <text x="1508" y="326" fill="#8ca2c5" font-size="13">STATE</text>
+  </g>
+  <g>
+    <rect x="124" y="344" width="1550" height="96" rx="16" fill="#0f2035" stroke="#203956"/>
+    <text x="138" y="382" fill="#eef6ff" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700">MacBook Pro</text>
+    <text x="388" y="382" fill="#c2d4ee" font-family="Inter, Arial, sans-serif" font-size="16">macOS</text>
+    <text x="522" y="382" fill="#c2d4ee" font-family="Inter, Arial, sans-serif" font-size="16">MoneyFly v1.0</text>
+    <text x="720" y="382" fill="#c2d4ee" font-family="Inter, Arial, sans-serif" font-size="16">198.51.100.24</text>
+    <text x="928" y="382" fill="#c2d4ee" font-family="Inter, Arial, sans-serif" font-size="16">2026-06-25 09:14</text>
+    <text x="1114" y="382" fill="#c2d4ee" font-family="Inter, Arial, sans-serif" font-size="16">2026-05-01 11:03</text>
+    <text x="1330" y="382" fill="#c2d4ee" font-family="Inter, Arial, sans-serif" font-size="16">Work laptop</text>
+    <rect x="1508" y="360" width="112" height="34" rx="17" fill="#10342d" stroke="#1f6d5a"/>
+    <text x="1536" y="382" fill="#73f7c3" font-family="Inter, Arial, sans-serif" font-size="14">Current</text>
+  </g>
+  <g>
+    <rect x="124" y="452" width="1550" height="96" rx="16" fill="#0f2035" stroke="#203956"/>
+    <text x="138" y="490" fill="#eef6ff" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700">iPhone 15</text>
+    <text x="388" y="490" fill="#c2d4ee" font-family="Inter, Arial, sans-serif" font-size="16">iOS</text>
+    <text x="522" y="490" fill="#c2d4ee" font-family="Inter, Arial, sans-serif" font-size="16">MoneyFly Mobile</text>
+    <text x="720" y="490" fill="#c2d4ee" font-family="Inter, Arial, sans-serif" font-size="16">198.51.100.66</text>
+    <text x="928" y="490" fill="#c2d4ee" font-family="Inter, Arial, sans-serif" font-size="16">2026-06-24 22:06</text>
+    <text x="1114" y="490" fill="#c2d4ee" font-family="Inter, Arial, sans-serif" font-size="16">2026-05-03 19:55</text>
+    <text x="1330" y="490" fill="#c2d4ee" font-family="Inter, Arial, sans-serif" font-size="16">Travel phone</text>
+    <rect x="1508" y="468" width="112" height="34" rx="17" fill="#12233c" stroke="#294a73"/>
+    <text x="1540" y="490" fill="#c2d4ee" font-family="Inter, Arial, sans-serif" font-size="14">Active</text>
+  </g>
+  <g>
+    <rect x="124" y="560" width="1550" height="96" rx="16" fill="#0f2035" stroke="#203956"/>
+    <text x="138" y="598" fill="#eef6ff" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700">Windows PC</text>
+    <text x="388" y="598" fill="#c2d4ee" font-family="Inter, Arial, sans-serif" font-size="16">Windows</text>
+    <text x="522" y="598" fill="#c2d4ee" font-family="Inter, Arial, sans-serif" font-size="16">MoneyFly v1.0</text>
+    <text x="720" y="598" fill="#c2d4ee" font-family="Inter, Arial, sans-serif" font-size="16">198.51.100.81</text>
+    <text x="928" y="598" fill="#c2d4ee" font-family="Inter, Arial, sans-serif" font-size="16">2026-06-23 14:40</text>
+    <text x="1114" y="598" fill="#c2d4ee" font-family="Inter, Arial, sans-serif" font-size="16">2026-06-01 08:30</text>
+    <text x="1330" y="598" fill="#c2d4ee" font-family="Inter, Arial, sans-serif" font-size="16">Office</text>
+    <rect x="1508" y="576" width="112" height="34" rx="17" fill="#ffb347"/>
+    <text x="1537" y="598" fill="#1f1404" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="700">Remove</text>
+  </g>
+  <rect x="108" y="1048" width="1580" height="46" rx="14" fill="#10283f"/>
+  <text x="138" y="1078" fill="#c2d4ee" font-family="Inter, Arial, sans-serif" font-size="14">Deleting a device should disconnect it immediately and clear cached config on next start.</text>
+</svg>

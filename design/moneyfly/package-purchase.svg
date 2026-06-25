@@ -1,0 +1,57 @@
+<svg width="1800" height="1200" viewBox="0 0 1800 1200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="MoneyFly package purchase">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#07111f"/>
+      <stop offset="100%" stop-color="#091827"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#25d0ff"/>
+      <stop offset="100%" stop-color="#33f0b2"/>
+    </linearGradient>
+  </defs>
+  <rect width="1800" height="1200" fill="url(#bg)"/>
+  <rect x="72" y="72" width="1656" height="1056" rx="24" fill="#0d1928" stroke="#203956"/>
+  <text x="108" y="122" fill="#eef6ff" font-family="Inter, Arial, sans-serif" font-size="30" font-weight="700">Package purchase</text>
+  <text x="108" y="152" fill="#8ca2c5" font-family="Inter, Arial, sans-serif" font-size="14">Choose package, create order, pay inside the app, then refresh subscription automatically</text>
+
+  <rect x="108" y="188" width="1580" height="78" rx="20" fill="#12233c" stroke="#294a73"/>
+  <text x="138" y="236" fill="#8ca2c5" font-family="Inter, Arial, sans-serif" font-size="14">Payment methods loaded from backend settings, typically Alipay and code payment</text>
+
+  <rect x="108" y="298" width="480" height="734" rx="22" fill="#101f33" stroke="#21405f"/>
+  <text x="138" y="338" fill="#8ca2c5" font-family="Inter, Arial, sans-serif" font-size="13">PACKAGES</text>
+  <rect x="136" y="360" width="424" height="126" rx="18" fill="url(#accent)"/>
+  <text x="164" y="400" fill="#04111a" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700">MoneyFly Basic</text>
+  <text x="164" y="430" fill="#04111a" font-family="Inter, Arial, sans-serif" font-size="16">30 days · 5 devices</text>
+  <text x="164" y="462" fill="#04111a" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700">$9.90</text>
+  <rect x="136" y="504" width="424" height="126" rx="18" fill="#0f2035" stroke="#203956"/>
+  <text x="164" y="544" fill="#eef6ff" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700">MoneyFly Pro</text>
+  <text x="164" y="574" fill="#8ca2c5" font-family="Inter, Arial, sans-serif" font-size="16">90 days · 10 devices</text>
+  <text x="164" y="606" fill="#eef6ff" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700">$24.90</text>
+  <rect x="136" y="648" width="424" height="126" rx="18" fill="#0f2035" stroke="#203956"/>
+  <text x="164" y="688" fill="#eef6ff" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700">MoneyFly Max</text>
+  <text x="164" y="718" fill="#8ca2c5" font-family="Inter, Arial, sans-serif" font-size="16">365 days · 20 devices</text>
+  <text x="164" y="750" fill="#eef6ff" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700">$79.00</text>
+
+  <rect x="620" y="298" width="1092" height="734" rx="22" fill="#101f33" stroke="#21405f"/>
+  <text x="654" y="338" fill="#8ca2c5" font-family="Inter, Arial, sans-serif" font-size="13">ORDER PREVIEW</text>
+  <rect x="654" y="362" width="1024" height="132" rx="18" fill="#12233c" stroke="#294a73"/>
+  <text x="686" y="402" fill="#eef6ff" font-family="Inter, Arial, sans-serif" font-size="26" font-weight="700">MoneyFly Basic</text>
+  <text x="686" y="434" fill="#8ca2c5" font-family="Inter, Arial, sans-serif" font-size="16">30 days · 5 devices · subscription refresh after successful payment</text>
+  <text x="1510" y="420" fill="#eef6ff" font-family="Inter, Arial, sans-serif" font-size="30" font-weight="700">$9.90</text>
+
+  <text x="654" y="548" fill="#8ca2c5" font-family="Inter, Arial, sans-serif" font-size="13">PAYMENT METHOD</text>
+  <rect x="654" y="572" width="210" height="72" rx="18" fill="url(#accent)"/>
+  <text x="718" y="616" fill="#04111a" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700">Alipay</text>
+  <rect x="880" y="572" width="210" height="72" rx="18" fill="#0f2035" stroke="#203956"/>
+  <text x="937" y="616" fill="#c2d4ee" font-family="Inter, Arial, sans-serif" font-size="18">Code pay</text>
+  <rect x="1106" y="572" width="210" height="72" rx="18" fill="#0f2035" stroke="#203956"/>
+  <text x="1156" y="616" fill="#c2d4ee" font-family="Inter, Arial, sans-serif" font-size="18">Payment QR</text>
+  <text x="654" y="682" fill="#8ca2c5" font-family="Inter, Arial, sans-serif" font-size="14">Select method and open the QR dialog inside the app.</text>
+
+  <rect x="654" y="742" width="1024" height="180" rx="20" fill="#0f2035" stroke="#203956"/>
+  <text x="686" y="780" fill="#8ca2c5" font-family="Inter, Arial, sans-serif" font-size="13">ORDER STATE</text>
+  <text x="686" y="826" fill="#6ef5c2" font-family="Inter, Arial, sans-serif" font-size="30" font-weight="700">Awaiting payment</text>
+  <text x="686" y="860" fill="#c2d4ee" font-family="Inter, Arial, sans-serif" font-size="16">Poll every 2 seconds until the backend marks the order paid.</text>
+  <rect x="1394" y="790" width="250" height="62" rx="18" fill="#102f31" stroke="#1f6d5a"/>
+  <text x="1430" y="828" fill="#73f7c3" font-family="Inter, Arial, sans-serif" font-size="18">Open QR dialog</text>
+</svg>

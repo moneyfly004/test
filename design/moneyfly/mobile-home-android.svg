@@ -1,0 +1,72 @@
+<svg width="1080" height="2400" viewBox="0 0 1080 2400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="MoneyFly Android home">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#07111f"/>
+      <stop offset="100%" stop-color="#091827"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#25d0ff"/>
+      <stop offset="100%" stop-color="#33f0b2"/>
+    </linearGradient>
+  </defs>
+  <rect width="1080" height="2400" fill="url(#bg)"/>
+  <rect x="40" y="60" width="1000" height="2280" rx="34" fill="#0d1928" stroke="#203956"/>
+  <text x="78" y="124" fill="#eef6ff" font-family="Roboto, Arial, sans-serif" font-size="28" font-weight="700">MoneyFly</text>
+  <text x="78" y="158" fill="#8ca2c5" font-family="Roboto, Arial, sans-serif" font-size="14">Android uses VPN mode instead of TUN label</text>
+
+  <rect x="76" y="200" width="928" height="178" rx="24" fill="#12233c" stroke="#294a73"/>
+  <text x="108" y="244" fill="#8ca2c5" font-family="Roboto, Arial, sans-serif" font-size="14">USER</text>
+  <text x="108" y="286" fill="#eef6ff" font-family="Roboto, Arial, sans-serif" font-size="34" font-weight="700">MoneyFly</text>
+  <text x="108" y="326" fill="#6ef5c2" font-family="Roboto, Arial, sans-serif" font-size="18">Pro plan · 29 days left</text>
+  <text x="650" y="286" fill="#8ca2c5" font-family="Roboto, Arial, sans-serif" font-size="14">DEVICE</text>
+  <text x="650" y="326" fill="#eef6ff" font-family="Roboto, Arial, sans-serif" font-size="28" font-weight="700">3 / 5</text>
+
+  <rect x="76" y="410" width="928" height="120" rx="24" fill="#10233b" stroke="#294a73"/>
+  <text x="108" y="448" fill="#8ca2c5" font-family="Roboto, Arial, sans-serif" font-size="14">IP</text>
+  <text x="108" y="490" fill="#eef6ff" font-family="Roboto, Arial, sans-serif" font-size="26" font-weight="700">198.51.100.24</text>
+  <text x="108" y="518" fill="#8ca2c5" font-family="Roboto, Arial, sans-serif" font-size="14">Latency 42 ms</text>
+  <!-- Speed row -->
+  <rect x="76" y="546" width="440" height="100" rx="24" fill="#10233b" stroke="#294a73"/>
+  <text x="108" y="576" fill="#8ca2c5" font-family="Roboto, Arial, sans-serif" font-size="14">↑ UPLOAD</text>
+  <text x="108" y="616" fill="#33f0b2" font-family="Roboto, Arial, sans-serif" font-size="28" font-weight="700">1.2 MB/s</text>
+  <rect x="532" y="546" width="440" height="100" rx="24" fill="#10233b" stroke="#294a73"/>
+  <text x="564" y="576" fill="#8ca2c5" font-family="Roboto, Arial, sans-serif" font-size="14">↓ DOWNLOAD</text>
+  <text x="564" y="616" fill="#25d0ff" font-family="Roboto, Arial, sans-serif" font-size="28" font-weight="700">8.7 MB/s</text>
+  <!-- Duration -->
+  <rect x="76" y="660" width="928" height="90" rx="24" fill="#10233b" stroke="#294a73"/>
+  <text x="108" y="694" fill="#8ca2c5" font-family="Roboto, Arial, sans-serif" font-size="14">CONNECTED</text>
+  <text x="108" y="734" fill="#eef6ff" font-family="Roboto, Arial, sans-serif" font-size="30" font-weight="700">01:24:36</text>
+  <text x="680" y="734" fill="#6ef5c2" font-family="Roboto, Arial, sans-serif" font-size="18">hh:mm:ss</text>
+
+  <rect x="76" y="568" width="928" height="128" rx="28" fill="url(#accent)"/>
+  <text x="414" y="644" fill="#04111a" font-family="Roboto, Arial, sans-serif" font-size="34" font-weight="700">CONNECT</text>
+
+  <text x="76" y="766" fill="#8ca2c5" font-family="Roboto, Arial, sans-serif" font-size="14">MODE</text>
+  <rect x="76" y="790" width="928" height="94" rx="24" fill="#0f2035" stroke="#203956"/>
+  <rect x="96" y="808" width="188" height="58" rx="18" fill="url(#accent)"/>
+  <text x="148" y="845" fill="#04111a" font-family="Roboto, Arial, sans-serif" font-size="18" font-weight="700">RULE</text>
+  <rect x="300" y="808" width="188" height="58" rx="18" fill="#10283f"/>
+  <text x="348" y="845" fill="#c2d4ee" font-family="Roboto, Arial, sans-serif" font-size="18">GLOBAL</text>
+  <rect x="504" y="808" width="188" height="58" rx="18" fill="#10283f"/>
+  <text x="548" y="845" fill="#c2d4ee" font-family="Roboto, Arial, sans-serif" font-size="18">DIRECT</text>
+  <rect x="708" y="808" width="276" height="58" rx="18" fill="#102f31" stroke="#1f6d5a"/>
+  <text x="790" y="845" fill="#73f7c3" font-family="Roboto, Arial, sans-serif" font-size="18">VPN ON</text>
+
+  <text x="76" y="984" fill="#8ca2c5" font-family="Roboto, Arial, sans-serif" font-size="14">CURRENT NODE</text>
+  <rect x="76" y="1008" width="928" height="392" rx="28" fill="#12233c" stroke="#294a73"/>
+  <rect x="108" y="1042" width="864" height="84" rx="18" fill="#0f2035" stroke="#203956"/>
+  <text x="136" y="1076" fill="#eef6ff" font-family="Roboto, Arial, sans-serif" font-size="24" font-weight="700">HK-02 Optimized</text>
+  <text x="136" y="1106" fill="#6ef5c2" font-family="Roboto, Arial, sans-serif" font-size="14">Auto selected</text>
+  <text x="820" y="1088" fill="#8ca2c5" font-family="Roboto, Arial, sans-serif" font-size="20">42 ms</text>
+  <rect x="108" y="1140" width="864" height="84" rx="18" fill="#0f2035" stroke="#203956"/>
+  <text x="136" y="1174" fill="#c2d4ee" font-family="Roboto, Arial, sans-serif" font-size="24">SG-01 Stable</text>
+  <text x="820" y="1186" fill="#8ca2c5" font-family="Roboto, Arial, sans-serif" font-size="20">53 ms</text>
+  <rect x="108" y="1238" width="864" height="84" rx="18" fill="#0f2035" stroke="#203956"/>
+  <text x="136" y="1272" fill="#c2d4ee" font-family="Roboto, Arial, sans-serif" font-size="24">JP-04</text>
+  <text x="820" y="1284" fill="#8ca2c5" font-family="Roboto, Arial, sans-serif" font-size="20">66 ms</text>
+
+  <rect x="76" y="1452" width="928" height="530" rx="28" fill="#10233b" stroke="#294a73"/>
+  <text x="108" y="1494" fill="#8ca2c5" font-family="Roboto, Arial, sans-serif" font-size="14">BOTTOM SHEET / DETAILS</text>
+  <text x="108" y="1542" fill="#eef6ff" font-family="Roboto, Arial, sans-serif" font-size="26" font-weight="700">Device and package info remain visible in portrait</text>
+  <text x="108" y="1590" fill="#c2d4ee" font-family="Roboto, Arial, sans-serif" font-size="18">Account alerts, current IP, subscription state, and update notices fit below the primary action.</text>
+</svg>
