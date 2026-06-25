@@ -153,7 +153,9 @@ jobs:
       - name: Package
         run: |
           cd build/macos/Build/Products/Release
-          zip -r MoneyFly-macos-amd64.zip MoneyFly.app
+          ls -la
+          APP=$(ls -d *.app | head -1)
+          zip -r MoneyFly-macos-amd64.zip "$APP"
 
       - uses: actions/upload-artifact@v4
         with:
@@ -186,7 +188,9 @@ jobs:
       - name: Package
         run: |
           cd build/macos/Build/Products/Release
-          zip -r MoneyFly-macos-arm64.zip MoneyFly.app
+          ls -la
+          APP=$(ls -d *.app | head -1)
+          zip -r MoneyFly-macos-arm64.zip "$APP"
 
       - uses: actions/upload-artifact@v4
         with:
