@@ -176,8 +176,21 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          path: ./dist/
-          merge-multiple: true
+          path: ./artifacts/
+
+      - name: Collect release files
+        run: |
+          mkdir -p ./dist
+          find ./artifacts -type f \( -name '*.apk' -o -name '*.dmg' -o -name '*.exe' -o -name '*.zip' \) -print0 |
+            while IFS= read -r -d '' file; do
+              artifact="$(echo "$file" | cut -d/ -f3)"
+              name="$(basename "$file")"
+              if [ "$name" = "app-release.apk" ]; then
+                cp "$file" "./dist/MoneyFly-${artifact}.apk"
+              else
+                cp "$file" "./dist/$name"
+              fi
+            done
 
       - name: Generate SHA256
         run: |
