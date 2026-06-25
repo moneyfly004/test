@@ -8,7 +8,6 @@ executable_name: FlClash.exe
 output_base_file_name: MoneyFly-windows-setup
 setup_icon_file: ..\windows\runner\resources\app_icon.ico
 locales:
-  - lang: zh
-    file: ..\windows\packaging\exe\ChineseSimplified.isl
-  - lang: en
+  - zh
+  - en
 privileges_required: admin
