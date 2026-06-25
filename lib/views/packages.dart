@@ -1,8 +1,9 @@
 import 'dart:async';
 
-import 'package:fl_clash/widgets/scaffold.dart';
 import 'package:fl_clash/services/services.dart';
+import 'package:fl_clash/widgets/scaffold.dart';
 import 'package:flutter/material.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 class PackagesView extends StatefulWidget {
   const PackagesView({super.key});
@@ -468,14 +469,12 @@ class _PaymentQrDialogState extends State<_PaymentQrDialog> {
                   Container(
                     width: 200,
                     height: 200,
-                    color: Colors.grey[200],
+                    color: Colors.white,
                     child: qrUrl != null && qrUrl.isNotEmpty
-                        ? Image.network(
-                            qrUrl,
-                            fit: BoxFit.contain,
-                            errorBuilder: (_, __, ___) => const Center(
-                              child: Icon(Icons.qr_code, size: 80),
-                            ),
+                        ? QrImageView(
+                            data: qrUrl,
+                            size: 200,
+                            backgroundColor: Colors.white,
                           )
                         : const Center(child: Icon(Icons.qr_code, size: 80)),
                   ),

@@ -39,7 +39,7 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
   Widget _buildIsEdit(_IsEditWidgetBuilder builder) {
     return ValueListenableBuilder(
       valueListenable: _isEditNotifier,
-      builder: (_, isEdit, _) {
+      builder: (_, isEdit, __) {
         return builder(isEdit);
       },
     );
@@ -65,7 +65,7 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
     return [
       if (!isEdit)
         Consumer(
-          builder: (_, ref, _) {
+          builder: (_, ref, __) {
             final coreStatus = ref.watch(coreStatusProvider);
             return Tooltip(
               message: appLocalizations.coreStatus,
@@ -188,7 +188,7 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
       builder: (_) {
         return ValueListenableBuilder(
           valueListenable: _addedWidgetsNotifier,
-          builder: (_, value, _) {
+          builder: (_, value, __) {
             return AdaptiveSheetScaffold(
               body: _AddDashboardWidgetModal(
                 items: value,
@@ -294,59 +294,11 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
   }
 }
 
-class _DesktopDashboard extends ConsumerStatefulWidget {
+class _DesktopDashboard extends ConsumerWidget {
   const _DesktopDashboard();
 
   @override
-  ConsumerState<_DesktopDashboard> createState() => _DesktopDashboardState();
-}
-
-class _DesktopDashboardState extends ConsumerState<_DesktopDashboard> {
-  Map<String, dynamic>? _dashboardInfo;
-  Duration _connectionDuration = Duration.zero;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadDashboardInfo();
-    _startDurationTimer();
-  }
-
-  Future<void> _loadDashboardInfo() async {
-    try {
-      final info = await globalState.safeRun(
-        () => ApiService().getDashboard(),
-        title: '加载用户信息',
-      );
-      if (mounted && info != null) {
-        setState(() => _dashboardInfo = info);
-      }
-    } catch (_) {}
-  }
-
-  void _startDurationTimer() {
-    Future.doWhile(() async {
-      await Future.delayed(const Duration(seconds: 1));
-      if (!mounted) return false;
-      final isStart = ref.read(isStartProvider);
-      if (isStart) {
-        setState(() => _connectionDuration += const Duration(seconds: 1));
-      } else {
-        setState(() => _connectionDuration = Duration.zero);
-      }
-      return true;
-    });
-  }
-
-  String _formatDuration(Duration d) {
-    final h = d.inHours.toString().padLeft(2, '0');
-    final m = (d.inMinutes % 60).toString().padLeft(2, '0');
-    final s = (d.inSeconds % 60).toString().padLeft(2, '0');
-    return '$h:$m:$s';
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final appLocalizations = context.appLocalizations;
     final colorScheme = context.colorScheme;
     final isStart = ref.watch(isStartProvider);
@@ -367,297 +319,83 @@ class _DesktopDashboardState extends ConsumerState<_DesktopDashboard> {
       CoreStatus.disconnected => colorScheme.error,
     };
 
-    final expiry = (_dashboardInfo?['expiry'] ??
-            _dashboardInfo?['expire_at'] ??
-            _dashboardInfo?['expired_at'] ??
-            '')
-        .toString();
-    final deviceUsage =
-        '${_dashboardInfo?['device_used'] ?? _dashboardInfo?['devices_used'] ?? 0} / ${_dashboardInfo?['device_limit'] ?? _dashboardInfo?['devices_limit'] ?? 0}';
-
     return ConstrainedBox(
-      constraints: const BoxConstraints(maxWidth: 1400),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            flex: 2,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                if (expiry.isNotEmpty || deviceUsage != '0 / 0')
-                  _UserInfoCard(expiry: expiry, deviceUsage: deviceUsage),
-                if (expiry.isNotEmpty || deviceUsage != '0 / 0')
-                  const SizedBox(height: 16),
-                _DashboardHero(
-                  isStart: isStart,
-                  statusText: statusText,
-                  statusColor: statusColor,
-                  profileName:
-                      currentProfile?.label ?? appLocalizations.noInfo,
-                  uploadSpeed: currentTraffic.up.traffic.show,
-                  downloadSpeed: currentTraffic.down.traffic.show,
-                ),
-                const SizedBox(height: 16),
-                LayoutBuilder(
-                  builder: (context, constraints) {
-                    final isCompact = constraints.maxWidth < 600;
-                    final metricCards = [
-                      _MetricCard(
-                        icon: Icons.cloud_upload_outlined,
-                        label: appLocalizations.upload,
-                        value: totalTraffic.up.traffic.show,
-                        color: colorScheme.primary,
-                      ),
-                      _MetricCard(
-                        icon: Icons.cloud_download_outlined,
-                        label: appLocalizations.download,
-                        value: totalTraffic.down.traffic.show,
-                        color: colorScheme.secondary,
-                      ),
-                      _MetricCard(
-                        icon: Icons.timer_outlined,
-                        label: '连接时长',
-                        value: _formatDuration(_connectionDuration),
-                        color: colorScheme.tertiary,
-                      ),
-                    ];
-                    return Flex(
-                      direction: isCompact ? Axis.vertical : Axis.horizontal,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        for (var index = 0;
-                            index < metricCards.length;
-                            index++) ...[
-                          if (index > 0)
-                            SizedBox(
-                              width: isCompact ? 0 : 12,
-                              height: isCompact ? 12 : 0,
-                            ),
-                          Expanded(
-                            flex: isCompact ? 0 : 1,
-                            child: metricCards[index],
-                          ),
-                        ],
-                      ],
-                    );
-                  },
-                ),
-                const SizedBox(height: 16),
-                LayoutBuilder(
-                  builder: (context, constraints) {
-                    final isCompact = constraints.maxWidth < 600;
-                    final children = [
-                      const NetworkSpeed(),
-                      const TrafficUsage(),
-                    ];
-                    return Flex(
-                      direction: isCompact ? Axis.vertical : Axis.horizontal,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        for (var index = 0;
-                            index < children.length;
-                            index++) ...[
-                          if (index > 0)
-                            SizedBox(
-                              width: isCompact ? 0 : 16,
-                              height: isCompact ? 16 : 0,
-                            ),
-                          Expanded(
-                            flex: isCompact ? 0 : 1,
-                            child: children[index],
-                          ),
-                        ],
-                      ],
-                    );
-                  },
-                ),
-              ],
-            ),
-          ),
-          if (isStart && groups.isNotEmpty) ...[
-            const SizedBox(width: 16),
-            SizedBox(
-              width: 340,
-              child: _NodeSelector(groups: groups),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-class _UserInfoCard extends StatelessWidget {
-  final String expiry;
-  final String deviceUsage;
-
-  const _UserInfoCard({required this.expiry, required this.deviceUsage});
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = context.colorScheme;
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: ShapeDecoration(
-        color: colorScheme.surfaceContainerHighest.opacity80,
-        shape: RoundedSuperellipseBorder(
-          side: BorderSide(color: colorScheme.outlineVariant.opacity60),
-          borderRadius: BorderRadius.circular(24),
-        ),
-      ),
-      child: Row(
-        children: [
-          if (expiry.isNotEmpty)
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('到期时间',
-                      style: context.textTheme.labelMedium?.toLighter),
-                  const SizedBox(height: 4),
-                  Text(
-                    expiry.substring(0, min(expiry.length, 10)),
-                    style: context.textTheme.titleMedium
-                        ?.copyWith(fontWeight: FontWeight.w700),
-                  ),
-                ],
-              ),
-            ),
-          if (deviceUsage != '0 / 0')
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('设备使用',
-                      style: context.textTheme.labelMedium?.toLighter),
-                  const SizedBox(height: 4),
-                  Text(
-                    deviceUsage,
-                    style: context.textTheme.titleMedium
-                        ?.copyWith(fontWeight: FontWeight.w700),
-                  ),
-                ],
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-class _NodeSelector extends ConsumerWidget {
-  final List<Group> groups;
-
-  const _NodeSelector({required this.groups});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final colorScheme = context.colorScheme;
-    final selectorGroup = groups.firstWhere(
-      (g) => g.type == GroupType.Selector,
-      orElse: () => groups.first,
-    );
-    final currentProxyName = ref.watch(proxyNameProvider(selectorGroup.name));
-    final proxies = selectorGroup.all;
-    final delayMap = ref.watch(delayDataSourceProvider);
-
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: ShapeDecoration(
-        color: colorScheme.surfaceContainerHighest.opacity80,
-        shape: RoundedSuperellipseBorder(
-          side: BorderSide(color: colorScheme.outlineVariant.opacity60),
-          borderRadius: BorderRadius.circular(24),
-        ),
-      ),
+      constraints: const BoxConstraints(maxWidth: 1180),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Row(
-            children: [
-              Icon(Icons.dns_outlined, size: 20, color: colorScheme.primary),
-              const SizedBox(width: 8),
-              Text(
-                '节点选择',
-                style: context.textTheme.titleMedium
-                    ?.copyWith(fontWeight: FontWeight.w700),
-              ),
-            ],
+          const _AccountInfoCard(),
+          const SizedBox(height: 16),
+          _DashboardHero(
+            isStart: isStart,
+            statusText: statusText,
+            statusColor: statusColor,
+            profileName: currentProfile?.label ?? appLocalizations.noInfo,
+            uploadSpeed: currentTraffic.up.traffic.show,
+            downloadSpeed: currentTraffic.down.traffic.show,
           ),
           const SizedBox(height: 16),
-          ConstrainedBox(
-            constraints: const BoxConstraints(maxHeight: 500),
-            child: ListView.separated(
-              shrinkWrap: true,
-              itemCount: min(proxies.length, 10),
-              separatorBuilder: (__, ___) => const SizedBox(height: 8),
-              itemBuilder: (__, i) {
-                final proxy = proxies[i];
-                final isSelected = proxy.name == currentProxyName;
-                final delay = delayMap[proxy.name]?[proxy.name];
-                return Material(
-                  color: isSelected
-                      ? colorScheme.primaryContainer.opacity40
-                      : colorScheme.surface.opacity60,
-                  borderRadius: BorderRadius.circular(14),
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(14),
-                    onTap: () {
-                      ref
-                          .read(proxiesActionProvider.notifier)
-                          .changeProxyDebounce(selectorGroup.name, proxy.name);
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 12,
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            isSelected
-                                ? Icons.radio_button_checked
-                                : Icons.radio_button_unchecked,
-                            size: 18,
-                            color: isSelected
-                                ? colorScheme.primary
-                                : colorScheme.outline,
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Text(
-                              proxy.name,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: context.textTheme.bodyMedium?.copyWith(
-                                fontWeight: isSelected
-                                    ? FontWeight.w700
-                                    : FontWeight.normal,
-                              ),
-                            ),
-                          ),
-                          if (delay != null) ...[
-                            const SizedBox(width: 8),
-                            Text(
-                              '${delay}ms',
-                              style: context.textTheme.labelSmall?.copyWith(
-                                color: delay < 100
-                                    ? Colors.green
-                                    : delay < 300
-                                        ? Colors.orange
-                                        : Colors.red,
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final isCompact = constraints.maxWidth < 900;
+              final metricCards = [
+                _MetricCard(
+                  icon: Icons.cloud_upload_outlined,
+                  label: appLocalizations.upload,
+                  value: totalTraffic.up.traffic.show,
+                  color: colorScheme.primary,
+                ),
+                _MetricCard(
+                  icon: Icons.cloud_download_outlined,
+                  label: appLocalizations.download,
+                  value: totalTraffic.down.traffic.show,
+                  color: colorScheme.secondary,
+                ),
+                _MetricCard(
+                  icon: Icons.account_tree_outlined,
+                  label: appLocalizations.proxyGroup,
+                  value: groups.length.toString(),
+                  color: colorScheme.tertiary,
+                ),
+              ];
+              return Flex(
+                direction: isCompact ? Axis.vertical : Axis.horizontal,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  for (var index = 0; index < metricCards.length; index++) ...[
+                    if (index > 0)
+                      SizedBox(
+                          width: isCompact ? 0 : 12,
+                          height: isCompact ? 12 : 0),
+                    Expanded(
+                        flex: isCompact ? 0 : 1, child: metricCards[index]),
+                  ],
+                ],
+              );
+            },
+          ),
+          const SizedBox(height: 16),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final isCompact = constraints.maxWidth < 900;
+              final children = [
+                const NetworkSpeed(),
+                const TrafficUsage(),
+              ];
+              return Flex(
+                direction: isCompact ? Axis.vertical : Axis.horizontal,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  for (var index = 0; index < children.length; index++) ...[
+                    if (index > 0)
+                      SizedBox(
+                          width: isCompact ? 0 : 16,
+                          height: isCompact ? 16 : 0),
+                    Expanded(flex: isCompact ? 0 : 1, child: children[index]),
+                  ],
+                ],
+              );
+            },
           ),
         ],
       ),
@@ -996,6 +734,135 @@ class _AddedContainerState extends State<_AddedContainer> {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _AccountInfoCard extends ConsumerStatefulWidget {
+  const _AccountInfoCard();
+
+  @override
+  ConsumerState<_AccountInfoCard> createState() => _AccountInfoCardState();
+}
+
+class _AccountInfoCardState extends ConsumerState<_AccountInfoCard> {
+  Map<String, dynamic>? _info;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    try {
+      final info = await ApiService().getDashboard();
+      if (mounted) setState(() => _info = info);
+    } catch (_) {}
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_info == null) return const SizedBox.shrink();
+    final cs = context.colorScheme;
+    final expiry =
+        (_info!['expiry'] ?? _info!['expire_at'] ?? _info!['expired_at'] ?? '')
+            .toString();
+    final deviceUsed =
+        _info!['device_used'] ?? _info!['devices_used'] ?? 0;
+    final deviceLimit =
+        _info!['device_limit'] ?? _info!['devices_limit'] ?? 0;
+
+    bool isExpiringSoon = false;
+    bool isExpired = false;
+    if (expiry.length >= 10) {
+      try {
+        final expiryDate = DateTime.parse(expiry.substring(0, 10));
+        final now = DateTime.now();
+        isExpired = expiryDate.isBefore(now);
+        isExpiringSoon =
+            !isExpired && expiryDate.difference(now).inDays <= 7;
+      } catch (_) {}
+    }
+
+    final warnColor =
+        isExpired ? cs.error : Colors.orange;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      decoration: ShapeDecoration(
+        color: isExpired
+            ? cs.errorContainer.opacity60
+            : isExpiringSoon
+                ? Colors.orange.opacity15
+                : cs.surfaceContainerHighest.opacity80,
+        shape: RoundedSuperellipseBorder(
+          side: BorderSide(
+            color: isExpired
+                ? cs.error.opacity60
+                : isExpiringSoon
+                    ? Colors.orange.opacity60
+                    : cs.outlineVariant.opacity60,
+          ),
+          borderRadius: BorderRadius.circular(20),
+        ),
+      ),
+      child: Row(
+        children: [
+          if (expiry.length >= 10) ...[
+            Icon(
+              isExpired
+                  ? Icons.error_outline
+                  : Icons.calendar_today_outlined,
+              size: 18,
+              color: isExpired || isExpiringSoon
+                  ? warnColor
+                  : cs.onSurfaceVariant,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              isExpired
+                  ? '套餐已到期'
+                  : '到期：${expiry.substring(0, 10)}${isExpiringSoon ? '（即将到期）' : ''}',
+              style: context.textTheme.bodyMedium?.copyWith(
+                color: isExpired || isExpiringSoon ? warnColor : null,
+                fontWeight: isExpired || isExpiringSoon
+                    ? FontWeight.w600
+                    : null,
+              ),
+            ),
+            if (isExpired || isExpiringSoon) ...[
+              const SizedBox(width: 8),
+              InkWell(
+                onTap: () => globalState.container
+                    .read(currentPageLabelProvider.notifier)
+                    .value = PageLabel.packages,
+                borderRadius: BorderRadius.circular(8),
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  child: Text(
+                    '立即续费',
+                    style: context.textTheme.labelMedium?.copyWith(
+                      color: cs.primary,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ],
+          const Spacer(),
+          if (deviceLimit != 0) ...[
+            Icon(Icons.devices, size: 18, color: cs.onSurfaceVariant),
+            const SizedBox(width: 6),
+            Text(
+              '设备：$deviceUsed / $deviceLimit',
+              style: context.textTheme.bodyMedium,
+            ),
+          ],
+        ],
+      ),
     );
   }
 }
