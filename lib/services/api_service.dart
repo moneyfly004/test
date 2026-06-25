@@ -241,18 +241,26 @@ class ApiService {
   DioException _friendlyError(DioException error) {
     final response = error.response;
     final statusCode = response?.statusCode;
-    final message =
-        _messageFromBody(response?.data) ??
-        switch (statusCode) {
-          400 => '请求参数不正确，请检查后重试',
-          401 => '登录已失效或账号密码错误，请重新登录',
-          403 => '当前账号无权执行此操作',
-          404 => '请求的资源不存在',
-          429 => '操作过于频繁，请稍后再试',
-          >= 500 && < 600 => '服务器暂时不可用，请稍后再试',
-          _ => error.message ?? '网络请求失败，请检查网络后重试',
-        };
+    final message = _messageFromBody(response?.data) ??
+        _messageFromStatusCode(statusCode) ??
+        error.message ??
+        '网络请求失败，请检查网络后重试';
     return error.copyWith(message: message);
+  }
+
+  String? _messageFromStatusCode(int? statusCode) {
+    if (statusCode == null) return null;
+    if (statusCode >= 500 && statusCode < 600) {
+      return '服务器暂时不可用，请稍后再试';
+    }
+    return switch (statusCode) {
+      400 => '请求参数不正确，请检查后重试',
+      401 => '登录已失效或账号密码错误，请重新登录',
+      403 => '当前账号无权执行此操作',
+      404 => '请求的资源不存在',
+      429 => '操作过于频繁，请稍后再试',
+      _ => null,
+    };
   }
 
   String? _messageFromBody(Object? body) {
