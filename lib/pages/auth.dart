@@ -269,8 +269,9 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
           constraints: const BoxConstraints(maxWidth: 420),
           child: Column(
             children: [
-              const TextField(
-                decoration: InputDecoration(
+              TextField(
+                controller: _nameCtrl,
+                decoration: const InputDecoration(
                   labelText: '用户名',
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.person_outline),
