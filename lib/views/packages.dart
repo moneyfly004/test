@@ -40,7 +40,7 @@ class _PackagesViewState extends State<PackagesView> {
     if (method == null) return;
 
     try {
-      final order = await ApiService().createOrder(pkg['id'] as String? ?? '');
+      final order = await ApiService().createOrder(pkg['id']?.toString() ?? '', method);
       if (!mounted) return;
       await showDialog(
         context: context,

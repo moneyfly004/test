@@ -65,7 +65,7 @@ class ApplicationState extends ConsumerState<Application> {
       final isLoggedIn = await StorageService().isLoggedIn();
       if (!isLoggedIn) return;
       final subUrl = await ApiService().getSubscriptionUrl();
-      if (subUrl.isEmpty) return;
+      if (subUrl == null || subUrl.isEmpty) return;
       final profiles = ref.read(profilesProvider);
       final exists = profiles.any((p) => p.url == subUrl);
       if (!exists) {
