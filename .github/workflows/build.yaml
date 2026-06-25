@@ -130,7 +130,7 @@ jobs:
           overwrite: true
 
   build-macos-arm64:
-    runs-on: macos-latest
+    runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
 
