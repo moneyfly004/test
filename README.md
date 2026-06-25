@@ -4,62 +4,55 @@
 
 </div>
 
-## FlClash
+## MoneyFly
 
-[![Downloads](https://img.shields.io/github/downloads/chen08209/FlClash/total?style=flat-square&logo=github)](https://github.com/chen08209/FlClash/releases/)[![Last Version](https://img.shields.io/github/release/chen08209/FlClash/all.svg?style=flat-square)](https://github.com/chen08209/FlClash/releases/)[![License](https://img.shields.io/github/license/chen08209/FlClash?style=flat-square)](LICENSE)
+[![License](https://img.shields.io/github/license/moneyfly004/test?style=flat-square)](LICENSE)
+[![Release](https://img.shields.io/github/release/moneyfly004/test/all.svg?style=flat-square)](https://github.com/moneyfly004/test/releases/)
 
-[![Channel](https://img.shields.io/badge/Telegram-Channel-blue?style=flat-square&logo=telegram)](https://t.me/FlClash)
-
-A multi-platform proxy client based on ClashMeta, simple and easy to use, open-source and ad-free.
-
-on Desktop:
-<p style="text-align: center;">
-    <img alt="desktop" src="snapshots/desktop.gif">
-</p>
-
-on Mobile:
-<p style="text-align: center;">
-    <img alt="mobile" src="snapshots/mobile.gif">
-</p>
+A multi-platform proxy client with built-in subscription management, device management, and in-app package purchasing.
 
 ## Features
 
-✈️ Multi-platform: Android, Windows, macOS and Linux
+✈️ **Multi-platform**: Android, Windows, macOS and Linux
 
-💻 Adaptive multiple screen sizes, Multiple color themes available
+🔐 **Account system**: Login, register, forgot password with email verification
 
-💡 Based on Material You Design, [Surfboard](https://github.com/getsurfboard/surfboard)-like UI
+📦 **Subscription management**: Auto-sync proxy config after login
 
-☁️ Supports data sync via WebDAV
+💳 **In-app purchase**: Browse packages, pay via Alipay / QR payment, auto-update config on success
 
-✨ Support subscription link, Dark mode
+📱 **Device management**: View bound devices, edit remarks, remove devices remotely
 
-## Use
+📊 **Dashboard**: Subscription expiry, device usage, real-time speed, node selector
 
-### Linux
+🌙 **Material You design**: Dark mode, adaptive screen sizes, multiple color themes
 
-⚠️ Make sure to install the following dependencies before using them
-
-   ```bash
-    sudo apt-get install libayatana-appindicator3-dev
-    sudo apt-get install libkeybinder-3.0-dev
-   ```
-
-### Android
-
-Support the following actions
-
-   ```bash
-    com.follow.clash.action.START
-    
-    com.follow.clash.action.STOP
-    
-    com.follow.clash.action.TOGGLE
-   ```
+☁️ **WebDAV sync**: Backup and restore configuration
 
 ## Download
 
-<a href="https://chen08209.github.io/FlClash-fdroid-repo/repo?fingerprint=789D6D32668712EF7672F9E58DEEB15FBD6DCEEC5AE7A4371EA72F2AAE8A12FD"><img alt="Get it on F-Droid" src="snapshots/get-it-on-fdroid.svg" width="200px"/></a> <a href="https://github.com/chen08209/FlClash/releases"><img alt="Get it on GitHub" src="snapshots/get-it-on-github.svg" width="200px"/></a>
+<a href="https://github.com/moneyfly004/test/releases"><img alt="Get it on GitHub" src="snapshots/get-it-on-github.svg" width="200px"/></a>
+
+## Usage
+
+### Linux
+
+Install dependencies before use:
+
+```bash
+sudo apt-get install libayatana-appindicator3-dev
+sudo apt-get install libkeybinder-3.0-dev
+```
+
+### Android
+
+Supports the following broadcast actions:
+
+```
+com.moneyfly.proxy.action.START
+com.moneyfly.proxy.action.STOP
+com.moneyfly.proxy.action.TOGGLE
+```
 
 ## Build
 
@@ -70,63 +63,15 @@ Support the following actions
 
 2. Install `Flutter` and `Golang` environment
 
-3. Build Application
+3. Build
 
-    - android
+   ```bash
+   dart setup.dart android   # Android
+   dart setup.dart windows   # Windows
+   dart setup.dart linux     # Linux
+   dart setup.dart macos     # macOS
+   ```
 
-        1. Install `Android SDK`, `Android NDK`
+## Acknowledgements
 
-        2. Set `ANDROID_NDK` environment variable
-
-        3. Run build script
-
-           ```bash
-           dart setup.dart android
-           ```
-
-    - windows
-
-        1. Requires a Windows client
-
-        2. Install `GCC`, `Inno Setup`
-
-        3. Run build script
-
-           ```bash
-           dart setup.dart windows
-           ```
-
-    - linux
-
-        1. Requires a Linux client
-
-        2. Dependencies are auto-installed by setup script, or manually:
-           ```bash
-           sudo apt-get install -y libayatana-appindicator3-dev libkeybinder-3.0-dev
-           ```
-
-        3. Run build script
-
-           ```bash
-           dart setup.dart linux
-           ```
-
-    - macOS
-
-        1. Requires a macOS client
-
-        2. Run build script
-
-           ```bash
-           dart setup.dart macos
-           ```
-
-## Star
-
-The easiest way to support developers is to click on the star (⭐) at the top of the page.
-
-<p style="text-align: center;">
-    <a href="https://api.star-history.com/svg?repos=chen08209/FlClash&Date">
-        <img alt="start" width=50% src="https://api.star-history.com/svg?repos=chen08209/FlClash&Date"/>
-    </a>
-</p>
+Based on [FlClash](https://github.com/chen08209/FlClash) by chen08209. Thanks to the original author for the excellent open-source work.

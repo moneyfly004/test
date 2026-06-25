@@ -59,7 +59,6 @@ class _ToolViewState extends ConsumerState<ToolsView> {
     return generateSection(
       title: context.appLocalizations.other,
       items: [
-        const _LogoutItem(),
         const _DisclaimerItem(),
         if (enableDeveloperMode) const _DeveloperItem(),
         const _InfoItem(),
@@ -80,6 +79,7 @@ class _ToolViewState extends ConsumerState<ToolsView> {
         const _ConfigItem(),
         const _AdvancedConfigItem(),
         const _SettingItem(),
+        const _LogoutItem(),
       ],
     );
   }
@@ -323,27 +323,27 @@ class _LogoutItem extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return ListItem(
       leading: const Icon(Icons.logout, color: Colors.red),
-      title: const Text('Logout', style: TextStyle(color: Colors.red)),
+      title: const Text('退出账户', style: TextStyle(color: Colors.red)),
       onTap: () async {
         final confirmed = await showDialog<bool>(
           context: context,
-          builder: (_) => AlertDialog(
-            title: const Text('Logout'),
-            content: const Text('Are you sure you want to logout?'),
+          builder: (dialogContext) => AlertDialog(
+            title: const Text('退出账户'),
+            content: const Text('确定要退出账户吗？退出后将删除本地代理配置并返回登录页面。'),
             actions: [
               TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: const Text('Cancel'),
+                onPressed: () => Navigator.of(dialogContext).pop(false),
+                child: const Text('取消'),
               ),
               FilledButton(
                 style: FilledButton.styleFrom(backgroundColor: Colors.red),
-                onPressed: () => Navigator.pop(context, true),
-                child: const Text('Logout'),
+                onPressed: () => Navigator.of(dialogContext).pop(true),
+                child: const Text('退出'),
               ),
             ],
           ),
         );
-        if (confirmed != true) return;
+        if (confirmed != true || !context.mounted) return;
         await MoneyFlyService.logout(ref);
         if (context.mounted) {
           Navigator.of(context).pushAndRemoveUntil(
