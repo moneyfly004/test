@@ -28,12 +28,6 @@ class Navigation {
             : [],
       ),
       NavigationItem(
-        icon: const Icon(Icons.devices),
-        label: PageLabel.devices,
-        builder: (_) =>
-            const DevicesView(key: GlobalObjectKey(PageLabel.devices)),
-      ),
-      NavigationItem(
         icon: const Icon(Icons.shopping_bag_outlined),
         label: PageLabel.packages,
         builder: (_) =>
@@ -44,6 +38,14 @@ class Navigation {
         label: PageLabel.settings,
         builder: (_) =>
             const ToolsView(key: GlobalObjectKey(PageLabel.settings)),
+      ),
+      // Devices moved to "more" — not a daily-use feature
+      NavigationItem(
+        icon: const Icon(Icons.devices),
+        label: PageLabel.devices,
+        builder: (_) =>
+            const DevicesView(key: GlobalObjectKey(PageLabel.devices)),
+        modes: const [NavigationItemMode.more],
       ),
       NavigationItem(
         icon: const Icon(Icons.folder),
