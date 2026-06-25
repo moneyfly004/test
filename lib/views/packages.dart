@@ -25,7 +25,11 @@ class _PackagesViewState extends State<PackagesView> {
       final packages = await ApiService().getPackages();
       if (mounted) setState(() => _packages = packages);
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
+      }
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -35,24 +39,30 @@ class _PackagesViewState extends State<PackagesView> {
     // Show payment method dialog
     final method = await showDialog<String>(
       context: context,
-      builder: (_) => _PaymentMethodDialog(packageName: pkg['name'] as String? ?? 'Package'),
+      builder: (_) => _PaymentMethodDialog(
+        packageName: pkg['name'] as String? ?? 'Package',
+      ),
     );
     if (method == null) return;
 
     try {
-      final order = await ApiService().createOrder(pkg['id']?.toString() ?? '', method);
+      final order = await ApiService().createOrder(
+        pkg['id']?.toString() ?? '',
+        method,
+      );
       if (!mounted) return;
       await showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (_) => _PaymentQrDialog(
-          order: order,
-          paymentMethod: method,
-        ),
+        builder: (_) => _PaymentQrDialog(order: order, paymentMethod: method),
       );
       await _loadPackages();
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
+      }
     }
   }
 
@@ -79,14 +89,17 @@ class _PackagesViewState extends State<PackagesView> {
                         children: [
                           Text(
                             pkg['name'] as String? ?? 'Package',
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(fontWeight: FontWeight.bold),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
                           const SizedBox(height: 4),
                           Text(
                             pkg['description'] as String? ?? '',
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(color: cs.outline),
+                            style: Theme.of(
+                              context,
+                            ).textTheme.bodySmall?.copyWith(color: cs.outline),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -96,7 +109,11 @@ class _PackagesViewState extends State<PackagesView> {
                             children: [
                               Text(
                                 '¥${pkg['price'] ?? pkg['amount'] ?? ''}',
-                                style: Theme.of(context).textTheme.titleLarge?.copyWith(color: cs.primary, fontWeight: FontWeight.bold),
+                                style: Theme.of(context).textTheme.titleLarge
+                                    ?.copyWith(
+                                      color: cs.primary,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                               ),
                               FilledButton(
                                 onPressed: () => _purchase(pkg),
@@ -123,32 +140,97 @@ class _PaymentMethodDialog extends StatefulWidget {
 }
 
 class _PaymentMethodDialogState extends State<_PaymentMethodDialog> {
-  String _selected = 'alipay';
+  List<dynamic> _methods = [];
+  String? _selected;
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadMethods();
+  }
+
+  Future<void> _loadMethods() async {
+    try {
+      final methods = await ApiService().getPaymentMethods();
+      if (mounted) {
+        setState(() {
+          _methods = methods;
+          _selected = methods.isNotEmpty
+              ? ((methods.first as Map)['key'] ??
+                        (methods.first as Map)['pay_type'] ??
+                        (methods.first as Map)['id'])
+                    .toString()
+              : null;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
+      }
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('Purchase ${widget.packageName}', maxLines: 1, overflow: TextOverflow.ellipsis),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ListTile(
-            leading: Radio<String>(value: 'alipay', groupValue: _selected, onChanged: (v) => setState(() => _selected = v!)),
-            title: const Text('Alipay'),
-            trailing: const Icon(Icons.payment),
-            onTap: () => setState(() => _selected = 'alipay'),
-          ),
-          ListTile(
-            leading: Radio<String>(value: 'wechat', groupValue: _selected, onChanged: (v) => setState(() => _selected = v!)),
-            title: const Text('WeChat Pay'),
-            trailing: const Icon(Icons.qr_code),
-            onTap: () => setState(() => _selected = 'wechat'),
-          ),
-        ],
+      title: Text(
+        'Purchase ${widget.packageName}',
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
       ),
+      content: _loading
+          ? const SizedBox(
+              width: 260,
+              height: 96,
+              child: Center(child: CircularProgressIndicator()),
+            )
+          : Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (final raw in _methods)
+                  Builder(
+                    builder: (_) {
+                      final method = raw as Map;
+                      final key =
+                          (method['key'] ?? method['pay_type'] ?? method['id'])
+                              .toString();
+                      final name = (method['name'] ?? key).toString();
+                      return ListTile(
+                        leading: Radio<String>(
+                          value: key,
+                          groupValue: _selected,
+                          onChanged: (v) => setState(() => _selected = v),
+                        ),
+                        title: Text(
+                          name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        trailing: const Icon(Icons.qr_code_2),
+                        onTap: () => setState(() => _selected = key),
+                      );
+                    },
+                  ),
+                if (_methods.isEmpty)
+                  const Text('No payment methods available'),
+              ],
+            ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
-        FilledButton(onPressed: () => Navigator.pop(context, _selected), child: const Text('Continue')),
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          onPressed: _selected == null
+              ? null
+              : () => Navigator.pop(context, _selected),
+          child: const Text('Continue'),
+        ),
       ],
     );
   }
@@ -177,7 +259,12 @@ class _PaymentQrDialogState extends State<_PaymentQrDialog> {
   void _startPolling() {
     _pollTimer = Timer.periodic(const Duration(seconds: 2), (_) async {
       try {
-        final orderId = widget.order['order_id'] as String? ?? widget.order['id'] as String? ?? '';
+        final orderId =
+            (widget.order['order_no'] ??
+                    widget.order['order_id'] ??
+                    widget.order['id'] ??
+                    '')
+                .toString();
         final status = await ApiService().getOrderStatus(orderId);
         if (status['status'] == 'paid' || status['paid'] == true) {
           _pollTimer?.cancel();
@@ -219,9 +306,17 @@ class _PaymentQrDialogState extends State<_PaymentQrDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final qrUrl = widget.order['qr_code'] as String?;
+    final qrValue =
+        widget.order['payment_qr_code'] ??
+        widget.order['payment_url'] ??
+        widget.order['qr_code'];
+    final qrUrl = qrValue == null ? null : qrValue.toString();
     final amount = widget.order['amount'] ?? widget.order['price'] ?? '';
-    final orderId = widget.order['order_id'] ?? widget.order['id'] ?? '';
+    final orderId =
+        widget.order['order_no'] ??
+        widget.order['order_id'] ??
+        widget.order['id'] ??
+        '';
 
     return AlertDialog(
       title: const Text('Complete Payment'),
@@ -248,15 +343,31 @@ class _PaymentQrDialogState extends State<_PaymentQrDialog> {
                     : const Center(child: Icon(Icons.qr_code, size: 80)),
               ),
               const SizedBox(height: 12),
-              Text('Amount: ¥$amount', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+              Text(
+                'Amount: ¥$amount',
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 4),
-              Text('Order: $orderId', style: Theme.of(context).textTheme.bodySmall, overflow: TextOverflow.ellipsis, maxLines: 1),
+              Text(
+                'Order: $orderId',
+                style: Theme.of(context).textTheme.bodySmall,
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+              ),
               const SizedBox(height: 8),
-              Text('Expires in $_timeLeft', style: TextStyle(color: _secondsLeft < 60 ? Colors.red : null)),
+              Text(
+                'Expires in $_timeLeft',
+                style: TextStyle(color: _secondsLeft < 60 ? Colors.red : null),
+              ),
               const SizedBox(height: 8),
               const LinearProgressIndicator(),
               const SizedBox(height: 4),
-              const Text('Waiting for payment...', style: TextStyle(fontSize: 12)),
+              const Text(
+                'Waiting for payment...',
+                style: TextStyle(fontSize: 12),
+              ),
             ],
           ],
         ),

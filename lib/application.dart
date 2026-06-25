@@ -64,17 +64,14 @@ class ApplicationState extends ConsumerState<Application> {
     try {
       final isLoggedIn = await StorageService().isLoggedIn();
       if (!isLoggedIn) return;
-      final subUrl = await ApiService().getSubscriptionUrl();
-      if (subUrl == null || subUrl.isEmpty) return;
-      final profiles = ref.read(profilesProvider);
-      final exists = profiles.any((p) => p.url == subUrl);
-      if (!exists) {
-        ref.read(profilesActionProvider.notifier).addProfileFormURL(subUrl);
-      } else {
-        final existing = profiles.firstWhere((p) => p.url == subUrl);
-        ref.read(profilesActionProvider.notifier).updateProfile(existing);
-      }
-    } catch (_) {}
+      await MoneyFlyService.clearAccountData(ref);
+      await MoneyFlyService.syncSubscription(ref);
+    } catch (e) {
+      commonPrint.log(
+        'MoneyFly subscription sync failed: $e',
+        logLevel: LogLevel.warning,
+      );
+    }
   }
 
   void _initLink() {

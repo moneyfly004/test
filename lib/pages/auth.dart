@@ -1,28 +1,37 @@
 import 'package:fl_clash/services/services.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class LoginPage extends StatefulWidget {
+class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  ConsumerState<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
-  final _emailCtrl = TextEditingController();
+class _LoginPageState extends ConsumerState<LoginPage> {
+  final _accountCtrl = TextEditingController();
   final _pwCtrl = TextEditingController();
   bool _loading = false;
   bool _obscure = true;
 
   Future<void> _login() async {
-    if (_emailCtrl.text.isEmpty || _pwCtrl.text.isEmpty) return;
+    if (_accountCtrl.text.isEmpty || _pwCtrl.text.isEmpty) return;
     setState(() => _loading = true);
     try {
-      final result = await ApiService().login(_emailCtrl.text.trim(), _pwCtrl.text);
+      final result = await ApiService().login(
+        _accountCtrl.text.trim(),
+        _pwCtrl.text,
+      );
       await StorageService().saveToken(result['access_token'] ?? '');
       await StorageService().saveRefreshToken(result['refresh_token'] ?? '');
+      await _syncSubscriptionAfterAuth();
       if (mounted) Navigator.of(context).pushReplacementNamed('/home');
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
+      }
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -30,9 +39,22 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   void dispose() {
-    _emailCtrl.dispose();
+    _accountCtrl.dispose();
     _pwCtrl.dispose();
     super.dispose();
+  }
+
+  Future<void> _syncSubscriptionAfterAuth() async {
+    try {
+      await MoneyFlyService.clearAccountData(ref);
+      await MoneyFlyService.syncSubscription(ref);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
+      }
+    }
   }
 
   @override
@@ -47,18 +69,28 @@ class _LoginPageState extends State<LoginPage> {
             child: Column(
               children: [
                 const SizedBox(height: 32),
-                Text('MoneyFly',
-                    style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: cs.primary,
-                        )),
+                Text(
+                  'MoneyFly',
+                  style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: cs.primary,
+                  ),
+                ),
                 const SizedBox(height: 8),
-                Text('Secure Proxy Client',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: cs.outline)),
+                Text(
+                  'Secure Proxy Client',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(color: cs.outline),
+                ),
                 const SizedBox(height: 40),
                 TextField(
-                  controller: _emailCtrl,
-                  decoration: const InputDecoration(labelText: 'Email', border: OutlineInputBorder(), prefixIcon: Icon(Icons.email_outlined)),
+                  controller: _accountCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'Email or username',
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.person_outline),
+                  ),
                   keyboardType: TextInputType.emailAddress,
                 ),
                 const SizedBox(height: 16),
@@ -70,7 +102,9 @@ class _LoginPageState extends State<LoginPage> {
                     border: const OutlineInputBorder(),
                     prefixIcon: const Icon(Icons.lock_outline),
                     suffixIcon: IconButton(
-                      icon: Icon(_obscure ? Icons.visibility_off : Icons.visibility),
+                      icon: Icon(
+                        _obscure ? Icons.visibility_off : Icons.visibility,
+                      ),
                       onPressed: () => setState(() => _obscure = !_obscure),
                     ),
                   ),
@@ -79,7 +113,12 @@ class _LoginPageState extends State<LoginPage> {
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(
-                    onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ForgotPasswordPage())),
+                    onPressed: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const ForgotPasswordPage(),
+                      ),
+                    ),
                     child: const Text('Forgot password?'),
                   ),
                 ),
@@ -89,7 +128,13 @@ class _LoginPageState extends State<LoginPage> {
                   height: 48,
                   child: FilledButton(
                     onPressed: _loading ? null : _login,
-                    child: _loading ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)) : const Text('Login'),
+                    child: _loading
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Text('Login'),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -98,7 +143,10 @@ class _LoginPageState extends State<LoginPage> {
                   children: [
                     const Text("Don't have an account? "),
                     TextButton(
-                      onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RegisterPage())),
+                      onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const RegisterPage()),
+                      ),
                       child: const Text('Register'),
                     ),
                   ],
@@ -112,13 +160,13 @@ class _LoginPageState extends State<LoginPage> {
   }
 }
 
-class RegisterPage extends StatefulWidget {
+class RegisterPage extends ConsumerStatefulWidget {
   const RegisterPage({super.key});
   @override
-  State<RegisterPage> createState() => _RegisterPageState();
+  ConsumerState<RegisterPage> createState() => _RegisterPageState();
 }
 
-class _RegisterPageState extends State<RegisterPage> {
+class _RegisterPageState extends ConsumerState<RegisterPage> {
   final _nameCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
   final _pwCtrl = TextEditingController();
@@ -132,12 +180,18 @@ class _RegisterPageState extends State<RegisterPage> {
     try {
       await ApiService().sendVerificationCode(_emailCtrl.text.trim());
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Verification code sent')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Verification code sent')));
         setState(() => _countdown = 60);
         _startCountdown();
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
+      }
     }
   }
 
@@ -151,7 +205,12 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   Future<void> _register() async {
-    if (_nameCtrl.text.isEmpty || _emailCtrl.text.isEmpty || _pwCtrl.text.isEmpty || _codeCtrl.text.isEmpty) return;
+    if (_nameCtrl.text.isEmpty ||
+        _emailCtrl.text.isEmpty ||
+        _pwCtrl.text.isEmpty ||
+        _codeCtrl.text.isEmpty) {
+      return;
+    }
     setState(() => _loading = true);
     try {
       final result = await ApiService().register(
@@ -159,13 +218,20 @@ class _RegisterPageState extends State<RegisterPage> {
         email: _emailCtrl.text.trim(),
         password: _pwCtrl.text,
         verificationCode: _codeCtrl.text.trim(),
-        inviteCode: _inviteCtrl.text.trim().isEmpty ? null : _inviteCtrl.text.trim(),
+        inviteCode: _inviteCtrl.text.trim().isEmpty
+            ? null
+            : _inviteCtrl.text.trim(),
       );
       await StorageService().saveToken(result['access_token'] ?? '');
       await StorageService().saveRefreshToken(result['refresh_token'] ?? '');
+      await _syncSubscriptionAfterAuth();
       if (mounted) Navigator.of(context).pushReplacementNamed('/home');
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
+      }
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -173,8 +239,25 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   void dispose() {
-    _nameCtrl.dispose(); _emailCtrl.dispose(); _pwCtrl.dispose(); _codeCtrl.dispose(); _inviteCtrl.dispose();
+    _nameCtrl.dispose();
+    _emailCtrl.dispose();
+    _pwCtrl.dispose();
+    _codeCtrl.dispose();
+    _inviteCtrl.dispose();
     super.dispose();
+  }
+
+  Future<void> _syncSubscriptionAfterAuth() async {
+    try {
+      await MoneyFlyService.clearAccountData(ref);
+      await MoneyFlyService.syncSubscription(ref);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
+      }
+    }
   }
 
   @override
@@ -187,29 +270,75 @@ class _RegisterPageState extends State<RegisterPage> {
           constraints: const BoxConstraints(maxWidth: 420),
           child: Column(
             children: [
-              TextField(controller: _nameCtrl, decoration: const InputDecoration(labelText: 'Username', border: OutlineInputBorder(), prefixIcon: Icon(Icons.person_outline))),
-              const SizedBox(height: 16),
-              TextField(controller: _emailCtrl, decoration: const InputDecoration(labelText: 'Email', border: OutlineInputBorder(), prefixIcon: Icon(Icons.email_outlined)), keyboardType: TextInputType.emailAddress),
-              const SizedBox(height: 16),
-              Row(children: [
-                Expanded(child: TextField(controller: _codeCtrl, decoration: const InputDecoration(labelText: 'Verification Code', border: OutlineInputBorder()))),
-                const SizedBox(width: 8),
-                FilledButton.tonal(
-                  onPressed: _countdown > 0 ? null : _sendCode,
-                  child: Text(_countdown > 0 ? '${_countdown}s' : 'Send'),
+              TextField(
+                controller: _nameCtrl,
+                decoration: const InputDecoration(
+                  labelText: 'Username',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.person_outline),
                 ),
-              ]),
+              ),
               const SizedBox(height: 16),
-              TextField(controller: _pwCtrl, obscureText: true, decoration: const InputDecoration(labelText: 'Password', border: OutlineInputBorder(), prefixIcon: Icon(Icons.lock_outline))),
+              TextField(
+                controller: _emailCtrl,
+                decoration: const InputDecoration(
+                  labelText: 'Email',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.email_outlined),
+                ),
+                keyboardType: TextInputType.emailAddress,
+              ),
               const SizedBox(height: 16),
-              TextField(controller: _inviteCtrl, decoration: const InputDecoration(labelText: 'Invite Code (optional)', border: OutlineInputBorder(), prefixIcon: Icon(Icons.card_giftcard_outlined))),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _codeCtrl,
+                      decoration: const InputDecoration(
+                        labelText: 'Verification Code',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  FilledButton.tonal(
+                    onPressed: _countdown > 0 ? null : _sendCode,
+                    child: Text(_countdown > 0 ? '${_countdown}s' : 'Send'),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _pwCtrl,
+                obscureText: true,
+                decoration: const InputDecoration(
+                  labelText: 'Password',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.lock_outline),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _inviteCtrl,
+                decoration: const InputDecoration(
+                  labelText: 'Invite Code (optional)',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.card_giftcard_outlined),
+                ),
+              ),
               const SizedBox(height: 24),
               SizedBox(
                 width: double.infinity,
                 height: 48,
                 child: FilledButton(
                   onPressed: _loading ? null : _register,
-                  child: _loading ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)) : const Text('Register'),
+                  child: _loading
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text('Register'),
                 ),
               ),
             ],
@@ -220,13 +349,13 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 }
 
-class ForgotPasswordPage extends StatefulWidget {
+class ForgotPasswordPage extends ConsumerStatefulWidget {
   const ForgotPasswordPage({super.key});
   @override
-  State<ForgotPasswordPage> createState() => _ForgotPasswordPageState();
+  ConsumerState<ForgotPasswordPage> createState() => _ForgotPasswordPageState();
 }
 
-class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
+class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
   final _emailCtrl = TextEditingController();
   final _codeCtrl = TextEditingController();
   final _pwCtrl = TextEditingController();
@@ -238,7 +367,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     try {
       await ApiService().sendVerificationCode(_emailCtrl.text.trim());
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Code sent')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Code sent')));
         setState(() => _countdown = 60);
         Future.doWhile(() async {
           await Future.delayed(const Duration(seconds: 1));
@@ -248,21 +379,41 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
         });
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
+      }
     }
   }
 
   Future<void> _reset() async {
-    if (_emailCtrl.text.isEmpty || _codeCtrl.text.isEmpty || _pwCtrl.text.isEmpty) return;
+    if (_emailCtrl.text.isEmpty ||
+        _codeCtrl.text.isEmpty ||
+        _pwCtrl.text.isEmpty) {
+      return;
+    }
     setState(() => _loading = true);
     try {
-      final result = await ApiService().resetPassword(_emailCtrl.text.trim(), _codeCtrl.text.trim(), _pwCtrl.text);
-      // Auto-login after reset
+      await ApiService().resetPassword(
+        _emailCtrl.text.trim(),
+        _codeCtrl.text.trim(),
+        _pwCtrl.text,
+      );
+      final result = await ApiService().login(
+        _emailCtrl.text.trim(),
+        _pwCtrl.text,
+      );
       await StorageService().saveToken(result['access_token'] ?? '');
       await StorageService().saveRefreshToken(result['refresh_token'] ?? '');
+      await _syncSubscriptionAfterAuth();
       if (mounted) Navigator.of(context).pushReplacementNamed('/home');
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
+      }
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -270,8 +421,23 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
 
   @override
   void dispose() {
-    _emailCtrl.dispose(); _codeCtrl.dispose(); _pwCtrl.dispose();
+    _emailCtrl.dispose();
+    _codeCtrl.dispose();
+    _pwCtrl.dispose();
     super.dispose();
+  }
+
+  Future<void> _syncSubscriptionAfterAuth() async {
+    try {
+      await MoneyFlyService.clearAccountData(ref);
+      await MoneyFlyService.syncSubscription(ref);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
+      }
+    }
   }
 
   @override
@@ -284,25 +450,57 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
           constraints: const BoxConstraints(maxWidth: 420),
           child: Column(
             children: [
-              TextField(controller: _emailCtrl, decoration: const InputDecoration(labelText: 'Email', border: OutlineInputBorder(), prefixIcon: Icon(Icons.email_outlined)), keyboardType: TextInputType.emailAddress),
-              const SizedBox(height: 16),
-              Row(children: [
-                Expanded(child: TextField(controller: _codeCtrl, decoration: const InputDecoration(labelText: 'Verification Code', border: OutlineInputBorder()))),
-                const SizedBox(width: 8),
-                FilledButton.tonal(
-                  onPressed: _countdown > 0 ? null : _sendCode,
-                  child: Text(_countdown > 0 ? '${_countdown}s' : 'Send'),
+              TextField(
+                controller: _emailCtrl,
+                decoration: const InputDecoration(
+                  labelText: 'Email',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.email_outlined),
                 ),
-              ]),
+                keyboardType: TextInputType.emailAddress,
+              ),
               const SizedBox(height: 16),
-              TextField(controller: _pwCtrl, obscureText: true, decoration: const InputDecoration(labelText: 'New Password', border: OutlineInputBorder(), prefixIcon: Icon(Icons.lock_outline))),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _codeCtrl,
+                      decoration: const InputDecoration(
+                        labelText: 'Verification Code',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  FilledButton.tonal(
+                    onPressed: _countdown > 0 ? null : _sendCode,
+                    child: Text(_countdown > 0 ? '${_countdown}s' : 'Send'),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _pwCtrl,
+                obscureText: true,
+                decoration: const InputDecoration(
+                  labelText: 'New Password',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.lock_outline),
+                ),
+              ),
               const SizedBox(height: 24),
               SizedBox(
                 width: double.infinity,
                 height: 48,
                 child: FilledButton(
                   onPressed: _loading ? null : _reset,
-                  child: _loading ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)) : const Text('Reset Password'),
+                  child: _loading
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text('Reset Password'),
                 ),
               ),
             ],

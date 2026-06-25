@@ -7,8 +7,11 @@ Files:
 - `auth-flow.svg`
 - `desktop-home-macos.svg`
 - `desktop-home-windows.svg`
+- `desktop-home-linux.svg`
+- `small-windows-home.svg`
 - `mobile-home-android.svg`
 - `tablet-home-landscape.svg`
+- `auth-dialog.svg`
 - `device-management.svg`
 - `package-purchase.svg`
 - `payment-qr-dialog.svg`

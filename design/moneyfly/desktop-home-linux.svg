@@ -1,0 +1,52 @@
+<svg width="1800" height="1200" viewBox="0 0 1800 1200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="MoneyFly Linux desktop home">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#07111f"/>
+      <stop offset="100%" stop-color="#0c1f2f"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#25d0ff"/>
+      <stop offset="100%" stop-color="#33f0b2"/>
+    </linearGradient>
+  </defs>
+  <rect width="1800" height="1200" fill="url(#bg)"/>
+  <rect x="52" y="52" width="270" height="1096" rx="18" fill="#0d1928" stroke="#203956"/>
+  <text x="92" y="118" fill="#eef6ff" font-family="Inter, Arial, sans-serif" font-size="30" font-weight="700">MoneyFly</text>
+  <text x="92" y="148" fill="#8ca2c5" font-family="Inter, Arial, sans-serif" font-size="14">Linux desktop</text>
+  <g font-family="Inter, Arial, sans-serif" font-size="17">
+    <rect x="78" y="210" width="218" height="52" rx="14" fill="url(#accent)"/>
+    <text x="122" y="243" fill="#06111d" font-weight="700">Home</text>
+    <text x="122" y="313" fill="#c2d4ee">Devices</text>
+    <text x="122" y="383" fill="#c2d4ee">Packages</text>
+    <text x="122" y="453" fill="#c2d4ee">Settings</text>
+    <text x="122" y="523" fill="#6f86a6">Advanced</text>
+  </g>
+  <rect x="362" y="52" width="1386" height="1096" rx="22" fill="#0d1928" stroke="#203956"/>
+  <text x="410" y="120" fill="#eef6ff" font-family="Inter, Arial, sans-serif" font-size="32" font-weight="700">Connection</text>
+  <text x="410" y="154" fill="#8ca2c5" font-family="Inter, Arial, sans-serif" font-size="15">Refresh subscription on every launch, then apply the fixed MoneyFly profile</text>
+  <rect x="410" y="206" width="586" height="214" rx="20" fill="#12233c" stroke="#294a73"/>
+  <text x="444" y="252" fill="#8ca2c5" font-family="Inter, Arial, sans-serif" font-size="13">ACCOUNT</text>
+  <text x="444" y="300" fill="#eef6ff" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700">moneyfly_user</text>
+  <text x="444" y="338" fill="#c2d4ee" font-family="Inter, Arial, sans-serif" font-size="18">Package: MoneyFly Pro</text>
+  <text x="444" y="374" fill="#c2d4ee" font-family="Inter, Arial, sans-serif" font-size="18">Expires: 2026-12-31 · Devices: 2 / 5</text>
+  <rect x="1032" y="206" width="660" height="214" rx="20" fill="#12233c" stroke="#294a73"/>
+  <text x="1066" y="252" fill="#8ca2c5" font-family="Inter, Arial, sans-serif" font-size="13">NETWORK</text>
+  <text x="1066" y="300" fill="#eef6ff" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700">Current IP 203.0.113.12</text>
+  <text x="1066" y="338" fill="#c2d4ee" font-family="Inter, Arial, sans-serif" font-size="18">Latency 42 ms · Announcement banner enabled</text>
+  <rect x="410" y="462" width="1282" height="138" rx="20" fill="#101f33" stroke="#21405f"/>
+  <text x="444" y="512" fill="#8ca2c5" font-family="Inter, Arial, sans-serif" font-size="13">MODE</text>
+  <rect x="444" y="532" width="150" height="44" rx="12" fill="url(#accent)"/>
+  <text x="493" y="560" fill="#06111d" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="700">Rule</text>
+  <rect x="610" y="532" width="150" height="44" rx="12" fill="#0f2035" stroke="#203956"/>
+  <text x="656" y="560" fill="#c2d4ee" font-family="Inter, Arial, sans-serif" font-size="16">Global</text>
+  <rect x="776" y="532" width="150" height="44" rx="12" fill="#0f2035" stroke="#203956"/>
+  <text x="823" y="560" fill="#c2d4ee" font-family="Inter, Arial, sans-serif" font-size="16">Direct</text>
+  <rect x="1390" y="532" width="240" height="44" rx="12" fill="#102f31" stroke="#1f6d5a"/>
+  <text x="1440" y="560" fill="#73f7c3" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="700">TUN enabled</text>
+  <circle cx="1050" cy="804" r="154" fill="url(#accent)"/>
+  <text x="968" y="788" fill="#06111d" font-family="Inter, Arial, sans-serif" font-size="30" font-weight="800">Connected</text>
+  <text x="958" y="828" fill="#06111d" font-family="Inter, Arial, sans-serif" font-size="18">Click to disconnect</text>
+  <rect x="684" y="1012" width="732" height="72" rx="18" fill="#12233c" stroke="#294a73"/>
+  <text x="724" y="1056" fill="#eef6ff" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700">Selected node: Hong Kong 03</text>
+  <text x="1248" y="1056" fill="#73f7c3" font-family="Inter, Arial, sans-serif" font-size="16">Switch</text>
+</svg>

@@ -1,0 +1,35 @@
+<svg width="1100" height="820" viewBox="0 0 1100 820" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="MoneyFly small Windows home">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#07111f"/>
+      <stop offset="100%" stop-color="#091827"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#25d0ff"/>
+      <stop offset="100%" stop-color="#33f0b2"/>
+    </linearGradient>
+  </defs>
+  <rect width="1100" height="820" fill="url(#bg)"/>
+  <rect x="28" y="28" width="1044" height="764" rx="18" fill="#0d1928" stroke="#203956"/>
+  <text x="64" y="86" fill="#eef6ff" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700">MoneyFly</text>
+  <text x="64" y="118" fill="#8ca2c5" font-family="Inter, Arial, sans-serif" font-size="14">Compact Windows layout, 1024px-class width</text>
+  <rect x="64" y="154" width="972" height="116" rx="18" fill="#12233c" stroke="#294a73"/>
+  <text x="94" y="196" fill="#8ca2c5" font-family="Inter, Arial, sans-serif" font-size="12">ACCOUNT</text>
+  <text x="94" y="232" fill="#eef6ff" font-family="Inter, Arial, sans-serif" font-size="24" font-weight="700">moneyfly_user · Pro · 2 / 5 devices</text>
+  <text x="708" y="232" fill="#73f7c3" font-family="Inter, Arial, sans-serif" font-size="18">203.0.113.12 · 42ms</text>
+  <rect x="64" y="304" width="972" height="86" rx="18" fill="#101f33" stroke="#21405f"/>
+  <rect x="94" y="326" width="126" height="42" rx="12" fill="url(#accent)"/>
+  <text x="135" y="353" fill="#06111d" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="700">Rule</text>
+  <rect x="236" y="326" width="126" height="42" rx="12" fill="#0f2035" stroke="#203956"/>
+  <text x="278" y="353" fill="#c2d4ee" font-family="Inter, Arial, sans-serif" font-size="15">Global</text>
+  <rect x="378" y="326" width="126" height="42" rx="12" fill="#0f2035" stroke="#203956"/>
+  <text x="421" y="353" fill="#c2d4ee" font-family="Inter, Arial, sans-serif" font-size="15">Direct</text>
+  <rect x="786" y="326" width="190" height="42" rx="12" fill="#102f31" stroke="#1f6d5a"/>
+  <text x="831" y="353" fill="#73f7c3" font-family="Inter, Arial, sans-serif" font-size="15">TUN on</text>
+  <circle cx="550" cy="542" r="112" fill="url(#accent)"/>
+  <text x="492" y="532" fill="#06111d" font-family="Inter, Arial, sans-serif" font-size="25" font-weight="800">Connected</text>
+  <text x="485" y="566" fill="#06111d" font-family="Inter, Arial, sans-serif" font-size="15">same as tray action</text>
+  <rect x="198" y="706" width="704" height="54" rx="14" fill="#12233c" stroke="#294a73"/>
+  <text x="228" y="740" fill="#eef6ff" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700">Hong Kong 03</text>
+  <text x="768" y="740" fill="#73f7c3" font-family="Inter, Arial, sans-serif" font-size="15">Switch node</text>
+</svg>

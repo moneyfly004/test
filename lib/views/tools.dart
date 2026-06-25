@@ -316,11 +316,11 @@ class _DeveloperItem extends StatelessWidget {
   }
 }
 
-class _LogoutItem extends StatelessWidget {
+class _LogoutItem extends ConsumerWidget {
   const _LogoutItem();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return ListItem(
       leading: const Icon(Icons.logout, color: Colors.red),
       title: const Text('Logout', style: TextStyle(color: Colors.red)),
@@ -331,7 +331,10 @@ class _LogoutItem extends StatelessWidget {
             title: const Text('Logout'),
             content: const Text('Are you sure you want to logout?'),
             actions: [
-              TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancel'),
+              ),
               FilledButton(
                 style: FilledButton.styleFrom(backgroundColor: Colors.red),
                 onPressed: () => Navigator.pop(context, true),
@@ -341,8 +344,7 @@ class _LogoutItem extends StatelessWidget {
           ),
         );
         if (confirmed != true) return;
-        await ApiService().logout();
-        await StorageService().clearTokens();
+        await MoneyFlyService.logout(ref);
         if (context.mounted) {
           Navigator.of(context).pushAndRemoveUntil(
             MaterialPageRoute(builder: (_) => const LoginPage()),
