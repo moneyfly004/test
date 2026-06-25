@@ -143,14 +143,22 @@ Future<int> _package(
     'packages',
     'flutter_distributor',
   );
-  final activateResult = await Process.run('dart', [
-    'pub',
-    'global',
-    'activate',
-    '-s',
-    'path',
-    distributorDir,
-  ]);
+  final activateArgs = Directory(distributorDir).existsSync()
+      ? [
+          'pub',
+          'global',
+          'activate',
+          '-s',
+          'path',
+          distributorDir,
+        ]
+      : [
+          'pub',
+          'global',
+          'activate',
+          'flutter_distributor',
+        ];
+  final activateResult = await Process.run('dart', activateArgs);
   if (activateResult.exitCode != 0) {
     stderr.write(activateResult.stderr);
     return activateResult.exitCode;
