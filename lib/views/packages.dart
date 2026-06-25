@@ -3,16 +3,17 @@ import 'dart:async';
 import 'package:fl_clash/services/services.dart';
 import 'package:fl_clash/widgets/scaffold.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
-class PackagesView extends StatefulWidget {
+class PackagesView extends ConsumerStatefulWidget {
   const PackagesView({super.key});
 
   @override
-  State<PackagesView> createState() => _PackagesViewState();
+  ConsumerState<PackagesView> createState() => _PackagesViewState();
 }
 
-class _PackagesViewState extends State<PackagesView> {
+class _PackagesViewState extends ConsumerState<PackagesView> {
   List<dynamic> _packages = [];
   bool _loading = true;
   String? _error;
@@ -47,51 +48,38 @@ class _PackagesViewState extends State<PackagesView> {
       ),
     );
     if (method == null || !mounted) return;
+
+    final Map<String, dynamic> order;
     try {
-      final order = await ApiService().createOrder(
-        pkg['id']?.toString() ?? '',
-        method,
-      );
-      if (!mounted) return;
-      await showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (dialogContext) =>
-            _PaymentQrDialog(order: order, dialogContext: dialogContext),
-      );
-      await _loadPackages();
+      order = await ApiService().createOrder(pkg['id']?.toString() ?? '', method);
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(e.toString())));
       }
+      return;
+    }
+    if (!mounted) return;
+
+    final paid = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) =>
+          _PaymentQrDialog(order: order, dialogContext: dialogContext),
+    );
+
+    if (paid == true && mounted) {
+      // Sync subscription so proxy config is updated immediately
+      try {
+        await MoneyFlyService.syncSubscription(ref);
+      } catch (_) {}
+      await _loadPackages();
     }
   }
 
   String _name(Map<String, dynamic> pkg) =>
       (pkg['name'] ?? pkg['title'] ?? pkg['package_name'] ?? pkg['subject'] ?? '套餐')
           .toString();
-
-  String _desc(Map<String, dynamic> pkg) =>
-      (pkg['description'] ?? pkg['desc'] ?? pkg['content'] ?? '').toString();
-
-  String _price(Map<String, dynamic> pkg) {
-    final p = pkg['price'] ?? pkg['amount'] ?? pkg['sale_price'] ?? pkg['money'];
-    if (p == null || p.toString().isEmpty) return '';
-    return '¥$p';
-  }
-
-  String _duration(Map<String, dynamic> pkg) {
-    final d = pkg['duration'] ?? pkg['period'] ?? pkg['days'];
-    if (d == null) return '';
-    return '$d天';
-  }
-
-  String _traffic(Map<String, dynamic> pkg) {
-    final t = pkg['traffic'] ?? pkg['bandwidth'] ?? pkg['flow'];
-    if (t == null) return '';
-    return '$t GB';
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -114,8 +102,7 @@ class _PackagesViewState extends State<PackagesView> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.error_outline,
-                            size: 48, color: cs.error),
+                        Icon(Icons.error_outline, size: 48, color: cs.error),
                         const SizedBox(height: 16),
                         Text('加载失败', style: TextStyle(color: cs.error)),
                         const SizedBox(height: 8),
@@ -124,9 +111,7 @@ class _PackagesViewState extends State<PackagesView> {
                             style: const TextStyle(fontSize: 12)),
                         const SizedBox(height: 16),
                         FilledButton(
-                          onPressed: _loadPackages,
-                          child: const Text('重试'),
-                        ),
+                            onPressed: _loadPackages, child: const Text('重试')),
                       ],
                     ),
                   ),
@@ -147,17 +132,32 @@ class _PackagesViewState extends State<PackagesView> {
                           padding: const EdgeInsets.all(16),
                           itemCount: _packages.length,
                           itemBuilder: (_, i) {
-                            final pkg =
-                                _packages[i] as Map<String, dynamic>;
-                            final duration = _duration(pkg);
-                            final traffic = _traffic(pkg);
+                            final pkg = _packages[i] as Map<String, dynamic>;
+                            final desc = (pkg['description'] ??
+                                    pkg['desc'] ??
+                                    pkg['content'] ??
+                                    '')
+                                .toString();
+                            final duration = (pkg['duration'] ??
+                                        pkg['period'] ??
+                                        pkg['days'])
+                                    ?.toString() ??
+                                '';
+                            final traffic = (pkg['traffic'] ??
+                                        pkg['bandwidth'] ??
+                                        pkg['flow'])
+                                    ?.toString() ??
+                                '';
+                            final price = pkg['price'] ??
+                                pkg['amount'] ??
+                                pkg['sale_price'] ??
+                                pkg['money'];
                             return Card(
                               margin: const EdgeInsets.only(bottom: 12),
                               child: Padding(
                                 padding: const EdgeInsets.all(16),
                                 child: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
                                       _name(pkg),
@@ -167,10 +167,10 @@ class _PackagesViewState extends State<PackagesView> {
                                           ?.copyWith(
                                               fontWeight: FontWeight.bold),
                                     ),
-                                    if (_desc(pkg).isNotEmpty) ...[
+                                    if (desc.isNotEmpty) ...[
                                       const SizedBox(height: 4),
                                       Text(
-                                        _desc(pkg),
+                                        desc,
                                         style: TextStyle(
                                             fontSize: 13, color: cs.outline),
                                         maxLines: 2,
@@ -186,12 +186,12 @@ class _PackagesViewState extends State<PackagesView> {
                                           if (duration.isNotEmpty)
                                             _Tag(
                                               icon: Icons.access_time,
-                                              label: duration,
+                                              label: '$duration天',
                                             ),
                                           if (traffic.isNotEmpty)
                                             _Tag(
                                               icon: Icons.data_usage,
-                                              label: traffic,
+                                              label: '$traffic GB',
                                             ),
                                         ],
                                       ),
@@ -201,16 +201,19 @@ class _PackagesViewState extends State<PackagesView> {
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceBetween,
                                       children: [
-                                        Text(
-                                          _price(pkg),
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .titleLarge
-                                              ?.copyWith(
-                                                color: cs.primary,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                        ),
+                                        if (price != null)
+                                          Text(
+                                            '¥$price',
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .titleLarge
+                                                ?.copyWith(
+                                                  color: cs.primary,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                          )
+                                        else
+                                          const SizedBox.shrink(),
                                         FilledButton(
                                           onPressed: () => _purchase(pkg),
                                           child: const Text('立即购买'),
@@ -283,12 +286,11 @@ class _PaymentMethodDialogState extends State<_PaymentMethodDialog> {
       if (mounted) {
         setState(() {
           _methods = methods;
-          _selected = methods.isNotEmpty
-              ? ((methods.first as Map)['key'] ??
-                      (methods.first as Map)['pay_type'] ??
-                      (methods.first as Map)['id'])
-                  .toString()
-              : null;
+          if (methods.isNotEmpty) {
+            final first = methods.first as Map;
+            _selected =
+                (first['key'] ?? first['pay_type'] ?? first['id']).toString();
+          }
         });
       }
     } catch (e) {
@@ -327,16 +329,17 @@ class _PaymentMethodDialogState extends State<_PaymentMethodDialog> {
                   for (final raw in _methods)
                     Builder(builder: (_) {
                       final m = raw as Map;
-                      final key = (m['key'] ?? m['pay_type'] ?? m['id'])
-                          .toString();
+                      final key =
+                          (m['key'] ?? m['pay_type'] ?? m['id']).toString();
                       final name = (m['name'] ?? key).toString();
+                      final isSelected = key == _selected;
                       return ListTile(
                         dense: true,
                         leading: Icon(
-                          key == _selected
+                          isSelected
                               ? Icons.radio_button_checked
                               : Icons.radio_button_unchecked,
-                          color: key == _selected
+                          color: isSelected
                               ? Theme.of(context).colorScheme.primary
                               : null,
                         ),
@@ -397,7 +400,12 @@ class _PaymentQrDialogState extends State<_PaymentQrDialog> {
             .toString();
         if (orderId.isEmpty) return;
         final status = await ApiService().getOrderStatus(orderId);
-        if (status['status'] == 'paid' || status['paid'] == true) {
+        final isPaid = status['status'] == 'paid' ||
+            status['status'] == 'success' ||
+            status['paid'] == true ||
+            status['is_paid'] == true ||
+            status['order_status'] == 'paid';
+        if (isPaid) {
           _pollTimer?.cancel();
           if (mounted) {
             setState(() => _paid = true);
@@ -411,13 +419,14 @@ class _PaymentQrDialogState extends State<_PaymentQrDialog> {
 
   void _startCountdown() {
     _countdownTimer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (!mounted || _secondsLeft <= 0) {
+      if (!mounted) {
         _countdownTimer?.cancel();
         return;
       }
       setState(() => _secondsLeft--);
       if (_secondsLeft <= 0) {
         _countdownTimer?.cancel();
+        _pollTimer?.cancel();
         if (mounted) Navigator.of(widget.dialogContext).pop(false);
       }
     });
@@ -438,9 +447,14 @@ class _PaymentQrDialogState extends State<_PaymentQrDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final qrUrl = (widget.order['payment_qr_code'] ??
+    // Support common payment URL field names from different backends
+    final qrData = (widget.order['payment_qr_code'] ??
             widget.order['payment_url'] ??
-            widget.order['qr_code'])
+            widget.order['qr_code'] ??
+            widget.order['pay_url'] ??
+            widget.order['qr_link'] ??
+            widget.order['code_url'] ??
+            widget.order['pay_info'])
         ?.toString();
     final amount =
         (widget.order['amount'] ?? widget.order['price'] ?? '').toString();
@@ -460,7 +474,8 @@ class _PaymentQrDialogState extends State<_PaymentQrDialog> {
                 children: [
                   Icon(Icons.check_circle, color: Colors.green, size: 64),
                   SizedBox(height: 12),
-                  Text('支付成功！', style: TextStyle(fontSize: 16)),
+                  Text('支付成功！正在更新套餐…',
+                      style: TextStyle(fontSize: 16)),
                 ],
               )
             : Column(
@@ -470,13 +485,23 @@ class _PaymentQrDialogState extends State<_PaymentQrDialog> {
                     width: 200,
                     height: 200,
                     color: Colors.white,
-                    child: qrUrl != null && qrUrl.isNotEmpty
+                    child: qrData != null && qrData.isNotEmpty
                         ? QrImageView(
-                            data: qrUrl,
+                            data: qrData,
                             size: 200,
                             backgroundColor: Colors.white,
                           )
-                        : const Center(child: Icon(Icons.qr_code, size: 80)),
+                        : const Center(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.qr_code, size: 60),
+                                SizedBox(height: 8),
+                                Text('二维码加载中…',
+                                    style: TextStyle(fontSize: 12)),
+                              ],
+                            ),
+                          ),
                   ),
                   const SizedBox(height: 12),
                   if (amount.isNotEmpty)
@@ -489,7 +514,8 @@ class _PaymentQrDialogState extends State<_PaymentQrDialog> {
                     const SizedBox(height: 4),
                     Text(
                       '订单号：$orderId',
-                      style: const TextStyle(fontSize: 11, color: Colors.grey),
+                      style: const TextStyle(
+                          fontSize: 11, color: Colors.grey),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ],
