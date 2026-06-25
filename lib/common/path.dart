@@ -44,7 +44,7 @@ class AppPath {
   }
 
   String get corePath {
-    return join(executableDirPath, 'MoneyFlyCore$executableExtension');
+    return join(executableDirPath, 'FlClashCore$executableExtension');
   }
 
   String get helperPath {
