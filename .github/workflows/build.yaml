@@ -90,46 +90,6 @@ jobs:
           path: dist/*
           overwrite: true
 
-  build-windows-arm64:
-    runs-on: windows-11-arm
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Clone Go core
-        run: git clone --depth=1 -b FlClash https://github.com/chen08209/Clash.Meta.git core/Clash.Meta
-
-      - name: Setup Rust
-        run: |
-          Invoke-WebRequest -Uri "https://win.rustup.rs/aarch64" -OutFile rustup-init.exe
-          .\rustup-init.exe -y --default-toolchain stable
-          $cargoPath = "$env:USERPROFILE\.cargo\bin"
-          Add-Content $env:GITHUB_PATH $cargoPath
-
-      - uses: actions/setup-go@v5
-        with:
-          go-version: '1.24.0'
-          cache-dependency-path: core/go.sum
-
-      - uses: subosito/flutter-action@v2
-        with:
-          channel: master
-          flutter-version: 3.44.0-0.1.pre
-          cache: true
-
-      - run: flutter pub get
-
-      - name: Install Inno Setup
-        run: choco install innosetup --no-progress -y
-
-      - name: Package exe and zip
-        run: dart setup.dart windows --env=stable --targets=exe,zip --verbose
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: windows-arm64
-          path: dist/*
-          overwrite: true
-
   build-macos-amd64:
     runs-on: macos-15-intel
     steps:
