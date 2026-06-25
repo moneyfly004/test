@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
-import 'package:fl_clash/common/preferences.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:crypto/crypto.dart';
 import 'dart:convert';
@@ -9,8 +8,6 @@ class StorageService {
   static final StorageService _instance = StorageService._internal();
   factory StorageService() => _instance;
   StorageService._internal();
-
-  final _prefs = Preferences();
 
   Future<String?> getToken() async {
     final prefs = await SharedPreferences.getInstance();

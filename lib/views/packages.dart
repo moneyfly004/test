@@ -132,19 +132,17 @@ class _PaymentMethodDialogState extends State<_PaymentMethodDialog> {
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          RadioListTile<String>(
-            value: 'alipay',
-            groupValue: _selected,
-            onChanged: (v) => setState(() => _selected = v!),
+          ListTile(
+            leading: Radio<String>(value: 'alipay', groupValue: _selected, onChanged: (v) => setState(() => _selected = v!)),
             title: const Text('Alipay'),
-            secondary: const Icon(Icons.payment),
+            trailing: const Icon(Icons.payment),
+            onTap: () => setState(() => _selected = 'alipay'),
           ),
-          RadioListTile<String>(
-            value: 'wechat',
-            groupValue: _selected,
-            onChanged: (v) => setState(() => _selected = v!),
+          ListTile(
+            leading: Radio<String>(value: 'wechat', groupValue: _selected, onChanged: (v) => setState(() => _selected = v!)),
             title: const Text('WeChat Pay'),
-            secondary: const Icon(Icons.qr_code),
+            trailing: const Icon(Icons.qr_code),
+            onTap: () => setState(() => _selected = 'wechat'),
           ),
         ],
       ),
