@@ -6,6 +6,7 @@ import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
+import 'package:fl_clash/services/services.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:flutter/material.dart';
@@ -293,11 +294,59 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
   }
 }
 
-class _DesktopDashboard extends ConsumerWidget {
+class _DesktopDashboard extends ConsumerStatefulWidget {
   const _DesktopDashboard();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_DesktopDashboard> createState() => _DesktopDashboardState();
+}
+
+class _DesktopDashboardState extends ConsumerState<_DesktopDashboard> {
+  Map<String, dynamic>? _dashboardInfo;
+  Duration _connectionDuration = Duration.zero;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDashboardInfo();
+    _startDurationTimer();
+  }
+
+  Future<void> _loadDashboardInfo() async {
+    try {
+      final info = await globalState.safeRun(
+        () => ApiService().getDashboard(),
+        title: '加载用户信息',
+      );
+      if (mounted && info != null) {
+        setState(() => _dashboardInfo = info);
+      }
+    } catch (_) {}
+  }
+
+  void _startDurationTimer() {
+    Future.doWhile(() async {
+      await Future.delayed(const Duration(seconds: 1));
+      if (!mounted) return false;
+      final isStart = ref.read(isStartProvider);
+      if (isStart) {
+        setState(() => _connectionDuration += const Duration(seconds: 1));
+      } else {
+        setState(() => _connectionDuration = Duration.zero);
+      }
+      return true;
+    });
+  }
+
+  String _formatDuration(Duration d) {
+    final h = d.inHours.toString().padLeft(2, '0');
+    final m = (d.inMinutes % 60).toString().padLeft(2, '0');
+    final s = (d.inSeconds % 60).toString().padLeft(2, '0');
+    return '$h:$m:$s';
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final appLocalizations = context.appLocalizations;
     final colorScheme = context.colorScheme;
     final isStart = ref.watch(isStartProvider);
@@ -318,81 +367,297 @@ class _DesktopDashboard extends ConsumerWidget {
       CoreStatus.disconnected => colorScheme.error,
     };
 
+    final expiry = (_dashboardInfo?['expiry'] ??
+            _dashboardInfo?['expire_at'] ??
+            _dashboardInfo?['expired_at'] ??
+            '')
+        .toString();
+    final deviceUsage =
+        '${_dashboardInfo?['device_used'] ?? _dashboardInfo?['devices_used'] ?? 0} / ${_dashboardInfo?['device_limit'] ?? _dashboardInfo?['devices_limit'] ?? 0}';
+
     return ConstrainedBox(
-      constraints: const BoxConstraints(maxWidth: 1180),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+      constraints: const BoxConstraints(maxWidth: 1400),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _DashboardHero(
-            isStart: isStart,
-            statusText: statusText,
-            statusColor: statusColor,
-            profileName: currentProfile?.label ?? appLocalizations.noInfo,
-            uploadSpeed: currentTraffic.up.traffic.show,
-            downloadSpeed: currentTraffic.down.traffic.show,
+          Expanded(
+            flex: 2,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (expiry.isNotEmpty || deviceUsage != '0 / 0')
+                  _UserInfoCard(expiry: expiry, deviceUsage: deviceUsage),
+                if (expiry.isNotEmpty || deviceUsage != '0 / 0')
+                  const SizedBox(height: 16),
+                _DashboardHero(
+                  isStart: isStart,
+                  statusText: statusText,
+                  statusColor: statusColor,
+                  profileName:
+                      currentProfile?.label ?? appLocalizations.noInfo,
+                  uploadSpeed: currentTraffic.up.traffic.show,
+                  downloadSpeed: currentTraffic.down.traffic.show,
+                ),
+                const SizedBox(height: 16),
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final isCompact = constraints.maxWidth < 600;
+                    final metricCards = [
+                      _MetricCard(
+                        icon: Icons.cloud_upload_outlined,
+                        label: appLocalizations.upload,
+                        value: totalTraffic.up.traffic.show,
+                        color: colorScheme.primary,
+                      ),
+                      _MetricCard(
+                        icon: Icons.cloud_download_outlined,
+                        label: appLocalizations.download,
+                        value: totalTraffic.down.traffic.show,
+                        color: colorScheme.secondary,
+                      ),
+                      _MetricCard(
+                        icon: Icons.timer_outlined,
+                        label: '连接时长',
+                        value: _formatDuration(_connectionDuration),
+                        color: colorScheme.tertiary,
+                      ),
+                    ];
+                    return Flex(
+                      direction: isCompact ? Axis.vertical : Axis.horizontal,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        for (var index = 0;
+                            index < metricCards.length;
+                            index++) ...[
+                          if (index > 0)
+                            SizedBox(
+                              width: isCompact ? 0 : 12,
+                              height: isCompact ? 12 : 0,
+                            ),
+                          Expanded(
+                            flex: isCompact ? 0 : 1,
+                            child: metricCards[index],
+                          ),
+                        ],
+                      ],
+                    );
+                  },
+                ),
+                const SizedBox(height: 16),
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final isCompact = constraints.maxWidth < 600;
+                    final children = [
+                      const NetworkSpeed(),
+                      const TrafficUsage(),
+                    ];
+                    return Flex(
+                      direction: isCompact ? Axis.vertical : Axis.horizontal,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        for (var index = 0;
+                            index < children.length;
+                            index++) ...[
+                          if (index > 0)
+                            SizedBox(
+                              width: isCompact ? 0 : 16,
+                              height: isCompact ? 16 : 0,
+                            ),
+                          Expanded(
+                            flex: isCompact ? 0 : 1,
+                            child: children[index],
+                          ),
+                        ],
+                      ],
+                    );
+                  },
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: 16),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final isCompact = constraints.maxWidth < 900;
-              final metricCards = [
-                _MetricCard(
-                  icon: Icons.cloud_upload_outlined,
-                  label: appLocalizations.upload,
-                  value: totalTraffic.up.traffic.show,
-                  color: colorScheme.primary,
-                ),
-                _MetricCard(
-                  icon: Icons.cloud_download_outlined,
-                  label: appLocalizations.download,
-                  value: totalTraffic.down.traffic.show,
-                  color: colorScheme.secondary,
-                ),
-                _MetricCard(
-                  icon: Icons.account_tree_outlined,
-                  label: appLocalizations.proxyGroup,
-                  value: groups.length.toString(),
-                  color: colorScheme.tertiary,
-                ),
-              ];
-              return Flex(
-                direction: isCompact ? Axis.vertical : Axis.horizontal,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  for (var index = 0; index < metricCards.length; index++) ...[
-                    if (index > 0)
-                      SizedBox(
-                          width: isCompact ? 0 : 12,
-                          height: isCompact ? 12 : 0),
-                    Expanded(
-                        flex: isCompact ? 0 : 1, child: metricCards[index]),
-                  ],
-                ],
-              );
-            },
-          ),
-          const SizedBox(height: 16),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final isCompact = constraints.maxWidth < 900;
-              final children = [
-                const NetworkSpeed(),
-                const TrafficUsage(),
-              ];
-              return Flex(
-                direction: isCompact ? Axis.vertical : Axis.horizontal,
+          if (isStart && groups.isNotEmpty) ...[
+            const SizedBox(width: 16),
+            SizedBox(
+              width: 340,
+              child: _NodeSelector(groups: groups),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _UserInfoCard extends StatelessWidget {
+  final String expiry;
+  final String deviceUsage;
+
+  const _UserInfoCard({required this.expiry, required this.deviceUsage});
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = context.colorScheme;
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: ShapeDecoration(
+        color: colorScheme.surfaceContainerHighest.opacity80,
+        shape: RoundedSuperellipseBorder(
+          side: BorderSide(color: colorScheme.outlineVariant.opacity60),
+          borderRadius: BorderRadius.circular(24),
+        ),
+      ),
+      child: Row(
+        children: [
+          if (expiry.isNotEmpty)
+            Expanded(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  for (var index = 0; index < children.length; index++) ...[
-                    if (index > 0)
-                      SizedBox(
-                          width: isCompact ? 0 : 16,
-                          height: isCompact ? 16 : 0),
-                    Expanded(flex: isCompact ? 0 : 1, child: children[index]),
-                  ],
+                  Text('到期时间',
+                      style: context.textTheme.labelMedium?.toLighter),
+                  const SizedBox(height: 4),
+                  Text(
+                    expiry.substring(0, min(expiry.length, 10)),
+                    style: context.textTheme.titleMedium
+                        ?.copyWith(fontWeight: FontWeight.w700),
+                  ),
                 ],
-              );
-            },
+              ),
+            ),
+          if (deviceUsage != '0 / 0')
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('设备使用',
+                      style: context.textTheme.labelMedium?.toLighter),
+                  const SizedBox(height: 4),
+                  Text(
+                    deviceUsage,
+                    style: context.textTheme.titleMedium
+                        ?.copyWith(fontWeight: FontWeight.w700),
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _NodeSelector extends ConsumerWidget {
+  final List<Group> groups;
+
+  const _NodeSelector({required this.groups});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final colorScheme = context.colorScheme;
+    final selectorGroup = groups.firstWhere(
+      (g) => g.type == GroupType.Selector,
+      orElse: () => groups.first,
+    );
+    final currentProxyName = ref.watch(proxyNameProvider(selectorGroup.name));
+    final proxies = selectorGroup.all;
+    final delayMap = ref.watch(delayDataSourceProvider);
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: ShapeDecoration(
+        color: colorScheme.surfaceContainerHighest.opacity80,
+        shape: RoundedSuperellipseBorder(
+          side: BorderSide(color: colorScheme.outlineVariant.opacity60),
+          borderRadius: BorderRadius.circular(24),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.dns_outlined, size: 20, color: colorScheme.primary),
+              const SizedBox(width: 8),
+              Text(
+                '节点选择',
+                style: context.textTheme.titleMedium
+                    ?.copyWith(fontWeight: FontWeight.w700),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxHeight: 500),
+            child: ListView.separated(
+              shrinkWrap: true,
+              itemCount: min(proxies.length, 10),
+              separatorBuilder: (__, ___) => const SizedBox(height: 8),
+              itemBuilder: (__, i) {
+                final proxy = proxies[i];
+                final isSelected = proxy.name == currentProxyName;
+                final delay = delayMap[proxy.name]?[proxy.name];
+                return Material(
+                  color: isSelected
+                      ? colorScheme.primaryContainer.opacity40
+                      : colorScheme.surface.opacity60,
+                  borderRadius: BorderRadius.circular(14),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(14),
+                    onTap: () {
+                      ref
+                          .read(proxiesActionProvider.notifier)
+                          .changeProxyDebounce(selectorGroup.name, proxy.name);
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 12,
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            isSelected
+                                ? Icons.radio_button_checked
+                                : Icons.radio_button_unchecked,
+                            size: 18,
+                            color: isSelected
+                                ? colorScheme.primary
+                                : colorScheme.outline,
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              proxy.name,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: context.textTheme.bodyMedium?.copyWith(
+                                fontWeight: isSelected
+                                    ? FontWeight.w700
+                                    : FontWeight.normal,
+                              ),
+                            ),
+                          ),
+                          if (delay != null) ...[
+                            const SizedBox(width: 8),
+                            Text(
+                              '${delay}ms',
+                              style: context.textTheme.labelSmall?.copyWith(
+                                color: delay < 100
+                                    ? Colors.green
+                                    : delay < 300
+                                        ? Colors.orange
+                                        : Colors.red,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
           ),
         ],
       ),
