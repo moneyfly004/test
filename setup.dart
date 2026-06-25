@@ -176,9 +176,9 @@ Future<int> _package(
     platform: platform,
     verbose: verbose,
   );
-  final descriptionArgs = <String>[];
+  final artifactNameArgs = <String>[];
   if (platform != 'android') {
-    descriptionArgs.addAll(['--description', arch]);
+    artifactNameArgs.add('--artifact-name=MoneyFly-$platform-$arch');
   }
 
   final depExit = await _ensureDependencies(platform, arch);
@@ -197,7 +197,7 @@ Future<int> _package(
         '--build-target-platform=${_androidFlutterTarget[androidArch]!}',
       if (flutterBuildArgs.isNotEmpty)
         '--flutter-build-args=${flutterBuildArgs.join(',')}',
-      ...descriptionArgs,
+      ...artifactNameArgs,
     ],
     includeParentEnvironment: true,
     environment: {'ANDROID_ARCH': ?androidArch},
