@@ -178,7 +178,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   Future<void> _sendCode() async {
     if (_emailCtrl.text.isEmpty) return;
     try {
-      await ApiService().sendVerificationCode(_emailCtrl.text.trim());
+      await ApiService().sendForgotPasswordCode(_emailCtrl.text.trim());
       if (mounted) {
         ScaffoldMessenger.of(
           context,
