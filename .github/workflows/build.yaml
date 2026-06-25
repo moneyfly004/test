@@ -180,10 +180,17 @@ jobs:
           merge-multiple: true
 
       - name: Generate SHA256
-        run: cd ./dist && sha256sum * > SHA256SUMS
+        run: |
+          cd ./dist
+          find . -maxdepth 1 -type f ! -name SHA256SUMS -print0 | sort -z | xargs -0 sha256sum > SHA256SUMS
 
       - uses: softprops/action-gh-release@v2
         with:
-          files: ./dist/*
+          files: |
+            ./dist/*.apk
+            ./dist/*.dmg
+            ./dist/*.exe
+            ./dist/*.zip
+            ./dist/SHA256SUMS
           generate_release_notes: true
           name: MoneyFly ${{ github.ref_name }}
