@@ -65,7 +65,6 @@ class ApplicationState extends ConsumerState<Application> {
     try {
       final isLoggedIn = await StorageService().isLoggedIn();
       if (!isLoggedIn) return;
-      await MoneyFlyService.clearAccountData(ref);
       await MoneyFlyService.syncSubscription(ref);
     } catch (e) {
       commonPrint.log(

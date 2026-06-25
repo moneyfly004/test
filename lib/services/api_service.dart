@@ -7,34 +7,32 @@ class ApiService {
   factory ApiService() => _instance;
   ApiService._internal();
 
-  late final Dio _dio =
-      Dio(
-          BaseOptions(
-            baseUrl: apiBaseUrl,
-            connectTimeout: apiTimeout,
-            receiveTimeout: apiTimeout,
-            headers: {'Content-Type': 'application/json'},
-          ),
-        )
-        ..interceptors.add(
-          InterceptorsWrapper(
-            onRequest: (options, handler) async {
-              final token = await StorageService().getToken();
-              if (token != null && token.isNotEmpty) {
-                options.headers['Authorization'] = 'Bearer $token';
-              } else {
-                options.headers.remove('Authorization');
-              }
-              options.headers['X-App-Client'] = appName;
-              options.headers['X-App-Device-Id'] = await StorageService()
-                  .getDeviceId();
-              handler.next(options);
-            },
-            onError: (error, handler) {
-              handler.reject(_friendlyError(error));
-            },
-          ),
-        );
+  late final Dio _dio = Dio(
+    BaseOptions(
+      baseUrl: apiBaseUrl,
+      connectTimeout: apiTimeout,
+      receiveTimeout: apiTimeout,
+      headers: {'Content-Type': 'application/json'},
+    ),
+  )..interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) async {
+          final token = await StorageService().getToken();
+          if (token != null && token.isNotEmpty) {
+            options.headers['Authorization'] = 'Bearer $token';
+          } else {
+            options.headers.remove('Authorization');
+          }
+          options.headers['X-App-Client'] = appName;
+          options.headers['X-App-Device-Id'] =
+              await StorageService().getDeviceId();
+          handler.next(options);
+        },
+        onError: (error, handler) {
+          handler.reject(_friendlyError(error));
+        },
+      ),
+    );
 
   Future<void> _auth() async {
     final token = await StorageService().getToken();
@@ -144,8 +142,7 @@ class ApiService {
     }
     final resp = await _dio.get('/subscriptions');
     final data = _data(resp);
-    final subscriptions =
-        data['subscriptions'] as List? ??
+    final subscriptions = data['subscriptions'] as List? ??
         data['list'] as List? ??
         (resp.data is List ? resp.data as List : null);
     if (subscriptions == null || subscriptions.isEmpty) return null;
@@ -183,9 +180,14 @@ class ApiService {
   Future<List<dynamic>> getPackages() async {
     final resp = await _dio.get('/packages');
     final data = _data(resp);
-    return data['packages'] as List? ??
-        data['list'] as List? ??
-        (resp.data is List ? resp.data : []);
+    return _listFromData(resp.data, data, [
+      'packages',
+      'plans',
+      'products',
+      'items',
+      'list',
+      'data',
+    ]);
   }
 
   // ── Payment methods ───────────────────────────────────
@@ -193,9 +195,13 @@ class ApiService {
   Future<List<dynamic>> getPaymentMethods() async {
     final resp = await _dio.get('/payment-methods/active');
     final data = _data(resp);
-    return data['methods'] as List? ??
-        data['payment_methods'] as List? ??
-        (resp.data is List ? resp.data : []);
+    return _listFromData(resp.data, data, [
+      'methods',
+      'payment_methods',
+      'items',
+      'list',
+      'data',
+    ]);
   }
 
   // ── Orders ────────────────────────────────────────────
@@ -223,15 +229,33 @@ class ApiService {
 
   // ── Helpers ───────────────────────────────────────────
 
+  List<dynamic> _listFromData(
+    Object? raw,
+    Map<String, dynamic> data,
+    List<String> keys,
+  ) {
+    for (final key in keys) {
+      final value = data[key];
+      if (value is List) return value;
+    }
+    if (raw is List) return raw;
+    if (raw is Map) {
+      for (final key in keys) {
+        final value = raw[key];
+        if (value is List) return value;
+      }
+    }
+    return [];
+  }
+
   Map<String, dynamic> _data(Response resp) {
     final body = resp.data;
     if (body is Map<String, dynamic>) {
-      // Standard: { success: true, data: {...} } or { data: {...} }
       if (body.containsKey('data') && body['data'] is Map) {
         return body['data'] as Map<String, dynamic>;
       }
       if (body.containsKey('data') && body['data'] is List) {
-        return body as Map<String, dynamic>;
+        return body;
       }
       return body;
     }

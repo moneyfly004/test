@@ -1,3 +1,4 @@
+import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/services/services.dart';
 import 'package:fl_clash/widgets/scaffold.dart';
 import 'package:flutter/material.dart';
@@ -40,17 +41,18 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Remove Device'),
-        content: Text('Remove "$name"? This device will be disconnected.'),
+        title: Text(context.appLocalizations
+            .deleteTip(context.appLocalizations.devices)),
+        content: Text('$name ${context.appLocalizations.remove}?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text(context.appLocalizations.cancel),
           ),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Remove'),
+            child: Text(context.appLocalizations.remove),
           ),
         ],
       ),
@@ -60,10 +62,11 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
       await ApiService().deleteDevice(deviceId);
       await _loadDevices();
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text(e.toString())));
+      }
     }
   }
 
@@ -72,23 +75,23 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
     final remark = await showDialog<String>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Device Remark'),
+        title: Text(context.appLocalizations.rename),
         content: TextField(
           controller: controller,
-          decoration: const InputDecoration(
-            labelText: 'Remark',
-            border: OutlineInputBorder(),
+          decoration: InputDecoration(
+            labelText: context.appLocalizations.name,
+            border: const OutlineInputBorder(),
           ),
           maxLength: 40,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(context.appLocalizations.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, controller.text.trim()),
-            child: const Text('Save'),
+            child: Text(context.appLocalizations.save),
           ),
         ],
       ),
@@ -99,99 +102,116 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
       await ApiService().remarkDevice(deviceId, remark);
       await _loadDevices();
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text(e.toString())));
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return CommonScaffold(
-      title: 'Device Management',
+      title: context.appLocalizations.devices,
       actions: [
-        IconButton(icon: const Icon(Icons.refresh), onPressed: _loadDevices),
+        IconButton(
+          tooltip: context.appLocalizations.update,
+          icon: const Icon(Icons.refresh),
+          onPressed: _loading ? null : _loadDevices,
+        ),
       ],
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _devices.isEmpty
-          ? const Center(child: Text('No devices'))
-          : RefreshIndicator(
-              onRefresh: _loadDevices,
-              child: ListView.builder(
-                itemCount: _devices.length,
-                itemBuilder: (_, i) {
-                  final d = _devices[i] as Map<String, dynamic>;
-                  final isCurrent = d['is_current'] == true;
-                  final id = (d['id'] ?? '').toString();
-                  final system =
-                      (d['system'] ?? d['os_name'] ?? d['type'] ?? '')
-                          .toString();
-                  final name =
-                      (d['remark'] ??
+              ? RefreshIndicator(
+                  onRefresh: _loadDevices,
+                  child: ListView(
+                    children: [
+                      SizedBox(
+                        height: MediaQuery.sizeOf(context).height * 0.45,
+                        child: Center(
+                            child: Text(context.appLocalizations.noData)),
+                      ),
+                    ],
+                  ),
+                )
+              : RefreshIndicator(
+                  onRefresh: _loadDevices,
+                  child: ListView.builder(
+                    itemCount: _devices.length,
+                    itemBuilder: (_, i) {
+                      final d = _devices[i] as Map<String, dynamic>;
+                      final isCurrent = d['is_current'] == true;
+                      final id = (d['id'] ?? '').toString();
+                      final system =
+                          (d['system'] ?? d['os_name'] ?? d['type'] ?? '')
+                              .toString();
+                      final name = (d['remark'] ??
                               d['device_name'] ??
                               d['name'] ??
-                              'Unknown')
+                              context.appLocalizations.unknown)
                           .toString();
-                  final ip = (d['ip'] ?? d['ip_address'] ?? '').toString();
-                  final lastSeen = (d['last_seen'] ?? d['last_access'] ?? '')
-                      .toString();
-                  return ListTile(
-                    leading: Icon(
-                      _platformIcon(system),
-                      color: isCurrent
-                          ? Theme.of(context).colorScheme.primary
-                          : null,
-                    ),
-                    title: Text(
-                      name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    subtitle: Text(
-                      [
-                        system,
-                        ip,
-                        lastSeen,
-                      ].where((v) => v.isNotEmpty).join(' · '),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    trailing: isCurrent
-                        ? Chip(
-                            label: const Text('Current'),
-                            backgroundColor: Theme.of(
-                              context,
-                            ).colorScheme.primaryContainer,
-                          )
-                        : PopupMenuButton<String>(
-                            onSelected: (value) async {
-                              if (value == 'remark') {
-                                await _editRemark(
-                                  id,
-                                  (d['remark'] ?? '').toString(),
-                                );
-                              }
-                              if (value == 'delete') {
-                                await _deleteDevice(id, name);
-                              }
-                            },
-                            itemBuilder: (_) => const [
-                              PopupMenuItem(
-                                value: 'remark',
-                                child: Text('Edit remark'),
+                      final ip = (d['ip'] ?? d['ip_address'] ?? '').toString();
+                      final lastSeen =
+                          (d['last_seen'] ?? d['last_access'] ?? '').toString();
+                      return ListTile(
+                        leading: Icon(
+                          _platformIcon(system),
+                          color: isCurrent
+                              ? Theme.of(context).colorScheme.primary
+                              : null,
+                        ),
+                        title: Text(
+                          name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        subtitle: Text(
+                          [
+                            system,
+                            ip,
+                            lastSeen,
+                          ].where((v) => v.isNotEmpty).join(' · '),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        trailing: isCurrent
+                            ? Chip(
+                                label: Text(context.appLocalizations.status),
+                                backgroundColor: Theme.of(
+                                  context,
+                                ).colorScheme.primaryContainer,
+                              )
+                            : PopupMenuButton<String>(
+                                onSelected: (value) async {
+                                  if (value == 'remark') {
+                                    await _editRemark(
+                                      id,
+                                      (d['remark'] ?? '').toString(),
+                                    );
+                                  }
+                                  if (value == 'delete') {
+                                    await _deleteDevice(id, name);
+                                  }
+                                },
+                                itemBuilder: (_) => [
+                                  PopupMenuItem(
+                                    value: 'remark',
+                                    child:
+                                        Text(context.appLocalizations.rename),
+                                  ),
+                                  PopupMenuItem(
+                                    value: 'delete',
+                                    child:
+                                        Text(context.appLocalizations.remove),
+                                  ),
+                                ],
                               ),
-                              PopupMenuItem(
-                                value: 'delete',
-                                child: Text('Remove'),
-                              ),
-                            ],
-                          ),
-                  );
-                },
-              ),
-            ),
+                      );
+                    },
+                  ),
+                ),
     );
   }
 

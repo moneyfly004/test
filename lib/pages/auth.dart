@@ -46,7 +46,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
   Future<void> _syncSubscriptionAfterAuth() async {
     try {
-      await MoneyFlyService.clearAccountData(ref);
       await MoneyFlyService.syncSubscription(ref);
     } catch (e) {
       if (mounted) {
@@ -72,9 +71,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 Text(
                   'MoneyFly',
                   style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: cs.primary,
-                  ),
+                        fontWeight: FontWeight.bold,
+                        color: cs.primary,
+                      ),
                 ),
                 const SizedBox(height: 8),
                 Text(
@@ -178,7 +177,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   Future<void> _sendCode() async {
     if (_emailCtrl.text.isEmpty) return;
     try {
-      await ApiService().sendForgotPasswordCode(_emailCtrl.text.trim());
+      await ApiService().sendVerificationCode(_emailCtrl.text.trim());
       if (mounted) {
         ScaffoldMessenger.of(
           context,
@@ -218,9 +217,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
         email: _emailCtrl.text.trim(),
         password: _pwCtrl.text,
         verificationCode: _codeCtrl.text.trim(),
-        inviteCode: _inviteCtrl.text.trim().isEmpty
-            ? null
-            : _inviteCtrl.text.trim(),
+        inviteCode:
+            _inviteCtrl.text.trim().isEmpty ? null : _inviteCtrl.text.trim(),
       );
       await StorageService().saveToken(result['access_token'] ?? '');
       await StorageService().saveRefreshToken(result['refresh_token'] ?? '');
@@ -249,7 +247,6 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
 
   Future<void> _syncSubscriptionAfterAuth() async {
     try {
-      await MoneyFlyService.clearAccountData(ref);
       await MoneyFlyService.syncSubscription(ref);
     } catch (e) {
       if (mounted) {
@@ -365,7 +362,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
   Future<void> _sendCode() async {
     if (_emailCtrl.text.isEmpty) return;
     try {
-      await ApiService().sendVerificationCode(_emailCtrl.text.trim());
+      await ApiService().sendForgotPasswordCode(_emailCtrl.text.trim());
       if (mounted) {
         ScaffoldMessenger.of(
           context,
@@ -429,7 +426,6 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
 
   Future<void> _syncSubscriptionAfterAuth() async {
     try {
-      await MoneyFlyService.clearAccountData(ref);
       await MoneyFlyService.syncSubscription(ref);
     } catch (e) {
       if (mounted) {

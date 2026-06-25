@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/common/constant.dart';
 import 'package:fl_clash/models/models.dart';
@@ -39,15 +40,19 @@ class MoneyFlyService {
     final subscriptionUrl = await ApiService().getSubscriptionUrl();
     if (subscriptionUrl == null || subscriptionUrl.isEmpty) return null;
 
-    await _deleteMoneyFlyProfiles(container);
-
-    final profile = await Profile.normal(
-      label: profileLabel,
-      url: subscriptionUrl,
-    ).update();
+    final profiles = List<Profile>.from(container.read(profilesProvider));
+    final existingProfile = profiles.where(_isMoneyFlyProfile).firstOrNull;
+    final sourceProfile = existingProfile ??
+        Profile.normal(label: profileLabel, url: subscriptionUrl);
+    final profile = await sourceProfile
+        .copyWith(label: profileLabel, url: subscriptionUrl)
+        .update();
     container.read(profilesProvider.notifier).put(profile);
     container.read(currentProfileIdProvider.notifier).value = profile.id;
-    container.read(setupActionProvider.notifier).applyProfileDebounce();
+    container.read(setupActionProvider.notifier).applyProfileDebounce(
+          force: true,
+          silence: true,
+        );
     return profile;
   }
 

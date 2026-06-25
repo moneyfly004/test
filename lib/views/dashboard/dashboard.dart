@@ -4,6 +4,7 @@ import 'package:defer_pointer/defer_pointer.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
+import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/widgets/widgets.dart';
@@ -11,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'widgets/start_button.dart';
+import 'widgets/widgets.dart';
 
 typedef _IsEditWidgetBuilder = Widget Function(bool isEdit);
 
@@ -87,7 +89,8 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
                           },
                         ),
                         onPressed: _handleConnection,
-                        icon: const Icon(Icons.check, fontWeight: FontWeight.w900),
+                        icon: const Icon(Icons.check,
+                            fontWeight: FontWeight.w900),
                       )
                     : FilledButton.icon(
                         key: ValueKey(coreStatus),
@@ -104,12 +107,12 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
                           foregroundColor: switch (coreStatus) {
                             CoreStatus.connecting => null,
                             CoreStatus.connected => switch (Theme.brightnessOf(
-                              context,
-                            )) {
-                              Brightness.light =>
-                                context.colorScheme.onSurfaceVariant,
-                              Brightness.dark => null,
-                            },
+                                context,
+                              )) {
+                                Brightness.light =>
+                                  context.colorScheme.onSurfaceVariant,
+                                Brightness.dark => null,
+                              },
                             CoreStatus.disconnected =>
                               context.colorScheme.onError,
                           },
@@ -119,21 +122,21 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
                           width: globalState.measure.bodyMediumHeight,
                           child: switch (coreStatus) {
                             CoreStatus.connecting => Padding(
-                              padding: const EdgeInsets.all(2),
-                              child: CircularProgressIndicator(
-                                strokeWidth: 3,
-                                color: context.colorScheme.onPrimary,
-                                backgroundColor: Colors.transparent,
+                                padding: const EdgeInsets.all(2),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 3,
+                                  color: context.colorScheme.onPrimary,
+                                  backgroundColor: Colors.transparent,
+                                ),
                               ),
-                            ),
                             CoreStatus.connected => const Icon(
-                              Icons.check_sharp,
-                              fontWeight: FontWeight.w900,
-                            ),
+                                Icons.check_sharp,
+                                fontWeight: FontWeight.w900,
+                              ),
                             CoreStatus.disconnected => const Icon(
-                              Icons.restart_alt_sharp,
-                              fontWeight: FontWeight.w900,
-                            ),
+                                Icons.restart_alt_sharp,
+                                fontWeight: FontWeight.w900,
+                              ),
                           },
                         ),
                         label: Text(switch (coreStatus) {
@@ -218,9 +221,7 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
       final dashboardWidgets = currentState.children
           .map((item) => DashboardWidget.getDashboardWidget(item))
           .toList();
-      ref
-          .read(appSettingProvider.notifier)
-          .update(
+      ref.read(appSettingProvider.notifier).update(
             (state) => state.copyWith(dashboardWidgets: dashboardWidgets),
           );
     }
@@ -252,7 +253,8 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
       (isEdit) => CommonScaffold(
         title: context.appLocalizations.dashboard,
         actions: _buildActions(isEdit),
-        floatingActionButton: const StartButton(),
+        floatingActionButton:
+            isEdit || !system.isDesktop ? const StartButton() : null,
         body: Align(
           alignment: Alignment.topCenter,
           child: SingleChildScrollView(
@@ -276,14 +278,365 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
                       },
                     ),
                   )
-                : Grid(
-                    crossAxisCount: columns,
-                    crossAxisSpacing: spacing,
-                    mainAxisSpacing: spacing,
-                    children: children,
-                  ),
+                : system.isDesktop
+                    ? const _DesktopDashboard()
+                    : Grid(
+                        crossAxisCount: columns,
+                        crossAxisSpacing: spacing,
+                        mainAxisSpacing: spacing,
+                        children: children,
+                      ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _DesktopDashboard extends ConsumerWidget {
+  const _DesktopDashboard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final appLocalizations = context.appLocalizations;
+    final colorScheme = context.colorScheme;
+    final isStart = ref.watch(isStartProvider);
+    final coreStatus = ref.watch(coreStatusProvider);
+    final currentProfile = ref.watch(currentProfileProvider);
+    final traffics = ref.watch(trafficsProvider).list;
+    final currentTraffic = traffics.isEmpty ? const Traffic() : traffics.last;
+    final totalTraffic = ref.watch(totalTrafficProvider);
+    final groups = ref.watch(currentGroupsStateProvider).value;
+    final statusText = switch (coreStatus) {
+      CoreStatus.connected => appLocalizations.connected,
+      CoreStatus.connecting => appLocalizations.connecting,
+      CoreStatus.disconnected => appLocalizations.disconnected,
+    };
+    final statusColor = switch (coreStatus) {
+      CoreStatus.connected => Colors.green.harmonizeWith(colorScheme.primary),
+      CoreStatus.connecting => colorScheme.tertiary,
+      CoreStatus.disconnected => colorScheme.error,
+    };
+
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 1180),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _DashboardHero(
+            isStart: isStart,
+            statusText: statusText,
+            statusColor: statusColor,
+            profileName: currentProfile?.label ?? appLocalizations.noInfo,
+            uploadSpeed: currentTraffic.up.traffic.show,
+            downloadSpeed: currentTraffic.down.traffic.show,
+          ),
+          const SizedBox(height: 16),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final isCompact = constraints.maxWidth < 900;
+              final metricCards = [
+                _MetricCard(
+                  icon: Icons.cloud_upload_outlined,
+                  label: appLocalizations.upload,
+                  value: totalTraffic.up.traffic.show,
+                  color: colorScheme.primary,
+                ),
+                _MetricCard(
+                  icon: Icons.cloud_download_outlined,
+                  label: appLocalizations.download,
+                  value: totalTraffic.down.traffic.show,
+                  color: colorScheme.secondary,
+                ),
+                _MetricCard(
+                  icon: Icons.account_tree_outlined,
+                  label: appLocalizations.proxyGroup,
+                  value: groups.length.toString(),
+                  color: colorScheme.tertiary,
+                ),
+              ];
+              return Flex(
+                direction: isCompact ? Axis.vertical : Axis.horizontal,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  for (var index = 0; index < metricCards.length; index++) ...[
+                    if (index > 0)
+                      SizedBox(
+                          width: isCompact ? 0 : 12,
+                          height: isCompact ? 12 : 0),
+                    Expanded(
+                        flex: isCompact ? 0 : 1, child: metricCards[index]),
+                  ],
+                ],
+              );
+            },
+          ),
+          const SizedBox(height: 16),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final isCompact = constraints.maxWidth < 900;
+              final children = [
+                const NetworkSpeed(),
+                const TrafficUsage(),
+              ];
+              return Flex(
+                direction: isCompact ? Axis.vertical : Axis.horizontal,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  for (var index = 0; index < children.length; index++) ...[
+                    if (index > 0)
+                      SizedBox(
+                          width: isCompact ? 0 : 16,
+                          height: isCompact ? 16 : 0),
+                    Expanded(flex: isCompact ? 0 : 1, child: children[index]),
+                  ],
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DashboardHero extends ConsumerWidget {
+  final bool isStart;
+  final String statusText;
+  final Color statusColor;
+  final String profileName;
+  final String uploadSpeed;
+  final String downloadSpeed;
+
+  const _DashboardHero({
+    required this.isStart,
+    required this.statusText,
+    required this.statusColor,
+    required this.profileName,
+    required this.uploadSpeed,
+    required this.downloadSpeed,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final appLocalizations = context.appLocalizations;
+    final colorScheme = context.colorScheme;
+    return Container(
+      padding: const EdgeInsets.all(28),
+      decoration: ShapeDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            colorScheme.primaryContainer.opacity80,
+            colorScheme.secondaryContainer.opacity60,
+            colorScheme.surfaceContainerHighest,
+          ],
+        ),
+        shape: RoundedSuperellipseBorder(
+          side: BorderSide(color: colorScheme.outlineVariant.opacity60),
+          borderRadius: BorderRadius.circular(32),
+        ),
+        shadows: [
+          BoxShadow(
+            color: colorScheme.shadow.opacity12,
+            blurRadius: 32,
+            offset: const Offset(0, 18),
+          ),
+        ],
+      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final isCompact = constraints.maxWidth < 760;
+          return Flex(
+            direction: isCompact ? Axis.vertical : Axis.horizontal,
+            crossAxisAlignment: isCompact
+                ? CrossAxisAlignment.start
+                : CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                flex: isCompact ? 0 : 1,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _StatusPill(text: statusText, color: statusColor),
+                    const SizedBox(height: 18),
+                    Text(
+                      isStart ? appLocalizations.start : appLocalizations.stop,
+                      style: context.textTheme.displaySmall?.copyWith(
+                        fontWeight: FontWeight.w800,
+                        color: colorScheme.onSurface,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      profileName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: context.textTheme.titleMedium?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(width: isCompact ? 0 : 28, height: isCompact ? 24 : 0),
+              Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                children: [
+                  _SpeedTile(
+                    icon: Icons.arrow_upward_rounded,
+                    label: appLocalizations.upload,
+                    value: '$uploadSpeed/s',
+                  ),
+                  _SpeedTile(
+                    icon: Icons.arrow_downward_rounded,
+                    label: appLocalizations.download,
+                    value: '$downloadSpeed/s',
+                  ),
+                  const StartButton(),
+                ],
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _StatusPill extends StatelessWidget {
+  final String text;
+  final Color color;
+
+  const _StatusPill({required this.text, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: ShapeDecoration(
+        color: color.opacity15,
+        shape: const StadiumBorder(),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.circle, size: 10, color: color),
+          const SizedBox(width: 8),
+          Text(
+            text,
+            style: context.textTheme.labelLarge?.copyWith(
+              color: color,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SpeedTile extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+
+  const _SpeedTile(
+      {required this.icon, required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = context.colorScheme;
+    return Container(
+      width: 168,
+      padding: const EdgeInsets.all(16),
+      decoration: ShapeDecoration(
+        color: colorScheme.surface.opacity80,
+        shape: RoundedSuperellipseBorder(
+          side: BorderSide(color: colorScheme.outlineVariant.opacity60),
+          borderRadius: BorderRadius.circular(22),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: colorScheme.primary),
+          const SizedBox(height: 14),
+          Text(label, style: context.textTheme.labelMedium?.toLighter),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: context.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MetricCard extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+  final Color color;
+
+  const _MetricCard({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = context.colorScheme;
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: ShapeDecoration(
+        color: colorScheme.surfaceContainerHighest.opacity80,
+        shape: RoundedSuperellipseBorder(
+          side: BorderSide(color: colorScheme.outlineVariant.opacity60),
+          borderRadius: BorderRadius.circular(24),
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 46,
+            height: 46,
+            decoration: ShapeDecoration(
+              color: color.opacity15,
+              shape: RoundedSuperellipseBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
+            child: Icon(icon, color: color),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label, style: context.textTheme.labelMedium?.toLighter),
+                const SizedBox(height: 4),
+                Text(
+                  value,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: context.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
