@@ -1,8 +1,8 @@
-display_name: FlClash
-package_name: FlClash
+display_name: MoneyFly
+package_name: MoneyFly
 maintainer:
-  name: chen08209
-  email: chen08209@gmail.com
+  name: MoneyFly
+  email: support@moneyfly.top
 
 priority: optional
 section: x11
@@ -15,12 +15,12 @@ dependencies:
   - libkeybinder-3.0-dev
 
 keywords:
-  - FlClash
+  - MoneyFly
   - Clash
   - ClashMeta
   - Proxy
 
-generic_name: FlClash
+generic_name: MoneyFly
 
 categories:
   - Network

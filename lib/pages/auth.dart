@@ -28,9 +28,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       if (mounted) Navigator.of(context).pushReplacementNamed('/home');
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(e.toString())));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString())),
+        );
       }
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -49,9 +49,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       await MoneyFlyService.syncSubscription(ref);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(e.toString())));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString())),
+        );
       }
     }
   }
@@ -77,16 +77,16 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Secure Proxy Client',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodyMedium?.copyWith(color: cs.outline),
+                  '安全代理客户端',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: cs.outline,
+                      ),
                 ),
                 const SizedBox(height: 40),
                 TextField(
                   controller: _accountCtrl,
                   decoration: const InputDecoration(
-                    labelText: 'Email or username',
+                    labelText: '邮箱或用户名',
                     border: OutlineInputBorder(),
                     prefixIcon: Icon(Icons.person_outline),
                   ),
@@ -97,7 +97,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   controller: _pwCtrl,
                   obscureText: _obscure,
                   decoration: InputDecoration(
-                    labelText: 'Password',
+                    labelText: '密码',
                     border: const OutlineInputBorder(),
                     prefixIcon: const Icon(Icons.lock_outline),
                     suffixIcon: IconButton(
@@ -118,7 +118,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         builder: (_) => const ForgotPasswordPage(),
                       ),
                     ),
-                    child: const Text('Forgot password?'),
+                    child: const Text('忘记密码？'),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -133,20 +133,22 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                             height: 20,
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
-                        : const Text('Login'),
+                        : const Text('登录'),
                   ),
                 ),
                 const SizedBox(height: 16),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text("Don't have an account? "),
+                    const Text('没有账号？'),
                     TextButton(
                       onPressed: () => Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => const RegisterPage()),
+                        MaterialPageRoute(
+                          builder: (_) => const RegisterPage(),
+                        ),
                       ),
-                      child: const Text('Register'),
+                      child: const Text('立即注册'),
                     ),
                   ],
                 ),
@@ -179,17 +181,17 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     try {
       await ApiService().sendVerificationCode(_emailCtrl.text.trim());
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Verification code sent')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('验证码已发送')),
+        );
         setState(() => _countdown = 60);
         _startCountdown();
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(e.toString())));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString())),
+        );
       }
     }
   }
@@ -226,9 +228,9 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
       if (mounted) Navigator.of(context).pushReplacementNamed('/home');
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(e.toString())));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString())),
+        );
       }
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -250,9 +252,9 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
       await MoneyFlyService.syncSubscription(ref);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(e.toString())));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString())),
+        );
       }
     }
   }
@@ -260,17 +262,16 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Create Account')),
+      appBar: AppBar(title: const Text('创建账号')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 420),
           child: Column(
             children: [
-              TextField(
-                controller: _nameCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Username',
+              const TextField(
+                decoration: InputDecoration(
+                  labelText: '用户名',
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.person_outline),
                 ),
@@ -279,7 +280,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
               TextField(
                 controller: _emailCtrl,
                 decoration: const InputDecoration(
-                  labelText: 'Email',
+                  labelText: '邮箱',
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.email_outlined),
                 ),
@@ -292,7 +293,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                     child: TextField(
                       controller: _codeCtrl,
                       decoration: const InputDecoration(
-                        labelText: 'Verification Code',
+                        labelText: '验证码',
                         border: OutlineInputBorder(),
                       ),
                     ),
@@ -300,7 +301,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                   const SizedBox(width: 8),
                   FilledButton.tonal(
                     onPressed: _countdown > 0 ? null : _sendCode,
-                    child: Text(_countdown > 0 ? '${_countdown}s' : 'Send'),
+                    child: Text(_countdown > 0 ? '${_countdown}s' : '发送'),
                   ),
                 ],
               ),
@@ -309,7 +310,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                 controller: _pwCtrl,
                 obscureText: true,
                 decoration: const InputDecoration(
-                  labelText: 'Password',
+                  labelText: '密码',
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.lock_outline),
                 ),
@@ -318,7 +319,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
               TextField(
                 controller: _inviteCtrl,
                 decoration: const InputDecoration(
-                  labelText: 'Invite Code (optional)',
+                  labelText: '邀请码（选填）',
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.card_giftcard_outlined),
                 ),
@@ -335,7 +336,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                           height: 20,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                      : const Text('Register'),
+                      : const Text('注册'),
                 ),
               ),
             ],
@@ -364,9 +365,9 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
     try {
       await ApiService().sendForgotPasswordCode(_emailCtrl.text.trim());
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Code sent')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('验证码已发送')),
+        );
         setState(() => _countdown = 60);
         Future.doWhile(() async {
           await Future.delayed(const Duration(seconds: 1));
@@ -377,9 +378,9 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(e.toString())));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString())),
+        );
       }
     }
   }
@@ -407,9 +408,9 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
       if (mounted) Navigator.of(context).pushReplacementNamed('/home');
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(e.toString())));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString())),
+        );
       }
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -429,9 +430,9 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
       await MoneyFlyService.syncSubscription(ref);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(e.toString())));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString())),
+        );
       }
     }
   }
@@ -439,7 +440,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Reset Password')),
+      appBar: AppBar(title: const Text('重置密码')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: ConstrainedBox(
@@ -449,7 +450,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
               TextField(
                 controller: _emailCtrl,
                 decoration: const InputDecoration(
-                  labelText: 'Email',
+                  labelText: '邮箱',
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.email_outlined),
                 ),
@@ -462,7 +463,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                     child: TextField(
                       controller: _codeCtrl,
                       decoration: const InputDecoration(
-                        labelText: 'Verification Code',
+                        labelText: '验证码',
                         border: OutlineInputBorder(),
                       ),
                     ),
@@ -470,7 +471,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                   const SizedBox(width: 8),
                   FilledButton.tonal(
                     onPressed: _countdown > 0 ? null : _sendCode,
-                    child: Text(_countdown > 0 ? '${_countdown}s' : 'Send'),
+                    child: Text(_countdown > 0 ? '${_countdown}s' : '发送'),
                   ),
                 ],
               ),
@@ -479,7 +480,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                 controller: _pwCtrl,
                 obscureText: true,
                 decoration: const InputDecoration(
-                  labelText: 'New Password',
+                  labelText: '新密码',
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.lock_outline),
                 ),
@@ -496,7 +497,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                           height: 20,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                      : const Text('Reset Password'),
+                      : const Text('重置密码'),
                 ),
               ),
             ],

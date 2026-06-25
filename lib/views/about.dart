@@ -48,13 +48,6 @@ class AboutView extends StatelessWidget {
           },
         ),
         ListItem(
-          title: const Text('Telegram'),
-          onTap: () {
-            globalState.openUrl('https://t.me/FlClash');
-          },
-          trailing: const Icon(Icons.launch),
-        ),
-        ListItem(
           title: Text(appLocalizations.project),
           onTap: () {
             globalState.openUrl('https://github.com/$repository');
@@ -75,33 +68,19 @@ class AboutView extends StatelessWidget {
   }
 
   List<Widget> _buildContributorsSection(AppLocalizations appLocalizations) {
-    const contributors = [
-      Contributor(
-        avatar: 'assets/images/avatar/june2.jpg',
-        name: 'June2',
-        link: 'https://t.me/Jibadong',
-      ),
-      Contributor(
-        avatar: 'assets/images/avatar/arue.jpg',
-        name: 'Arue',
-        link: 'https://t.me/xrcm6868',
-      ),
-    ];
     return generateSection(
       separated: false,
       title: appLocalizations.otherContributors,
       items: [
         ListItem(
-          title: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Wrap(
-              spacing: 24,
-              children: [
-                for (final contributor in contributors)
-                  Avatar(contributor: contributor),
-              ],
-            ),
+          title: const Text(
+            'Based on FlClash by chen08209. Thanks to the original author for the open-source work.',
+            style: TextStyle(fontSize: 13),
           ),
+          trailing: const Icon(Icons.launch),
+          onTap: () {
+            globalState.openUrl('https://github.com/chen08209/FlClash');
+          },
         ),
       ],
     );
@@ -116,7 +95,7 @@ class AboutView extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Consumer(
-              builder: (_, ref, _) {
+              builder: (_, ref, __) {
                 return _DeveloperModeDetector(
                   child: Wrap(
                     spacing: 16,

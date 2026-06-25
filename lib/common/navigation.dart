@@ -19,6 +19,15 @@ class Navigation {
             const DashboardView(key: GlobalObjectKey(PageLabel.dashboard)),
       ),
       NavigationItem(
+        icon: const Icon(Icons.article),
+        label: PageLabel.proxies,
+        builder: (_) =>
+            const ProxiesView(key: GlobalObjectKey(PageLabel.proxies)),
+        modes: hasProxies
+            ? [NavigationItemMode.mobile, NavigationItemMode.desktop]
+            : [],
+      ),
+      NavigationItem(
         icon: const Icon(Icons.devices),
         label: PageLabel.devices,
         builder: (_) =>
@@ -35,15 +44,6 @@ class Navigation {
         label: PageLabel.settings,
         builder: (_) =>
             const ToolsView(key: GlobalObjectKey(PageLabel.settings)),
-      ),
-      NavigationItem(
-        icon: const Icon(Icons.article),
-        label: PageLabel.proxies,
-        builder: (_) =>
-            const ProxiesView(key: GlobalObjectKey(PageLabel.proxies)),
-        modes: hasProxies
-            ? [NavigationItemMode.mobile, NavigationItemMode.desktop]
-            : [],
       ),
       NavigationItem(
         icon: const Icon(Icons.folder),

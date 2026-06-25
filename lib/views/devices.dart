@@ -38,20 +38,21 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
   }
 
   Future<void> _deleteDevice(String deviceId, String name) async {
+    // Use dialogContext (not widget context) for Navigator.pop to avoid popping the wrong route
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: Text(context.appLocalizations
             .deleteTip(context.appLocalizations.devices)),
         content: Text('$name ${context.appLocalizations.remove}?'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
+            onPressed: () => Navigator.of(dialogContext).pop(false),
             child: Text(context.appLocalizations.cancel),
           ),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
-            onPressed: () => Navigator.pop(context, true),
+            onPressed: () => Navigator.of(dialogContext).pop(true),
             child: Text(context.appLocalizations.remove),
           ),
         ],
@@ -72,9 +73,10 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
 
   Future<void> _editRemark(String deviceId, String currentRemark) async {
     final controller = TextEditingController(text: currentRemark);
+    // Use dialogContext (not widget context) for Navigator.pop to avoid popping the wrong route
     final remark = await showDialog<String>(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: Text(context.appLocalizations.rename),
         content: TextField(
           controller: controller,
@@ -83,14 +85,16 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
             border: const OutlineInputBorder(),
           ),
           maxLength: 40,
+          autofocus: true,
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.of(dialogContext).pop(),
             child: Text(context.appLocalizations.cancel),
           ),
           FilledButton(
-            onPressed: () => Navigator.pop(context, controller.text.trim()),
+            onPressed: () =>
+                Navigator.of(dialogContext).pop(controller.text.trim()),
             child: Text(context.appLocalizations.save),
           ),
         ],
@@ -168,11 +172,9 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
                           overflow: TextOverflow.ellipsis,
                         ),
                         subtitle: Text(
-                          [
-                            system,
-                            ip,
-                            lastSeen,
-                          ].where((v) => v.isNotEmpty).join(' · '),
+                          [system, ip, lastSeen]
+                              .where((v) => v.isNotEmpty)
+                              .join(' · '),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -190,8 +192,7 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
                                       id,
                                       (d['remark'] ?? '').toString(),
                                     );
-                                  }
-                                  if (value == 'delete') {
+                                  } else if (value == 'delete') {
                                     await _deleteDevice(id, name);
                                   }
                                 },
