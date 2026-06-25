@@ -1,8 +1,7 @@
 import 'dart:async';
 
-import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/services/services.dart';
 import 'package:fl_clash/widgets/scaffold.dart';
+import 'package:fl_clash/services/services.dart';
 import 'package:flutter/material.dart';
 
 class PackagesView extends StatefulWidget {
@@ -15,6 +14,7 @@ class PackagesView extends StatefulWidget {
 class _PackagesViewState extends State<PackagesView> {
   List<dynamic> _packages = [];
   bool _loading = true;
+  String? _error;
 
   @override
   void initState() {
@@ -23,16 +23,15 @@ class _PackagesViewState extends State<PackagesView> {
   }
 
   Future<void> _loadPackages() async {
-    setState(() => _loading = true);
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
     try {
       final packages = await ApiService().getPackages();
       if (mounted) setState(() => _packages = packages);
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
-        );
-      }
+      if (mounted) setState(() => _error = e.toString());
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -41,12 +40,12 @@ class _PackagesViewState extends State<PackagesView> {
   Future<void> _purchase(Map<String, dynamic> pkg) async {
     final method = await showDialog<String>(
       context: context,
-      builder: (_) => _PaymentMethodDialog(
-        packageName: _packageName(pkg),
+      builder: (dialogContext) => _PaymentMethodDialog(
+        packageName: _name(pkg),
+        dialogContext: dialogContext,
       ),
     );
-    if (method == null) return;
-
+    if (method == null || !mounted) return;
     try {
       final order = await ApiService().createOrder(
         pkg['id']?.toString() ?? '',
@@ -56,134 +55,211 @@ class _PackagesViewState extends State<PackagesView> {
       await showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (_) => _PaymentQrDialog(order: order, paymentMethod: method),
+        builder: (dialogContext) =>
+            _PaymentQrDialog(order: order, dialogContext: dialogContext),
       );
       await _loadPackages();
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
-        );
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(e.toString())));
       }
     }
   }
 
-  String _packageName(Map<String, dynamic> pkg) {
-    return (pkg['name'] ??
-            pkg['title'] ??
-            pkg['package_name'] ??
-            pkg['subject'] ??
-            context.appLocalizations.packages)
-        .toString();
+  String _name(Map<String, dynamic> pkg) =>
+      (pkg['name'] ?? pkg['title'] ?? pkg['package_name'] ?? pkg['subject'] ?? '套餐')
+          .toString();
+
+  String _desc(Map<String, dynamic> pkg) =>
+      (pkg['description'] ?? pkg['desc'] ?? pkg['content'] ?? '').toString();
+
+  String _price(Map<String, dynamic> pkg) {
+    final p = pkg['price'] ?? pkg['amount'] ?? pkg['sale_price'] ?? pkg['money'];
+    if (p == null || p.toString().isEmpty) return '';
+    return '¥$p';
   }
 
-  String _packageDescription(Map<String, dynamic> pkg) {
-    return (pkg['description'] ?? pkg['desc'] ?? pkg['content'] ?? '')
-        .toString();
+  String _duration(Map<String, dynamic> pkg) {
+    final d = pkg['duration'] ?? pkg['period'] ?? pkg['days'];
+    if (d == null) return '';
+    return '$d天';
   }
 
-  String _packagePrice(Map<String, dynamic> pkg) {
-    final price =
-        pkg['price'] ?? pkg['amount'] ?? pkg['sale_price'] ?? pkg['money'];
-    if (price == null || price.toString().isEmpty) return '';
-    return '¥$price';
+  String _traffic(Map<String, dynamic> pkg) {
+    final t = pkg['traffic'] ?? pkg['bandwidth'] ?? pkg['flow'];
+    if (t == null) return '';
+    return '$t GB';
   }
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return CommonScaffold(
-      title: context.appLocalizations.packages,
+      title: '套餐购买',
       actions: [
         IconButton(
-          tooltip: context.appLocalizations.update,
+          tooltip: '刷新',
           onPressed: _loading ? null : _loadPackages,
           icon: const Icon(Icons.refresh),
         ),
       ],
       body: _loading
           ? const Center(child: CircularProgressIndicator())
-          : RefreshIndicator(
-              onRefresh: _loadPackages,
-              child: _packages.isEmpty
-                  ? ListView(
-                      padding: const EdgeInsets.all(16),
+          : _error != null
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        SizedBox(
-                          height: MediaQuery.sizeOf(context).height * 0.45,
-                          child: Center(
-                            child: Text(context.appLocalizations.noData),
-                          ),
+                        Icon(Icons.error_outline,
+                            size: 48, color: cs.error),
+                        const SizedBox(height: 16),
+                        Text('加载失败', style: TextStyle(color: cs.error)),
+                        const SizedBox(height: 8),
+                        Text(_error!,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(fontSize: 12)),
+                        const SizedBox(height: 16),
+                        FilledButton(
+                          onPressed: _loadPackages,
+                          child: const Text('重试'),
                         ),
                       ],
-                    )
-                  : ListView.builder(
-                      padding: const EdgeInsets.all(16),
-                      itemCount: _packages.length,
-                      itemBuilder: (_, i) {
-                        final pkg = _packages[i] as Map<String, dynamic>;
-                        return Card(
-                          margin: const EdgeInsets.only(bottom: 12),
-                          child: Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  _packageName(pkg),
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .titleMedium
-                                      ?.copyWith(fontWeight: FontWeight.bold),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  _packageDescription(pkg),
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodySmall
-                                      ?.copyWith(color: cs.outline),
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                const SizedBox(height: 12),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
+                    ),
+                  ),
+                )
+              : RefreshIndicator(
+                  onRefresh: _loadPackages,
+                  child: _packages.isEmpty
+                      ? ListView(
+                          padding: const EdgeInsets.all(24),
+                          children: [
+                            SizedBox(
+                              height: MediaQuery.sizeOf(context).height * 0.45,
+                              child: const Center(child: Text('暂无可用套餐')),
+                            ),
+                          ],
+                        )
+                      : ListView.builder(
+                          padding: const EdgeInsets.all(16),
+                          itemCount: _packages.length,
+                          itemBuilder: (_, i) {
+                            final pkg =
+                                _packages[i] as Map<String, dynamic>;
+                            final duration = _duration(pkg);
+                            final traffic = _traffic(pkg);
+                            return Card(
+                              margin: const EdgeInsets.only(bottom: 12),
+                              child: Padding(
+                                padding: const EdgeInsets.all(16),
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      _packagePrice(pkg),
+                                      _name(pkg),
                                       style: Theme.of(context)
                                           .textTheme
-                                          .titleLarge
+                                          .titleMedium
                                           ?.copyWith(
-                                            color: cs.primary,
-                                            fontWeight: FontWeight.bold,
-                                          ),
+                                              fontWeight: FontWeight.bold),
                                     ),
-                                    FilledButton(
-                                      onPressed: () => _purchase(pkg),
-                                      child: Text(context.appLocalizations.go),
+                                    if (_desc(pkg).isNotEmpty) ...[
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        _desc(pkg),
+                                        style: TextStyle(
+                                            fontSize: 13, color: cs.outline),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                    if (duration.isNotEmpty ||
+                                        traffic.isNotEmpty) ...[
+                                      const SizedBox(height: 8),
+                                      Wrap(
+                                        spacing: 8,
+                                        children: [
+                                          if (duration.isNotEmpty)
+                                            _Tag(
+                                              icon: Icons.access_time,
+                                              label: duration,
+                                            ),
+                                          if (traffic.isNotEmpty)
+                                            _Tag(
+                                              icon: Icons.data_usage,
+                                              label: traffic,
+                                            ),
+                                        ],
+                                      ),
+                                    ],
+                                    const SizedBox(height: 12),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          _price(pkg),
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .titleLarge
+                                              ?.copyWith(
+                                                color: cs.primary,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                        ),
+                                        FilledButton(
+                                          onPressed: () => _purchase(pkg),
+                                          child: const Text('立即购买'),
+                                        ),
+                                      ],
                                     ),
                                   ],
                                 ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-            ),
+                              ),
+                            );
+                          },
+                        ),
+                ),
+    );
+  }
+}
+
+class _Tag extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  const _Tag({required this.icon, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: cs.secondaryContainer,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12, color: cs.onSecondaryContainer),
+          const SizedBox(width: 4),
+          Text(label,
+              style: TextStyle(fontSize: 12, color: cs.onSecondaryContainer)),
+        ],
+      ),
     );
   }
 }
 
 class _PaymentMethodDialog extends StatefulWidget {
   final String packageName;
+  final BuildContext dialogContext;
 
-  const _PaymentMethodDialog({required this.packageName});
+  const _PaymentMethodDialog(
+      {required this.packageName, required this.dialogContext});
 
   @override
   State<_PaymentMethodDialog> createState() => _PaymentMethodDialogState();
@@ -216,9 +292,8 @@ class _PaymentMethodDialogState extends State<_PaymentMethodDialog> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
-        );
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(e.toString())));
       }
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -227,10 +302,9 @@ class _PaymentMethodDialogState extends State<_PaymentMethodDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final appLocalizations = context.appLocalizations;
     return AlertDialog(
       title: Text(
-        '${appLocalizations.go} ${widget.packageName}',
+        '购买「${widget.packageName}」',
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       ),
@@ -243,15 +317,20 @@ class _PaymentMethodDialogState extends State<_PaymentMethodDialog> {
           : Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                for (final raw in _methods)
-                  Builder(
-                    builder: (_) {
-                      final method = raw as Map;
-                      final key =
-                          (method['key'] ?? method['pay_type'] ?? method['id'])
-                              .toString();
-                      final name = (method['name'] ?? key).toString();
+                if (_methods.isEmpty)
+                  const Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Text('暂无可用支付方式'),
+                  )
+                else
+                  for (final raw in _methods)
+                    Builder(builder: (_) {
+                      final m = raw as Map;
+                      final key = (m['key'] ?? m['pay_type'] ?? m['id'])
+                          .toString();
+                      final name = (m['name'] ?? key).toString();
                       return ListTile(
+                        dense: true,
                         leading: Icon(
                           key == _selected
                               ? Icons.radio_button_checked
@@ -260,29 +339,23 @@ class _PaymentMethodDialogState extends State<_PaymentMethodDialog> {
                               ? Theme.of(context).colorScheme.primary
                               : null,
                         ),
-                        title: Text(
-                          name,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                        title: Text(name),
                         trailing: const Icon(Icons.qr_code_2),
                         onTap: () => setState(() => _selected = key),
                       );
-                    },
-                  ),
-                if (_methods.isEmpty) Text(appLocalizations.noData),
+                    }),
               ],
             ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: Text(appLocalizations.cancel),
+          onPressed: () => Navigator.of(widget.dialogContext).pop(),
+          child: const Text('取消'),
         ),
         FilledButton(
           onPressed: _selected == null
               ? null
-              : () => Navigator.pop(context, _selected),
-          child: Text(appLocalizations.confirm),
+              : () => Navigator.of(widget.dialogContext).pop(_selected),
+          child: const Text('确认'),
         ),
       ],
     );
@@ -291,9 +364,10 @@ class _PaymentMethodDialogState extends State<_PaymentMethodDialog> {
 
 class _PaymentQrDialog extends StatefulWidget {
   final Map<String, dynamic> order;
-  final String paymentMethod;
+  final BuildContext dialogContext;
 
-  const _PaymentQrDialog({required this.order, required this.paymentMethod});
+  const _PaymentQrDialog(
+      {required this.order, required this.dialogContext});
 
   @override
   State<_PaymentQrDialog> createState() => _PaymentQrDialogState();
@@ -301,6 +375,7 @@ class _PaymentQrDialog extends StatefulWidget {
 
 class _PaymentQrDialogState extends State<_PaymentQrDialog> {
   Timer? _pollTimer;
+  Timer? _countdownTimer;
   bool _paid = false;
   int _secondsLeft = 900;
 
@@ -312,20 +387,21 @@ class _PaymentQrDialogState extends State<_PaymentQrDialog> {
   }
 
   void _startPolling() {
-    _pollTimer = Timer.periodic(const Duration(seconds: 2), (_) async {
+    _pollTimer = Timer.periodic(const Duration(seconds: 3), (_) async {
       try {
         final orderId = (widget.order['order_no'] ??
                 widget.order['order_id'] ??
                 widget.order['id'] ??
                 '')
             .toString();
+        if (orderId.isEmpty) return;
         final status = await ApiService().getOrderStatus(orderId);
         if (status['status'] == 'paid' || status['paid'] == true) {
           _pollTimer?.cancel();
           if (mounted) {
             setState(() => _paid = true);
-            await Future.delayed(const Duration(seconds: 1));
-            if (mounted) Navigator.of(context).pop(true);
+            await Future.delayed(const Duration(seconds: 2));
+            if (mounted) Navigator.of(widget.dialogContext).pop(true);
           }
         }
       } catch (_) {}
@@ -333,15 +409,15 @@ class _PaymentQrDialogState extends State<_PaymentQrDialog> {
   }
 
   void _startCountdown() {
-    Timer.periodic(const Duration(seconds: 1), (t) {
+    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted || _secondsLeft <= 0) {
-        t.cancel();
+        _countdownTimer?.cancel();
         return;
       }
       setState(() => _secondsLeft--);
       if (_secondsLeft <= 0) {
-        t.cancel();
-        if (mounted) Navigator.of(context).pop(false);
+        _countdownTimer?.cancel();
+        if (mounted) Navigator.of(widget.dialogContext).pop(false);
       }
     });
   }
@@ -349,6 +425,7 @@ class _PaymentQrDialogState extends State<_PaymentQrDialog> {
   @override
   void dispose() {
     _pollTimer?.cancel();
+    _countdownTimer?.cancel();
     super.dispose();
   }
 
@@ -360,77 +437,83 @@ class _PaymentQrDialogState extends State<_PaymentQrDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final appLocalizations = context.appLocalizations;
-    final qrValue = widget.order['payment_qr_code'] ??
-        widget.order['payment_url'] ??
-        widget.order['qr_code'];
-    final qrUrl = qrValue?.toString();
-    final amount = widget.order['amount'] ?? widget.order['price'] ?? '';
-    final orderId = widget.order['order_no'] ??
-        widget.order['order_id'] ??
-        widget.order['id'] ??
-        '';
+    final qrUrl = (widget.order['payment_qr_code'] ??
+            widget.order['payment_url'] ??
+            widget.order['qr_code'])
+        ?.toString();
+    final amount =
+        (widget.order['amount'] ?? widget.order['price'] ?? '').toString();
+    final orderId = (widget.order['order_no'] ??
+            widget.order['order_id'] ??
+            widget.order['id'] ??
+            '')
+        .toString();
 
     return AlertDialog(
-      title: Text(appLocalizations.confirm),
+      title: const Text('扫码支付'),
       content: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 320),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (_paid)
-              Column(
+        child: _paid
+            ? const Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.check_circle, color: Colors.green, size: 64),
-                  const SizedBox(height: 8),
-                  Text(appLocalizations.update),
+                  Icon(Icons.check_circle, color: Colors.green, size: 64),
+                  SizedBox(height: 12),
+                  Text('支付成功！', style: TextStyle(fontSize: 16)),
                 ],
               )
-            else ...[
-              Container(
-                width: 200,
-                height: 200,
-                color: Colors.grey[200],
-                child: qrUrl != null
-                    ? Image.network(qrUrl, fit: BoxFit.cover)
-                    : const Center(child: Icon(Icons.qr_code, size: 80)),
+            : Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 200,
+                    height: 200,
+                    color: Colors.grey[200],
+                    child: qrUrl != null && qrUrl.isNotEmpty
+                        ? Image.network(
+                            qrUrl,
+                            fit: BoxFit.contain,
+                            errorBuilder: (_, __, ___) => const Center(
+                              child: Icon(Icons.qr_code, size: 80),
+                            ),
+                          )
+                        : const Center(child: Icon(Icons.qr_code, size: 80)),
+                  ),
+                  const SizedBox(height: 12),
+                  if (amount.isNotEmpty)
+                    Text(
+                      '金额：¥$amount',
+                      style: const TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                  if (orderId.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      '订单号：$orderId',
+                      style: const TextStyle(fontSize: 11, color: Colors.grey),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                  const SizedBox(height: 8),
+                  Text(
+                    '剩余时间：$_timeLeft',
+                    style: TextStyle(
+                        color: _secondsLeft < 60 ? Colors.red : null),
+                  ),
+                  const SizedBox(height: 8),
+                  const LinearProgressIndicator(),
+                  const SizedBox(height: 4),
+                  const Text('等待支付确认…',
+                      style: TextStyle(fontSize: 12, color: Colors.grey)),
+                ],
               ),
-              const SizedBox(height: 12),
-              Text(
-                'Amount: ¥$amount',
-                style: Theme.of(context)
-                    .textTheme
-                    .titleMedium
-                    ?.copyWith(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Order: $orderId',
-                style: Theme.of(context).textTheme.bodySmall,
-                overflow: TextOverflow.ellipsis,
-                maxLines: 1,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Expires in $_timeLeft',
-                style: TextStyle(color: _secondsLeft < 60 ? Colors.red : null),
-              ),
-              const SizedBox(height: 8),
-              const LinearProgressIndicator(),
-              const SizedBox(height: 4),
-              Text(
-                appLocalizations.loading,
-                style: const TextStyle(fontSize: 12),
-              ),
-            ],
-          ],
-        ),
       ),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(false),
-          child: Text(appLocalizations.cancel),
-        ),
+        if (!_paid)
+          TextButton(
+            onPressed: () => Navigator.of(widget.dialogContext).pop(false),
+            child: const Text('取消'),
+          ),
       ],
     );
   }

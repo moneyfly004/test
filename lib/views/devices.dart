@@ -1,4 +1,3 @@
-import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/services/services.dart';
 import 'package:fl_clash/widgets/scaffold.dart';
 import 'package:flutter/material.dart';
@@ -28,9 +27,8 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
       if (mounted) setState(() => _devices = devices);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(e.toString())));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(e.toString())));
       }
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -38,22 +36,20 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
   }
 
   Future<void> _deleteDevice(String deviceId, String name) async {
-    // Use dialogContext (not widget context) for Navigator.pop to avoid popping the wrong route
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(context.appLocalizations
-            .deleteTip(context.appLocalizations.devices)),
-        content: Text('$name ${context.appLocalizations.remove}?'),
+        title: const Text('删除设备'),
+        content: Text('确定要删除设备「$name」吗？'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(context.appLocalizations.cancel),
+            child: const Text('取消'),
           ),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(context.appLocalizations.remove),
+            child: const Text('删除'),
           ),
         ],
       ),
@@ -64,25 +60,23 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
       await _loadDevices();
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(e.toString())));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(e.toString())));
       }
     }
   }
 
   Future<void> _editRemark(String deviceId, String currentRemark) async {
     final controller = TextEditingController(text: currentRemark);
-    // Use dialogContext (not widget context) for Navigator.pop to avoid popping the wrong route
     final remark = await showDialog<String>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(context.appLocalizations.rename),
+        title: const Text('编辑备注'),
         content: TextField(
           controller: controller,
-          decoration: InputDecoration(
-            labelText: context.appLocalizations.name,
-            border: const OutlineInputBorder(),
+          decoration: const InputDecoration(
+            labelText: '备注名称',
+            border: OutlineInputBorder(),
           ),
           maxLength: 40,
           autofocus: true,
@@ -90,12 +84,12 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
-            child: Text(context.appLocalizations.cancel),
+            child: const Text('取消'),
           ),
           FilledButton(
             onPressed: () =>
                 Navigator.of(dialogContext).pop(controller.text.trim()),
-            child: Text(context.appLocalizations.save),
+            child: const Text('保存'),
           ),
         ],
       ),
@@ -107,20 +101,76 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
       await _loadDevices();
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(e.toString())));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(e.toString())));
       }
     }
+  }
+
+  void _showDetail(Map<String, dynamic> d) {
+    final ua = (d['user_agent'] ?? d['ua'] ?? d['browser'] ?? '').toString();
+    final ip = (d['ip'] ?? d['ip_address'] ?? d['login_ip'] ?? '').toString();
+    final system = (d['system'] ?? d['os_name'] ?? d['type'] ?? '').toString();
+    final deviceType =
+        (d['device_type'] ?? d['client_type'] ?? d['platform'] ?? '').toString();
+    final lastSeen =
+        (d['last_seen'] ?? d['last_access'] ?? d['updated_at'] ?? '').toString();
+    final createdAt = (d['created_at'] ?? d['bind_time'] ?? '').toString();
+    final remark = (d['remark'] ?? '').toString();
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('设备详情'),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (ip.isNotEmpty) _detailRow('IP 地址', ip),
+              if (system.isNotEmpty) _detailRow('操作系统', system),
+              if (deviceType.isNotEmpty) _detailRow('设备端', deviceType),
+              if (ua.isNotEmpty) _detailRow('UA', ua, copyable: true),
+              if (lastSeen.isNotEmpty) _detailRow('最后活跃', lastSeen),
+              if (createdAt.isNotEmpty) _detailRow('绑定时间', createdAt),
+              if (remark.isNotEmpty) _detailRow('备注', remark),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('关闭'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _detailRow(String label, String value, {bool copyable = false}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label,
+              style: const TextStyle(fontSize: 11, color: Colors.grey)),
+          const SizedBox(height: 2),
+          copyable
+              ? SelectableText(value, style: const TextStyle(fontSize: 13))
+              : Text(value, style: const TextStyle(fontSize: 13)),
+        ],
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return CommonScaffold(
-      title: context.appLocalizations.devices,
+      title: '设备管理',
       actions: [
         IconButton(
-          tooltip: context.appLocalizations.update,
+          tooltip: '刷新',
           icon: const Icon(Icons.refresh),
           onPressed: _loading ? null : _loadDevices,
         ),
@@ -134,8 +184,7 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
                     children: [
                       SizedBox(
                         height: MediaQuery.sizeOf(context).height * 0.45,
-                        child: Center(
-                            child: Text(context.appLocalizations.noData)),
+                        child: const Center(child: Text('暂无设备')),
                       ),
                     ],
                   ),
@@ -148,67 +197,131 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
                       final d = _devices[i] as Map<String, dynamic>;
                       final isCurrent = d['is_current'] == true;
                       final id = (d['id'] ?? '').toString();
-                      final system =
-                          (d['system'] ?? d['os_name'] ?? d['type'] ?? '')
-                              .toString();
+                      final system = (d['system'] ??
+                              d['os_name'] ??
+                              d['type'] ??
+                              '')
+                          .toString();
+                      final deviceType = (d['device_type'] ??
+                              d['client_type'] ??
+                              d['platform'] ??
+                              '')
+                          .toString();
                       final name = (d['remark'] ??
                               d['device_name'] ??
                               d['name'] ??
-                              context.appLocalizations.unknown)
+                              '未知设备')
                           .toString();
-                      final ip = (d['ip'] ?? d['ip_address'] ?? '').toString();
-                      final lastSeen =
-                          (d['last_seen'] ?? d['last_access'] ?? '').toString();
-                      return ListTile(
-                        leading: Icon(
-                          _platformIcon(system),
-                          color: isCurrent
-                              ? Theme.of(context).colorScheme.primary
-                              : null,
-                        ),
-                        title: Text(
-                          name,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        subtitle: Text(
-                          [system, ip, lastSeen]
-                              .where((v) => v.isNotEmpty)
-                              .join(' · '),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        trailing: isCurrent
-                            ? Chip(
-                                label: Text(context.appLocalizations.status),
-                                backgroundColor: Theme.of(
-                                  context,
-                                ).colorScheme.primaryContainer,
-                              )
-                            : PopupMenuButton<String>(
-                                onSelected: (value) async {
-                                  if (value == 'remark') {
-                                    await _editRemark(
-                                      id,
-                                      (d['remark'] ?? '').toString(),
-                                    );
-                                  } else if (value == 'delete') {
-                                    await _deleteDevice(id, name);
-                                  }
-                                },
-                                itemBuilder: (_) => [
-                                  PopupMenuItem(
-                                    value: 'remark',
-                                    child:
-                                        Text(context.appLocalizations.rename),
-                                  ),
-                                  PopupMenuItem(
-                                    value: 'delete',
-                                    child:
-                                        Text(context.appLocalizations.remove),
-                                  ),
-                                ],
+                      final ip = (d['ip'] ??
+                              d['ip_address'] ??
+                              d['login_ip'] ??
+                              '')
+                          .toString();
+                      final ua = (d['user_agent'] ??
+                              d['ua'] ??
+                              d['browser'] ??
+                              '')
+                          .toString();
+                      final lastSeen = (d['last_seen'] ??
+                              d['last_access'] ??
+                              d['updated_at'] ??
+                              '')
+                          .toString();
+
+                      // subtitle: IP · 系统 · 设备端
+                      final subtitleParts = [
+                        if (ip.isNotEmpty) ip,
+                        if (system.isNotEmpty) system,
+                        if (deviceType.isNotEmpty) deviceType,
+                        if (lastSeen.isNotEmpty) lastSeen,
+                      ];
+                      // ua shown as second line if available
+                      final uaShort = ua.length > 50
+                          ? '${ua.substring(0, 50)}…'
+                          : ua;
+
+                      return Card(
+                        margin: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 4),
+                        child: ListTile(
+                          leading: Icon(
+                            _platformIcon(system),
+                            color: isCurrent
+                                ? Theme.of(context).colorScheme.primary
+                                : null,
+                          ),
+                          title: Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  name,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                               ),
+                              if (isCurrent)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .primaryContainer,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    '当前',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onPrimaryContainer,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (subtitleParts.isNotEmpty)
+                                Text(
+                                  subtitleParts.join(' · '),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(fontSize: 12),
+                                ),
+                              if (uaShort.isNotEmpty)
+                                Text(
+                                  uaShort,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                      fontSize: 11, color: Colors.grey),
+                                ),
+                            ],
+                          ),
+                          isThreeLine: ua.isNotEmpty,
+                          onTap: () => _showDetail(d),
+                          trailing: isCurrent
+                              ? null
+                              : PopupMenuButton<String>(
+                                  onSelected: (value) async {
+                                    if (value == 'remark') {
+                                      await _editRemark(
+                                          id, (d['remark'] ?? '').toString());
+                                    } else if (value == 'delete') {
+                                      await _deleteDevice(id, name);
+                                    }
+                                  },
+                                  itemBuilder: (_) => const [
+                                    PopupMenuItem(
+                                        value: 'remark', child: Text('编辑备注')),
+                                    PopupMenuItem(
+                                        value: 'delete', child: Text('删除设备')),
+                                  ],
+                                ),
+                        ),
                       );
                     },
                   ),

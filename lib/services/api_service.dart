@@ -178,6 +178,7 @@ class ApiService {
   // ── Packages ─────────────────────────────────────────
 
   Future<List<dynamic>> getPackages() async {
+    await _auth();
     final resp = await _dio.get('/packages');
     final data = _data(resp);
     return _listFromData(resp.data, data, [
@@ -193,6 +194,7 @@ class ApiService {
   // ── Payment methods ───────────────────────────────────
 
   Future<List<dynamic>> getPaymentMethods() async {
+    await _auth();
     final resp = await _dio.get('/payment-methods/active');
     final data = _data(resp);
     return _listFromData(resp.data, data, [
