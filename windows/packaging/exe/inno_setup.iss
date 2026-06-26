@@ -25,7 +25,7 @@ var
   i: Integer;
   ResultCode: Integer;
 begin
-  Processes := ['FlClash.exe', 'FlClashCore.exe', 'FlClashHelperService.exe'];
+  Processes := ['fl_clash.exe', 'FlClashCore.exe', 'MoneyFlyHelperService.exe'];
 
   for i := 0 to GetArrayLength(Processes)-1 do
   begin
@@ -69,7 +69,7 @@ end;
 {% endfor %}
 
 [Tasks]
-Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: {% if CREATE_DESKTOP_ICON != true %}unchecked{% else %}checkedonce{% endif %}
+Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: checkedonce
 [Files]
 Source: "{{SOURCE_DIR}}\\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files

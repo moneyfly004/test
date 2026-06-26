@@ -53,6 +53,17 @@ class _StartButtonState extends ConsumerState<StartButton>
       globalState.container
           .read(setupActionProvider.notifier)
           .updateStatus(isStart, isInit: !ref.read(initProvider));
+      // Show connection status notification
+      final context = globalState.navigatorKey.currentContext;
+      if (context != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(isStart ? '代理已连接' : '代理已断开'),
+            duration: const Duration(seconds: 2),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
     }, duration: commonDuration);
   }
 

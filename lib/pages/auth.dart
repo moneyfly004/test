@@ -15,6 +15,22 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   final _pwCtrl = TextEditingController();
   bool _loading = false;
   bool _obscure = true;
+  bool _savePassword = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedCredentials();
+  }
+
+  Future<void> _loadSavedCredentials() async {
+    final creds = await StorageService().getSavedCredentials();
+    if (creds != null && mounted) {
+      _accountCtrl.text = creds['account'] ?? '';
+      _pwCtrl.text = creds['password'] ?? '';
+      setState(() => _savePassword = true);
+    }
+  }
 
   Future<void> _login() async {
     if (_accountCtrl.text.isEmpty || _pwCtrl.text.isEmpty) return;
@@ -24,6 +40,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         _accountCtrl.text.trim(),
         _pwCtrl.text,
       );
+      if (_savePassword) {
+        await StorageService().saveCredentials(
+          _accountCtrl.text.trim(),
+          _pwCtrl.text,
+        );
+      }
       await StorageService().saveToken(result['access_token'] ?? '');
       await StorageService().saveRefreshToken(result['refresh_token'] ?? '');
       if (mounted) {
@@ -115,6 +137,16 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   ),
                 ),
                 const SizedBox(height: 16),
+                CheckboxListTile(
+                  value: _savePassword,
+                  onChanged: (v) => setState(() => _savePassword = v ?? false),
+                  title: const Text('记住密码',
+                      style: TextStyle(fontSize: 14)),
+                  controlAffinity: ListTileControlAffinity.leading,
+                  contentPadding: EdgeInsets.zero,
+                  dense: true,
+                ),
+                const SizedBox(height: 4),
                 SizedBox(
                   width: double.infinity,
                   height: 48,

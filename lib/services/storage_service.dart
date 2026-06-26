@@ -35,6 +35,40 @@ class StorageService {
     await prefs.remove('refresh_token');
   }
 
+  // ── Auto-login with saved password ──────────────────────
+
+  Future<void> saveCredentials(String account, String password) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('saved_account', account);
+    await prefs.setString('saved_password', password);
+    await prefs.setBool('save_password', true);
+  }
+
+  Future<Map<String, String?>?> getSavedCredentials() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savePassword = prefs.getBool('save_password') ?? false;
+    if (!savePassword) return null;
+    final account = prefs.getString('saved_account');
+    final password = prefs.getString('saved_password');
+    if (account == null || password == null) return null;
+    return {'account': account, 'password': password};
+  }
+
+  Future<bool> shouldAutoLogin() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('save_password') ?? false;
+  }
+
+  Future<void> clearAll() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('auth_token');
+    await prefs.remove('refresh_token');
+    await prefs.remove('saved_account');
+    await prefs.remove('saved_password');
+    await prefs.remove('save_password');
+    await prefs.remove('device_id');
+  }
+
   Future<String> getDeviceId() async {
     final prefs = await SharedPreferences.getInstance();
     var deviceId = prefs.getString('device_id');

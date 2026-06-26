@@ -4,10 +4,11 @@ app_name: MoneyFly
 publisher: MoneyFly
 publisher_url: https://dy.moneyfly.top
 display_name: MoneyFly
-executable_name: FlClash.exe
+executable_name: MoneyFly.exe
 output_base_file_name: MoneyFly-windows-setup
 setup_icon_file: windows\runner\resources\app_icon.ico
 locales:
   - zh
   - en
 privileges_required: admin
+create_desktop_icon: true
