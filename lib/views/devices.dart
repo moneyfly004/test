@@ -55,10 +55,13 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
       ),
     );
     if (confirmed != true) return;
+    // Optimistic: remove from local list immediately
+    setState(() => _devices.removeWhere((d) => (d['id'] ?? '').toString() == deviceId));
     try {
       await ApiService().deleteDevice(deviceId);
-      await _loadDevices();
     } catch (e) {
+      // Restore on failure
+      _loadDevices();
       if (mounted) {
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(e.toString())));
@@ -96,10 +99,19 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
     );
     controller.dispose();
     if (remark == null) return;
+    // Optimistic: update local list immediately
+    setState(() {
+      final idx = _devices.indexWhere(
+          (d) => (d['id'] ?? '').toString() == deviceId);
+      if (idx != -1) {
+        _devices[idx] = Map<String, dynamic>.from(_devices[idx] as Map)
+          ..['remark'] = remark;
+      }
+    });
     try {
       await ApiService().remarkDevice(deviceId, remark);
-      await _loadDevices();
     } catch (e) {
+      _loadDevices();
       if (mounted) {
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(e.toString())));
@@ -197,85 +209,45 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
                       final d = _devices[i] as Map<String, dynamic>;
                       final isCurrent = d['is_current'] == true;
                       final id = (d['id'] ?? '').toString();
-                      final system = (d['system'] ??
-                              d['os_name'] ??
-                              d['type'] ??
-                              '')
-                          .toString();
-                      final deviceType = (d['device_type'] ??
-                              d['client_type'] ??
-                              d['platform'] ??
-                              '')
-                          .toString();
-                      final name = (d['remark'] ??
-                              d['device_name'] ??
-                              d['name'] ??
-                              '未知设备')
-                          .toString();
-                      final ip = (d['ip'] ??
-                              d['ip_address'] ??
-                              d['login_ip'] ??
-                              '')
-                          .toString();
-                      final ua = (d['user_agent'] ??
-                              d['ua'] ??
-                              d['browser'] ??
-                              '')
-                          .toString();
-                      final lastSeen = (d['last_seen'] ??
-                              d['last_access'] ??
-                              d['updated_at'] ??
-                              '')
-                          .toString();
+                      final system = (d['system'] ?? d['os_name'] ?? d['type'] ?? '').toString();
+                      final deviceType = (d['device_type'] ?? d['client_type'] ?? d['platform'] ?? '').toString();
+                      final name = (d['remark'] ?? d['device_name'] ?? d['name'] ?? '未知设备').toString();
+                      final ip = (d['ip'] ?? d['ip_address'] ?? d['login_ip'] ?? '').toString();
+                      final ua = (d['user_agent'] ?? d['ua'] ?? d['browser'] ?? '').toString();
+                      final lastSeen = (d['last_seen'] ?? d['last_access'] ?? d['updated_at'] ?? '').toString();
 
-                      // subtitle: IP · 系统 · 设备端
                       final subtitleParts = [
                         if (ip.isNotEmpty) ip,
                         if (system.isNotEmpty) system,
                         if (deviceType.isNotEmpty) deviceType,
                         if (lastSeen.isNotEmpty) lastSeen,
                       ];
-                      // ua shown as second line if available
-                      final uaShort = ua.length > 50
-                          ? '${ua.substring(0, 50)}…'
-                          : ua;
+                      final uaShort = ua.length > 50 ? '${ua.substring(0, 50)}…' : ua;
 
                       return Card(
-                        margin: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 4),
+                        margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                         child: ListTile(
                           leading: Icon(
                             _platformIcon(system),
-                            color: isCurrent
-                                ? Theme.of(context).colorScheme.primary
-                                : null,
+                            color: isCurrent ? Theme.of(context).colorScheme.primary : null,
                           ),
                           title: Row(
                             children: [
                               Expanded(
-                                child: Text(
-                                  name,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
+                                child: Text(name, maxLines: 1, overflow: TextOverflow.ellipsis),
                               ),
                               if (isCurrent)
                                 Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 6, vertical: 2),
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                   decoration: BoxDecoration(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .primaryContainer,
+                                    color: Theme.of(context).colorScheme.primaryContainer,
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Text(
                                     '当前',
                                     style: TextStyle(
                                       fontSize: 10,
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onPrimaryContainer,
+                                      color: Theme.of(context).colorScheme.onPrimaryContainer,
                                     ),
                                   ),
                                 ),
@@ -296,8 +268,7 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
                                   uaShort,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                      fontSize: 11, color: Colors.grey),
+                                  style: const TextStyle(fontSize: 11, color: Colors.grey),
                                 ),
                             ],
                           ),
@@ -308,17 +279,14 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
                               : PopupMenuButton<String>(
                                   onSelected: (value) async {
                                     if (value == 'remark') {
-                                      await _editRemark(
-                                          id, (d['remark'] ?? '').toString());
+                                      await _editRemark(id, (d['remark'] ?? '').toString());
                                     } else if (value == 'delete') {
                                       await _deleteDevice(id, name);
                                     }
                                   },
                                   itemBuilder: (_) => const [
-                                    PopupMenuItem(
-                                        value: 'remark', child: Text('编辑备注')),
-                                    PopupMenuItem(
-                                        value: 'delete', child: Text('删除设备')),
+                                    PopupMenuItem(value: 'remark', child: Text('编辑备注')),
+                                    PopupMenuItem(value: 'delete', child: Text('删除设备')),
                                   ],
                                 ),
                         ),

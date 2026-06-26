@@ -63,10 +63,8 @@ class _PackagesViewState extends ConsumerState<PackagesView> {
     );
 
     if (paid == true && mounted) {
-      // Sync subscription so proxy config is updated immediately
-      try {
-        await MoneyFlyService.syncSubscription(ref);
-      } catch (_) {}
+      // Sync in background — don't block the UI
+      MoneyFlyService.syncSubscription(ref).catchError((_) => null);
       await _loadPackages();
     }
   }

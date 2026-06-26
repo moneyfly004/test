@@ -4,7 +4,9 @@ import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/core/controller.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/manager/window_manager.dart';
+import 'package:fl_clash/pages/auth.dart';
 import 'package:fl_clash/providers/providers.dart';
+import 'package:fl_clash/services/services.dart';
 import 'package:fl_clash/state.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -255,18 +257,40 @@ class AppSidebarContainer extends ConsumerWidget {
                 ),
                 const SizedBox(height: 16),
                 IconButton(
-                  onPressed: () {
-                    ref
-                        .read(appSettingProvider.notifier)
-                        .update(
-                          (state) =>
-                              state.copyWith(showLabel: !state.showLabel),
-                        );
+                  tooltip: '退出账户',
+                  onPressed: () async {
+                    final context = globalState.navigatorKey.currentContext;
+                    if (context == null) return;
+                    final confirmed = await showDialog<bool>(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        title: const Text('退出账户'),
+                        content: const Text('确定要退出账户吗？'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(ctx).pop(false),
+                            child: const Text('取消'),
+                          ),
+                          FilledButton(
+                            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+                            onPressed: () => Navigator.of(ctx).pop(true),
+                            child: const Text('退出'),
+                          ),
+                        ],
+                      ),
+                    );
+                    if (confirmed != true) return;
+                    await StorageService().clearTokens();
+                    final ctx = globalState.navigatorKey.currentContext;
+                    if (ctx != null && ctx.mounted) {
+                      Navigator.of(ctx).pushAndRemoveUntil(
+                        MaterialPageRoute(builder: (_) => const LoginPage()),
+                        (_) => false,
+                      );
+                    }
+                    unawaited(MoneyFlyService.cleanupAfterLogout(ref));
                   },
-                  icon: Icon(
-                    Icons.menu,
-                    color: context.colorScheme.onSurfaceVariant,
-                  ),
+                  icon: const Icon(Icons.logout, color: Colors.red),
                 ),
                 const SizedBox(height: 16),
               ],
