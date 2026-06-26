@@ -301,7 +301,7 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
 // ── Account info card (expiry + device usage) ─────────────────────────────────
 
 class _AccountInfoCard extends ConsumerStatefulWidget {
-  const _AccountInfoCard();
+  const _AccountInfoCard({super.key});
 
   @override
   ConsumerState<_AccountInfoCard> createState() => _AccountInfoCardState();
