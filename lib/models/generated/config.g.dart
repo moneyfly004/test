@@ -35,6 +35,9 @@ _AppSettingProps _$AppSettingPropsFromJson(Map<String, dynamic> json) =>
           ) ??
           RestoreStrategy.compatible,
       showTrayTitle: json['showTrayTitle'] as bool? ?? true,
+      autoSyncSubscription: json['autoSyncSubscription'] as bool? ?? true,
+      autoSyncIntervalMinutes:
+          (json['autoSyncIntervalMinutes'] as num?)?.toInt() ?? 60,
     );
 
 Map<String, dynamic> _$AppSettingPropsToJson(_AppSettingProps instance) =>
@@ -61,6 +64,8 @@ Map<String, dynamic> _$AppSettingPropsToJson(_AppSettingProps instance) =>
       'developerMode': instance.developerMode,
       'restoreStrategy': _$RestoreStrategyEnumMap[instance.restoreStrategy]!,
       'showTrayTitle': instance.showTrayTitle,
+      'autoSyncSubscription': instance.autoSyncSubscription,
+      'autoSyncIntervalMinutes': instance.autoSyncIntervalMinutes,
     };
 
 const _$RestoreStrategyEnumMap = {
