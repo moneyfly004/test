@@ -402,7 +402,7 @@ class _AutoSyncSubscriptionItem extends ConsumerWidget {
               value: interval ?? 60,
               onChanged: (v) {
                 ref.read(appSettingProvider.notifier)
-                    .update((s) => s.copyWith(autoSyncIntervalMinutes: v));
+                    .update((s) => s.copyWith(autoSyncIntervalMinutes: v ?? 60));
               },
               textBuilder: (int v) => '\$v 分钟',
             ),
