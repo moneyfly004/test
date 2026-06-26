@@ -5,6 +5,7 @@ import 'package:fl_clash/widgets/scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import "package:url_launcher/url_launcher.dart";
 
 class PackagesView extends ConsumerStatefulWidget {
   const PackagesView({super.key});
@@ -487,8 +488,13 @@ class _PaymentQrDialogState extends State<_PaymentQrDialog> {
             order['pay_url'] ??
             order['qr_link'] ??
             order['code_url'] ??
+            order['checkout_url'] ??
+            order['payment_link'] ??
+            order['pay_link'] ??
             order['pay_info'])
         ?.toString();
+    final isHttpUrl =
+        qrData != null && (qrData.startsWith('http://') || qrData.startsWith('https://'));
     final amount = (order['amount'] ?? order['price'] ?? '').toString();
     final orderId =
         (order['order_no'] ?? order['order_id'] ?? order['id'] ?? '')
@@ -533,6 +539,15 @@ class _PaymentQrDialogState extends State<_PaymentQrDialog> {
                             ),
                           ),
                   ),
+                  if (isHttpUrl) ...[
+                    const SizedBox(height: 8),
+                    OutlinedButton.icon(
+                      icon: const Icon(Icons.open_in_browser, size: 18),
+                      label: const Text('浏览器中打开支付'),
+                      onPressed: () =>
+                          launchUrl(Uri.parse(qrData!), mode: LaunchMode.externalApplication),
+                    ),
+                  ],
                   const SizedBox(height: 12),
                   if (amount.isNotEmpty)
                     Text(
@@ -564,6 +579,12 @@ class _PaymentQrDialogState extends State<_PaymentQrDialog> {
               ),
       ),
       actions: [
+        if (isHttpUrl)
+          FilledButton.tonal(
+            onPressed: () =>
+                launchUrl(Uri.parse(qrData!), mode: LaunchMode.externalApplication),
+            child: const Text('浏览器打开'),
+          ),
         if (!_paid)
           TextButton(
             onPressed: () => Navigator.of(widget.dialogContext).pop(false),

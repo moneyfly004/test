@@ -247,7 +247,7 @@ class ApiService {
         return body['data'] as Map<String, dynamic>;
       }
       if (body.containsKey('data') && body['data'] is List) {
-        return body;
+        return {'data': body['data']};
       }
       return body;
     }
