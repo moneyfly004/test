@@ -12,7 +12,10 @@ class ApiService {
       baseUrl: apiBaseUrl,
       connectTimeout: apiTimeout,
       receiveTimeout: apiTimeout,
-      headers: {'Content-Type': 'application/json'},
+      headers: {
+        'Content-Type': 'application/json',
+        'User-Agent': appName,
+      },
     ),
   )..interceptors.add(
       InterceptorsWrapper(

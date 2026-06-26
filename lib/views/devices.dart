@@ -131,9 +131,10 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
             children: [
               const Expanded(flex: 2, child: Text('设备名称', style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.w600))),
               const Expanded(flex: 1, child: Text('类型', style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.w600))),
-              const SizedBox(width: 120, child: Text('IP / 地区', style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.w600))),
-              const SizedBox(width: 120, child: Text('备注', style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.w600))),
-              const SizedBox(width: 60),
+              const SizedBox(width: 100, child: Text('IP / 地区', style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.w600))),
+              const SizedBox(width: 85, child: Text('更新时间', style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.w600))),
+              const SizedBox(width: 110, child: Text('备注', style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.w600))),
+              const SizedBox(width: 40),
             ],
           ),
         ),
@@ -157,6 +158,7 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
     final country = _parseCountry(d['location']);
     final remark = (d['remark'] ?? '').toString();
     final remarkCtrl = TextEditingController(text: remark);
+    final lastSeen = (d['last_seen'] ?? d['last_access'] ?? d['updated_at'] ?? '').toString();
 
     return Container(
       color: index.isEven ? cs.surfaceContainerHighest.opacity30 : null,
@@ -194,7 +196,7 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
             ),
           ),
           SizedBox(
-            width: 120,
+            width: 100,
             child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: Column(
@@ -208,7 +210,19 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
             ),
           ),
           SizedBox(
-            width: 130,
+            width: 85,
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                lastSeen.length >= 16 ? lastSeen.substring(5, 16) : lastSeen,
+                style: const TextStyle(fontSize: 11),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ),
+          SizedBox(
+            width: 110,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
               child: SizedBox(
@@ -262,6 +276,7 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
         final os = _parseOs(d);
         final remark = (d['remark'] ?? '').toString();
         final remarkCtrl = TextEditingController(text: remark);
+        final lastSeen = (d['last_seen'] ?? d['last_access'] ?? d['updated_at'] ?? '').toString();
 
         return Card(
           margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
@@ -290,6 +305,8 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
                 if (os.isNotEmpty) _infoRow('系统', os),
                 if (ip.isNotEmpty) _infoRow('IP', ip),
                 if (country.isNotEmpty) _infoRow('地区', country),
+                if (lastSeen.isNotEmpty)
+                  _infoRow('更新', lastSeen.length >= 16 ? lastSeen.substring(5, 16) : lastSeen),
                 const SizedBox(height: 8),
                 SizedBox(
                   height: 34,
