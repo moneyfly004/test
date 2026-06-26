@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/services/services.dart';
 import 'package:fl_clash/widgets/scaffold.dart';
 import 'package:flutter/material.dart';
@@ -55,125 +58,25 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
       ),
     );
     if (confirmed != true) return;
-    // Optimistic: remove from local list immediately
-    setState(() => _devices.removeWhere((d) => (d['id'] ?? '').toString() == deviceId));
+    setState(() =>
+        _devices.removeWhere((d) => (d['id'] ?? '').toString() == deviceId));
     try {
       await ApiService().deleteDevice(deviceId);
-    } catch (e) {
-      // Restore on failure
+    } catch (_) {
       _loadDevices();
-      if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(e.toString())));
-      }
     }
   }
 
-  Future<void> _editRemark(String deviceId, String currentRemark) async {
-    final controller = TextEditingController(text: currentRemark);
-    final remark = await showDialog<String>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('编辑备注'),
-        content: TextField(
-          controller: controller,
-          decoration: const InputDecoration(
-            labelText: '备注名称',
-            border: OutlineInputBorder(),
-          ),
-          maxLength: 40,
-          autofocus: true,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('取消'),
-          ),
-          FilledButton(
-            onPressed: () =>
-                Navigator.of(dialogContext).pop(controller.text.trim()),
-            child: const Text('保存'),
-          ),
-        ],
-      ),
-    );
-    controller.dispose();
-    if (remark == null) return;
-    // Optimistic: update local list immediately
+  void _saveRemark(String deviceId, String remark) {
     setState(() {
-      final idx = _devices.indexWhere(
-          (d) => (d['id'] ?? '').toString() == deviceId);
+      final idx =
+          _devices.indexWhere((d) => (d['id'] ?? '').toString() == deviceId);
       if (idx != -1) {
-        _devices[idx] = Map<String, dynamic>.from(_devices[idx] as Map)
-          ..['remark'] = remark;
+        _devices[idx] =
+            Map<String, dynamic>.from(_devices[idx] as Map)..['remark'] = remark;
       }
     });
-    try {
-      await ApiService().remarkDevice(deviceId, remark);
-    } catch (e) {
-      _loadDevices();
-      if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(e.toString())));
-      }
-    }
-  }
-
-  void _showDetail(Map<String, dynamic> d) {
-    final ua = (d['user_agent'] ?? d['ua'] ?? d['browser'] ?? '').toString();
-    final ip = (d['ip'] ?? d['ip_address'] ?? d['login_ip'] ?? '').toString();
-    final system = (d['system'] ?? d['os_name'] ?? d['type'] ?? '').toString();
-    final deviceType =
-        (d['device_type'] ?? d['client_type'] ?? d['platform'] ?? '').toString();
-    final lastSeen =
-        (d['last_seen'] ?? d['last_access'] ?? d['updated_at'] ?? '').toString();
-    final createdAt = (d['created_at'] ?? d['bind_time'] ?? '').toString();
-    final remark = (d['remark'] ?? '').toString();
-
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('设备详情'),
-        content: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (ip.isNotEmpty) _detailRow('IP 地址', ip),
-              if (system.isNotEmpty) _detailRow('操作系统', system),
-              if (deviceType.isNotEmpty) _detailRow('设备端', deviceType),
-              if (ua.isNotEmpty) _detailRow('UA', ua, copyable: true),
-              if (lastSeen.isNotEmpty) _detailRow('最后活跃', lastSeen),
-              if (createdAt.isNotEmpty) _detailRow('绑定时间', createdAt),
-              if (remark.isNotEmpty) _detailRow('备注', remark),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('关闭'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _detailRow(String label, String value, {bool copyable = false}) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label,
-              style: const TextStyle(fontSize: 11, color: Colors.grey)),
-          const SizedBox(height: 2),
-          copyable
-              ? SelectableText(value, style: const TextStyle(fontSize: 13))
-              : Text(value, style: const TextStyle(fontSize: 13)),
-        ],
-      ),
-    );
+    ApiService().remarkDevice(deviceId, remark).catchError((_) => _loadDevices());
   }
 
   @override
@@ -203,107 +106,259 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
                 )
               : RefreshIndicator(
                   onRefresh: _loadDevices,
-                  child: ListView.builder(
-                    itemCount: _devices.length,
-                    itemBuilder: (_, i) {
-                      final d = _devices[i] as Map<String, dynamic>;
-                      final isCurrent = d['is_current'] == true;
-                      final id = (d['id'] ?? '').toString();
-                      final system = (d['system'] ?? d['os_name'] ?? d['type'] ?? '').toString();
-                      final deviceType = (d['device_type'] ?? d['client_type'] ?? d['platform'] ?? '').toString();
-                      final name = (d['remark'] ?? d['device_name'] ?? d['name'] ?? '未知设备').toString();
-                      final ip = (d['ip'] ?? d['ip_address'] ?? d['login_ip'] ?? '').toString();
-                      final ua = (d['user_agent'] ?? d['ua'] ?? d['browser'] ?? '').toString();
-                      final lastSeen = (d['last_seen'] ?? d['last_access'] ?? d['updated_at'] ?? '').toString();
-
-                      final subtitleParts = [
-                        if (ip.isNotEmpty) ip,
-                        if (system.isNotEmpty) system,
-                        if (deviceType.isNotEmpty) deviceType,
-                        if (lastSeen.isNotEmpty) lastSeen,
-                      ];
-                      final uaShort = ua.length > 50 ? '${ua.substring(0, 50)}…' : ua;
-
-                      return Card(
-                        margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                        child: ListTile(
-                          leading: Icon(
-                            _platformIcon(system),
-                            color: isCurrent ? Theme.of(context).colorScheme.primary : null,
-                          ),
-                          title: Row(
-                            children: [
-                              Expanded(
-                                child: Text(name, maxLines: 1, overflow: TextOverflow.ellipsis),
-                              ),
-                              if (isCurrent)
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                  decoration: BoxDecoration(
-                                    color: Theme.of(context).colorScheme.primaryContainer,
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Text(
-                                    '当前',
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      color: Theme.of(context).colorScheme.onPrimaryContainer,
-                                    ),
-                                  ),
-                                ),
-                            ],
-                          ),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              if (subtitleParts.isNotEmpty)
-                                Text(
-                                  subtitleParts.join(' · '),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(fontSize: 12),
-                                ),
-                              if (uaShort.isNotEmpty)
-                                Text(
-                                  uaShort,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(fontSize: 11, color: Colors.grey),
-                                ),
-                            ],
-                          ),
-                          isThreeLine: ua.isNotEmpty,
-                          onTap: () => _showDetail(d),
-                          trailing: isCurrent
-                              ? null
-                              : PopupMenuButton<String>(
-                                  onSelected: (value) async {
-                                    if (value == 'remark') {
-                                      await _editRemark(id, (d['remark'] ?? '').toString());
-                                    } else if (value == 'delete') {
-                                      await _deleteDevice(id, name);
-                                    }
-                                  },
-                                  itemBuilder: (_) => const [
-                                    PopupMenuItem(value: 'remark', child: Text('编辑备注')),
-                                    PopupMenuItem(value: 'delete', child: Text('删除设备')),
-                                  ],
-                                ),
-                        ),
-                      );
-                    },
-                  ),
+                  child: _buildDeviceTable(),
                 ),
     );
   }
 
-  IconData _platformIcon(String system) {
-    final s = system.toLowerCase();
-    if (s.contains('android')) return Icons.android;
-    if (s.contains('ios') || s.contains('iphone')) return Icons.phone_iphone;
-    if (s.contains('macos') || s.contains('mac')) return Icons.laptop_mac;
-    if (s.contains('windows')) return Icons.laptop_windows;
-    if (s.contains('linux')) return Icons.computer;
-    return Icons.devices;
+  Widget _buildDeviceTable() {
+    final cs = Theme.of(context).colorScheme;
+    final isWide = MediaQuery.sizeOf(context).width > 700;
+
+    if (isWide) return _buildWideTable(cs);
+    return _buildCompactTable(cs);
+  }
+
+  // Desktop/tablet: full table columns
+  Widget _buildWideTable(ColorScheme cs) {
+    return ListView(
+      padding: const EdgeInsets.all(12),
+      children: [
+        // Header
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
+          child: Row(
+            children: [
+              const Expanded(flex: 2, child: Text('设备名称', style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.w600))),
+              const Expanded(flex: 1, child: Text('类型', style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.w600))),
+              const SizedBox(width: 120, child: Text('IP / 地区', style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.w600))),
+              const SizedBox(width: 120, child: Text('备注', style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.w600))),
+              const SizedBox(width: 60),
+            ],
+          ),
+        ),
+        for (var i = 0; i < _devices.length; i++) ...[
+          _buildWideRow(cs, _devices[i] as Map<String, dynamic>, i),
+          const Divider(height: 1),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildWideRow(ColorScheme cs, Map<String, dynamic> d, int index) {
+    final id = (d['id'] ?? '').toString();
+    final name = (d['device_name'] ?? d['name'] ?? '未知').toString();
+    final software = (d['software_name'] ?? '').toString();
+    final displayName = software.isNotEmpty && !name.startsWith(software)
+        ? '$software - $name'
+        : name;
+    final deviceType = _typeLabel(d);
+    final ip = (d['ip'] ?? d['ip_address'] ?? '').toString();
+    final country = _parseCountry(d['location']);
+    final remark = (d['remark'] ?? '').toString();
+    final remarkCtrl = TextEditingController(text: remark);
+
+    return Container(
+      color: index.isEven ? cs.surfaceContainerHighest.opacity30 : null,
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Expanded(
+            flex: 2,
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(displayName, maxLines: 1, overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                  if (_parseUa(d).isNotEmpty)
+                    Text(_parseUa(d), maxLines: 1, overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontSize: 10, color: Colors.grey)),
+                ],
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 1,
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(deviceType, style: const TextStyle(fontSize: 12)),
+                  Text(_parseOs(d), style: const TextStyle(fontSize: 10, color: Colors.grey)),
+                ],
+              ),
+            ),
+          ),
+          SizedBox(
+            width: 120,
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(ip, style: const TextStyle(fontSize: 12), maxLines: 1, overflow: TextOverflow.ellipsis),
+                  if (country.isNotEmpty)
+                    Text(country, style: const TextStyle(fontSize: 10, color: Colors.grey)),
+                ],
+              ),
+            ),
+          ),
+          SizedBox(
+            width: 130,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+              child: SizedBox(
+                height: 32,
+                child: TextField(
+                  controller: remarkCtrl,
+                  style: const TextStyle(fontSize: 12),
+                  decoration: InputDecoration(
+                    hintText: '输入备注…',
+                    hintStyle: const TextStyle(fontSize: 11),
+                    isDense: true,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(6), borderSide: BorderSide(color: cs.outlineVariant)),
+                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(6), borderSide: BorderSide(color: cs.outlineVariant.opacity30)),
+                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(6), borderSide: BorderSide(color: cs.primary)),
+                  ),
+                  onSubmitted: (v) => _saveRemark(id, v.trim()),
+                  onEditingComplete: () => _saveRemark(id, remarkCtrl.text.trim()),
+                ),
+              ),
+            ),
+          ),
+          SizedBox(
+            width: 40,
+            child: IconButton(
+              icon: const Icon(Icons.delete_outline, size: 18),
+              color: cs.error,
+              tooltip: '删除设备',
+              onPressed: () => _deleteDevice(id, name),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Mobile: compact card layout
+  Widget _buildCompactTable(ColorScheme cs) {
+    return ListView.builder(
+      padding: const EdgeInsets.all(8),
+      itemCount: _devices.length,
+      itemBuilder: (_, i) {
+        final d = _devices[i] as Map<String, dynamic>;
+        final id = (d['id'] ?? '').toString();
+        final name = (d['device_name'] ?? d['name'] ?? '未知').toString();
+        final software = (d['software_name'] ?? '').toString();
+        final displayName = software.isNotEmpty && !name.startsWith(software) ? '$software - $name' : name;
+        final deviceType = _typeLabel(d);
+        final ip = (d['ip'] ?? d['ip_address'] ?? '').toString();
+        final country = _parseCountry(d['location']);
+        final os = _parseOs(d);
+        final remark = (d['remark'] ?? '').toString();
+        final remarkCtrl = TextEditingController(text: remark);
+
+        return Card(
+          margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(displayName,
+                          maxLines: 2, overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.delete_outline, size: 20),
+                      color: cs.error,
+                      visualDensity: VisualDensity.compact,
+                      onPressed: () => _deleteDevice(id, name),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                _infoRow('类型', deviceType),
+                if (os.isNotEmpty) _infoRow('系统', os),
+                if (ip.isNotEmpty) _infoRow('IP', ip),
+                if (country.isNotEmpty) _infoRow('地区', country),
+                const SizedBox(height: 8),
+                SizedBox(
+                  height: 34,
+                  child: TextField(
+                    controller: remarkCtrl,
+                    style: const TextStyle(fontSize: 12),
+                    decoration: InputDecoration(
+                      hintText: '输入备注…',
+                      hintStyle: const TextStyle(fontSize: 11),
+                      isDense: true,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(6)),
+                    ),
+                    onSubmitted: (v) => _saveRemark(id, v.trim()),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  String _typeLabel(Map<String, dynamic> d) {
+    final t = (d['device_type'] ?? d['type'] ?? '').toString();
+    return switch (t) {
+      'desktop' => '桌面',
+      'mobile'  => '手机',
+      'tablet'  => '平板',
+      _         => t.isNotEmpty ? t : '未知',
+    };
+  }
+
+  String _parseOs(Map<String, dynamic> d) =>
+      (d['os_name'] ?? d['os_version'] ?? '').toString();
+
+  String _parseUa(Map<String, dynamic> d) {
+    final ua = (d['user_agent'] ?? d['ua'] ?? '').toString();
+    return ua.length > 60 ? '${ua.substring(0, 60)}…' : ua;
+  }
+
+  // location is a JSON string: {"country":"泰国","country_code":"TH",...}
+  String _parseCountry(dynamic location) {
+    if (location == null) return '';
+    try {
+      final Map<String, dynamic> map;
+      if (location is String) {
+        map = json.decode(location) as Map<String, dynamic>;
+      } else if (location is Map<String, dynamic>) {
+        map = location;
+      } else {
+        return '';
+      }
+      return (map['country'] ?? '').toString();
+    } catch (_) {
+      return '';
+    }
+  }
+
+  Widget _infoRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        children: [
+          SizedBox(width: 40, child: Text(label, style: const TextStyle(fontSize: 11, color: Colors.grey))),
+          Expanded(child: Text(value, style: const TextStyle(fontSize: 12))),
+        ],
+      ),
+    );
   }
 }
