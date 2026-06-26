@@ -308,6 +308,7 @@ class _AccountInfoCard extends ConsumerStatefulWidget {
 
 class _AccountInfoCardState extends ConsumerState<_AccountInfoCard> {
   Map<String, dynamic>? _info;
+  bool _syncing = false;
 
   @override
   void initState() {
@@ -320,6 +321,22 @@ class _AccountInfoCardState extends ConsumerState<_AccountInfoCard> {
       final info = await ApiService().getDashboard();
       if (mounted) setState(() => _info = info);
     } catch (_) {}
+  }
+
+  Future<void> _syncSubscription() async {
+    if (_syncing) return;
+    setState(() => _syncing = true);
+    try {
+      await MoneyFlyService.syncSubscription(ref);
+      await _load();
+      if (mounted) {
+        globalState.showNotifier('订阅已更新');
+      }
+    } catch (e) {
+      if (mounted) globalState.showNotifier('更新失败：$e');
+    } finally {
+      if (mounted) setState(() => _syncing = false);
+    }
   }
 
   @override
@@ -406,7 +423,23 @@ class _AccountInfoCardState extends ConsumerState<_AccountInfoCard> {
               '设备：$deviceUsed / $deviceLimit',
               style: TextStyle(fontSize: 13, color: cs.onSurfaceVariant),
             ),
+            const SizedBox(width: 8),
           ],
+          SizedBox(
+            width: 28,
+            height: 28,
+            child: _syncing
+                ? const Padding(
+                    padding: EdgeInsets.all(4),
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : IconButton(
+                    padding: EdgeInsets.zero,
+                    tooltip: '更新订阅',
+                    icon: const Icon(Icons.sync, size: 18),
+                    onPressed: _syncSubscription,
+                  ),
+          ),
         ],
       ),
     );
