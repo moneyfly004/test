@@ -280,7 +280,7 @@ class AppSidebarContainer extends ConsumerWidget {
                       ),
                     );
                     if (confirmed != true) return;
-                    await StorageService().clearTokens();
+                    await StorageService().clearAll();
                     final ctx = globalState.navigatorKey.currentContext;
                     if (ctx != null && ctx.mounted) {
                       Navigator.of(ctx).pushAndRemoveUntil(

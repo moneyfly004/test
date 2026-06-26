@@ -65,7 +65,24 @@ class ApplicationState extends ConsumerState<Application> {
 
   Future<void> _fetchSubscriptionIfLoggedIn() async {
     try {
-      final isLoggedIn = await StorageService().isLoggedIn();
+      var isLoggedIn = await StorageService().isLoggedIn();
+      // If no token, try re-login with saved credentials
+      if (!isLoggedIn) {
+        final creds = await StorageService().getSavedCredentials();
+        if (creds != null) {
+          try {
+            final result = await ApiService().login(
+              creds['account']!, creds['password']!,
+            );
+            await StorageService().saveToken(result['access_token'] ?? '');
+            await StorageService().saveRefreshToken(result['refresh_token'] ?? '');
+            isLoggedIn = true;
+          } catch (_) {
+            // Credentials invalid, clear saved data
+            await StorageService().clearAll();
+          }
+        }
+      }
       if (!isLoggedIn) return;
       await MoneyFlyService.syncSubscription(ref);
     } catch (e) {

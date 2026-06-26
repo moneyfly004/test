@@ -355,7 +355,7 @@ class _LogoutItem extends ConsumerWidget {
         );
         if (confirmed != true || !context.mounted) return;
         // Clear tokens first, then navigate immediately — no UI blocking
-        await StorageService().clearTokens();
+        await StorageService().clearAll();
         if (!context.mounted) return;
         Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(builder: (_) => const LoginPage()),
