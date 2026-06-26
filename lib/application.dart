@@ -78,16 +78,30 @@ class ApplicationState extends ConsumerState<Application> {
             await StorageService().saveRefreshToken(result['refresh_token'] ?? '');
             isLoggedIn = true;
           } catch (_) {
-            // Credentials invalid, clear saved data
             await StorageService().clearAll();
           }
         }
       }
-      if (!isLoggedIn) return;
-      await MoneyFlyService.syncSubscription(ref);
+      // Clear cached proxy config on every startup — fresh start
+      if (isLoggedIn) {
+        try {
+          // Read profiles as plain list, delete MoneyFly ones
+          final profiles = ref.read(profilesProvider);
+          for (final p in List<dynamic>.from(profiles)) {
+            final label = (p as dynamic).label as String? ?? '';
+            final url = (p as dynamic).url as String? ?? '';
+            if (label == MoneyFlyService.profileLabel ||
+                url.contains(apiBaseUrl)) {
+              await ref
+                  .read(profilesActionProvider.notifier)
+                  .deleteProfile((p as dynamic).id as int);
+            }
+          }
+        } catch (_) {}
+      }
     } catch (e) {
       commonPrint.log(
-        'MoneyFly subscription sync failed: $e',
+        'MoneyFly startup clean failed: $e',
         logLevel: LogLevel.warning,
       );
     }
