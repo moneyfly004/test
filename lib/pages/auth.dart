@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:fl_clash/services/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -24,8 +26,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       );
       await StorageService().saveToken(result['access_token'] ?? '');
       await StorageService().saveRefreshToken(result['refresh_token'] ?? '');
-      await _syncSubscriptionAfterAuth();
-      if (mounted) Navigator.of(context).pushReplacementNamed('/home');
+      if (mounted) {
+        Navigator.of(context).pushReplacementNamed('/home');
+        unawaited(MoneyFlyService.syncSubscription(ref).catchError((_) => null));
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -44,17 +48,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     super.dispose();
   }
 
-  Future<void> _syncSubscriptionAfterAuth() async {
-    try {
-      await MoneyFlyService.syncSubscription(ref);
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
-        );
-      }
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -224,8 +217,10 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
       );
       await StorageService().saveToken(result['access_token'] ?? '');
       await StorageService().saveRefreshToken(result['refresh_token'] ?? '');
-      await _syncSubscriptionAfterAuth();
-      if (mounted) Navigator.of(context).pushReplacementNamed('/home');
+      if (mounted) {
+        Navigator.of(context).pushReplacementNamed('/home');
+        unawaited(MoneyFlyService.syncSubscription(ref).catchError((_) => null));
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -247,17 +242,6 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     super.dispose();
   }
 
-  Future<void> _syncSubscriptionAfterAuth() async {
-    try {
-      await MoneyFlyService.syncSubscription(ref);
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
-        );
-      }
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -405,8 +389,10 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
       );
       await StorageService().saveToken(result['access_token'] ?? '');
       await StorageService().saveRefreshToken(result['refresh_token'] ?? '');
-      await _syncSubscriptionAfterAuth();
-      if (mounted) Navigator.of(context).pushReplacementNamed('/home');
+      if (mounted) {
+        Navigator.of(context).pushReplacementNamed('/home');
+        unawaited(MoneyFlyService.syncSubscription(ref).catchError((_) => null));
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -426,17 +412,6 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
     super.dispose();
   }
 
-  Future<void> _syncSubscriptionAfterAuth() async {
-    try {
-      await MoneyFlyService.syncSubscription(ref);
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
-        );
-      }
-    }
-  }
 
   @override
   Widget build(BuildContext context) {

@@ -106,7 +106,6 @@ class ApiService {
   }
 
   Future<void> logout() async {
-    await _auth();
     try {
       await _dio.post('/auth/logout');
     } catch (_) {}
@@ -115,13 +114,11 @@ class ApiService {
   // ── User ─────────────────────────────────────────────
 
   Future<Map<String, dynamic>> getMe() async {
-    await _auth();
     final resp = await _dio.get('/users/me');
     return _data(resp);
   }
 
   Future<Map<String, dynamic>> getDashboard() async {
-    await _auth();
     final resp = await _dio.get('/users/dashboard-info');
     return _data(resp);
   }
@@ -130,7 +127,6 @@ class ApiService {
 
   /// Returns the clash subscription URL for this user.
   Future<String?> getSubscriptionUrl() async {
-    await _auth();
     try {
       final resp = await _dio.get('/subscriptions/user-subscription');
       final data = _data(resp);
@@ -154,7 +150,6 @@ class ApiService {
   // ── Devices ───────────────────────────────────────────
 
   Future<List<dynamic>> getDevices() async {
-    await _auth();
     final resp = await _dio.get('/subscriptions/devices');
     final data = _data(resp);
     return data['devices'] as List? ??
@@ -163,12 +158,10 @@ class ApiService {
   }
 
   Future<void> deleteDevice(String deviceId) async {
-    await _auth();
     await _dio.delete('/devices/$deviceId');
   }
 
   Future<void> remarkDevice(String deviceId, String remark) async {
-    await _auth();
     await _dio.put(
       '/subscriptions/devices/$deviceId/remark',
       data: {'remark': remark},
@@ -178,7 +171,6 @@ class ApiService {
   // ── Packages ─────────────────────────────────────────
 
   Future<List<dynamic>> getPackages() async {
-    await _auth();
     final resp = await _dio.get('/packages');
     final data = _data(resp);
     return _listFromData(resp.data, data, [
@@ -194,7 +186,6 @@ class ApiService {
   // ── Payment methods ───────────────────────────────────
 
   Future<List<dynamic>> getPaymentMethods() async {
-    await _auth();
     final resp = await _dio.get('/payment-methods/active');
     final data = _data(resp);
     return _listFromData(resp.data, data, [
@@ -212,7 +203,6 @@ class ApiService {
     String packageId,
     String paymentMethod,
   ) async {
-    await _auth();
     final resp = await _dio.post(
       '/orders',
       data: {
@@ -224,7 +214,6 @@ class ApiService {
   }
 
   Future<Map<String, dynamic>> getOrderStatus(String orderNo) async {
-    await _auth();
     final resp = await _dio.get('/orders/$orderNo/status');
     return _data(resp);
   }
