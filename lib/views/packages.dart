@@ -49,23 +49,17 @@ class _PackagesViewState extends ConsumerState<PackagesView> {
     );
     if (method == null || !mounted) return;
 
-    final Map<String, dynamic> order;
-    try {
-      order = await ApiService().createOrder(pkg['id']?.toString() ?? '', method);
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(e.toString())));
-      }
-      return;
-    }
-    if (!mounted) return;
-
+    // Show QR dialog immediately with loading state — no gap between dialogs
     final paid = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
-      builder: (dialogContext) =>
-          _PaymentQrDialog(order: order, dialogContext: dialogContext),
+      builder: (dialogContext) => _PaymentQrDialog(
+        orderFuture: ApiService().createOrder(
+          pkg['id']?.toString() ?? '',
+          method,
+        ),
+        dialogContext: dialogContext,
+      ),
     );
 
     if (paid == true && mounted) {
@@ -367,11 +361,11 @@ class _PaymentMethodDialogState extends State<_PaymentMethodDialog> {
 }
 
 class _PaymentQrDialog extends StatefulWidget {
-  final Map<String, dynamic> order;
+  final Future<Map<String, dynamic>> orderFuture;
   final BuildContext dialogContext;
 
   const _PaymentQrDialog(
-      {required this.order, required this.dialogContext});
+      {required this.orderFuture, required this.dialogContext});
 
   @override
   State<_PaymentQrDialog> createState() => _PaymentQrDialogState();
@@ -382,20 +376,29 @@ class _PaymentQrDialogState extends State<_PaymentQrDialog> {
   Timer? _countdownTimer;
   bool _paid = false;
   int _secondsLeft = 900;
+  Map<String, dynamic>? _order;
+  String? _orderError;
 
   @override
   void initState() {
     super.initState();
-    _startPolling();
-    _startCountdown();
+    widget.orderFuture.then((order) {
+      if (!mounted) return;
+      setState(() => _order = order);
+      _startPolling();
+      _startCountdown();
+    }).catchError((e) {
+      if (!mounted) return;
+      setState(() => _orderError = e.toString());
+    });
   }
 
   void _startPolling() {
     _pollTimer = Timer.periodic(const Duration(seconds: 3), (_) async {
       try {
-        final orderId = (widget.order['order_no'] ??
-                widget.order['order_id'] ??
-                widget.order['id'] ??
+        final orderId = (_order!['order_no'] ??
+                _order!['order_id'] ??
+                _order!['id'] ??
                 '')
             .toString();
         if (orderId.isEmpty) return;
@@ -447,22 +450,51 @@ class _PaymentQrDialogState extends State<_PaymentQrDialog> {
 
   @override
   Widget build(BuildContext context) {
-    // Support common payment URL field names from different backends
-    final qrData = (widget.order['payment_qr_code'] ??
-            widget.order['payment_url'] ??
-            widget.order['qr_code'] ??
-            widget.order['pay_url'] ??
-            widget.order['qr_link'] ??
-            widget.order['code_url'] ??
-            widget.order['pay_info'])
+    // Show loading while createOrder is in-flight (no gap between dialogs)
+    if (_orderError != null) {
+      return AlertDialog(
+        title: const Text('扫码支付'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.error_outline, color: Colors.red, size: 48),
+            const SizedBox(height: 12),
+            Text(_orderError!, style: const TextStyle(fontSize: 13)),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(widget.dialogContext).pop(false),
+            child: const Text('关闭'),
+          ),
+        ],
+      );
+    }
+
+    if (_order == null) {
+      return const AlertDialog(
+        title: Text('扫码支付'),
+        content: SizedBox(
+          width: 200,
+          height: 120,
+          child: Center(child: CircularProgressIndicator()),
+        ),
+      );
+    }
+
+    final order = _order!;
+    final qrData = (order['payment_qr_code'] ??
+            order['payment_url'] ??
+            order['qr_code'] ??
+            order['pay_url'] ??
+            order['qr_link'] ??
+            order['code_url'] ??
+            order['pay_info'])
         ?.toString();
-    final amount =
-        (widget.order['amount'] ?? widget.order['price'] ?? '').toString();
-    final orderId = (widget.order['order_no'] ??
-            widget.order['order_id'] ??
-            widget.order['id'] ??
-            '')
-        .toString();
+    final amount = (order['amount'] ?? order['price'] ?? '').toString();
+    final orderId =
+        (order['order_no'] ?? order['order_id'] ?? order['id'] ?? '')
+            .toString();
 
     return AlertDialog(
       title: const Text('扫码支付'),
