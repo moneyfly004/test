@@ -430,66 +430,74 @@ class _AccountInfoCardState extends ConsumerState<_AccountInfoCard> {
                   : cs.outlineVariant.withAlpha(153),
         ),
       ),
-      child: Row(
+      child: Stack(
         children: [
-          if (expiry.length >= 10) ...[
-            Icon(
-              isExpired ? Icons.error_outline : Icons.calendar_today_outlined,
-              size: 16,
-              color: isExpired || isExpiringSoon ? warnColor : cs.onSurfaceVariant,
-            ),
-            const SizedBox(width: 6),
-            Text(
-              isExpired
-                  ? '套餐已到期'
-                  : '到期：${expiry.substring(0, 10)}${isExpiringSoon ? '（即将到期）' : ''}',
-              style: TextStyle(
-                fontSize: 13,
-                color: isExpired || isExpiringSoon ? warnColor : null,
-                fontWeight: isExpired || isExpiringSoon ? FontWeight.w600 : null,
-              ),
-            ),
-            if (isExpired || isExpiringSoon) ...[
-              const SizedBox(width: 6),
-              GestureDetector(
-                onTap: () => globalState.container
-                    .read(currentPageLabelProvider.notifier)
-                    .value = PageLabel.packages,
-                child: Text(
-                  '立即续费',
+          Row(
+            children: [
+              if (expiry.length >= 10) ...[
+                Icon(
+                  isExpired ? Icons.error_outline : Icons.calendar_today_outlined,
+                  size: 16,
+                  color: isExpired || isExpiringSoon ? warnColor : cs.onSurfaceVariant,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  isExpired
+                      ? '套餐已到期'
+                      : '到期：${expiry.substring(0, 10)}${isExpiringSoon ? '（即将到期）' : ''}',
                   style: TextStyle(
                     fontSize: 13,
-                    color: cs.primary,
-                    fontWeight: FontWeight.w700,
+                    color: isExpired || isExpiringSoon ? warnColor : null,
+                    fontWeight: isExpired || isExpiringSoon ? FontWeight.w600 : null,
                   ),
                 ),
-              ),
-            ],
-          ],
-          const Spacer(),
-          if (deviceLimit != 0) ...[
-            Icon(Icons.devices, size: 16, color: cs.onSurfaceVariant),
-            const SizedBox(width: 4),
-            Text(
-              '设备：$deviceUsed / $deviceLimit',
-              style: TextStyle(fontSize: 13, color: cs.onSurfaceVariant),
-            ),
-            const SizedBox(width: 8),
-          ],
-          SizedBox(
-            width: 28,
-            height: 28,
-            child: _syncing
-                ? const Padding(
-                    padding: EdgeInsets.all(4),
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : IconButton(
-                    padding: EdgeInsets.zero,
-                    tooltip: '更新订阅',
-                    icon: const Icon(Icons.sync, size: 18),
-                    onPressed: _syncSubscription,
+                if (isExpired || isExpiringSoon) ...[
+                  const SizedBox(width: 6),
+                  GestureDetector(
+                    onTap: () => globalState.container
+                        .read(currentPageLabelProvider.notifier)
+                        .value = PageLabel.packages,
+                    child: Text(
+                      '立即续费',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: cs.primary,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
                   ),
+                ],
+              ],
+              const Spacer(),
+              if (deviceLimit != 0) ...[
+                Icon(Icons.devices, size: 16, color: cs.onSurfaceVariant),
+                const SizedBox(width: 4),
+                Text(
+                  '设备：$deviceUsed / $deviceLimit',
+                  style: TextStyle(fontSize: 13, color: cs.onSurfaceVariant),
+                ),
+                const SizedBox(width: 36),
+              ],
+            ],
+          ),
+          Positioned(
+            top: 0,
+            right: 0,
+            child: SizedBox(
+              width: 28,
+              height: 28,
+              child: _syncing
+                  ? const Padding(
+                      padding: EdgeInsets.all(4),
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : IconButton(
+                      padding: EdgeInsets.zero,
+                      tooltip: '更新订阅',
+                      icon: const Icon(Icons.sync, size: 18),
+                      onPressed: _syncSubscription,
+                    ),
+            ),
           ),
         ],
       ),

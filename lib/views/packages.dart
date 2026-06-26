@@ -495,6 +495,8 @@ class _PaymentQrDialogState extends State<_PaymentQrDialog> {
         ?.toString();
     final isHttpUrl =
         qrData != null && (qrData.startsWith('http://') || qrData.startsWith('https://'));
+    final isAlipayUrl = qrData != null &&
+        (qrData.startsWith('alipays://') || qrData.contains('qr.alipay.com'));
     final amount = (order['amount'] ?? order['price'] ?? '').toString();
     final orderId =
         (order['order_no'] ?? order['order_id'] ?? order['id'] ?? '')
@@ -539,13 +541,21 @@ class _PaymentQrDialogState extends State<_PaymentQrDialog> {
                             ),
                           ),
                   ),
-                  if (isHttpUrl) ...[
+                  if (isAlipayUrl) ...[
+                    const SizedBox(height: 8),
+                    FilledButton.icon(
+                      icon: const Icon(Icons.account_balance_wallet, size: 18),
+                      label: const Text('打开支付宝支付'),
+                      onPressed: () =>
+                          launchUrl(Uri.parse(qrData), mode: LaunchMode.externalApplication),
+                    ),
+                  ] else if (isHttpUrl) ...[
                     const SizedBox(height: 8),
                     OutlinedButton.icon(
                       icon: const Icon(Icons.open_in_browser, size: 18),
                       label: const Text('浏览器中打开支付'),
                       onPressed: () =>
-                          launchUrl(Uri.parse(qrData!), mode: LaunchMode.externalApplication),
+                          launchUrl(Uri.parse(qrData), mode: LaunchMode.externalApplication),
                     ),
                   ],
                   const SizedBox(height: 12),
@@ -579,12 +589,22 @@ class _PaymentQrDialogState extends State<_PaymentQrDialog> {
               ),
       ),
       actions: [
-        if (isHttpUrl)
+        if (isAlipayUrl) ...[
+          FilledButton.icon(
+            icon: const Icon(Icons.account_balance_wallet, size: 18),
+            label: const Text('支付宝支付'),
+            onPressed: () =>
+                launchUrl(Uri.parse(qrData), mode: LaunchMode.externalApplication),
+          ),
+          const SizedBox(width: 8),
+        ] else if (isHttpUrl) ...[
           FilledButton.tonal(
             onPressed: () =>
-                launchUrl(Uri.parse(qrData!), mode: LaunchMode.externalApplication),
+                launchUrl(Uri.parse(qrData), mode: LaunchMode.externalApplication),
             child: const Text('浏览器打开'),
           ),
+          const SizedBox(width: 8),
+        ],
         if (!_paid)
           TextButton(
             onPressed: () => Navigator.of(widget.dialogContext).pop(false),
