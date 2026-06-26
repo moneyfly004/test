@@ -27,6 +27,7 @@ class Application extends ConsumerStatefulWidget {
 
 class ApplicationState extends ConsumerState<Application> {
   Timer? _autoUpdateProfilesTaskTimer;
+  Timer? _autoSyncSubscriptionTimer;
   bool _preHasVpn = false;
 
   final _pageTransitionsTheme = const PageTransitionsTheme(
@@ -58,6 +59,7 @@ class ApplicationState extends ConsumerState<Application> {
       _initLink();
       app?.initShortcuts();
       _fetchSubscriptionIfLoggedIn();
+      _startAutoSyncSubscription();
     });
   }
 
@@ -102,6 +104,19 @@ class ApplicationState extends ConsumerState<Application> {
     _autoUpdateProfilesTaskTimer = Timer(const Duration(minutes: 20), () async {
       await ref.read(profilesActionProvider.notifier).autoUpdateProfiles();
       _autoUpdateProfilesTask();
+    });
+  }
+
+  void _startAutoSyncSubscription() {
+    _autoSyncSubscriptionTimer?.cancel();
+    final settings = ref.read(appSettingProvider);
+    if (!settings.autoSyncSubscription) return;
+    final interval = Duration(minutes: settings.autoSyncIntervalMinutes);
+    _autoSyncSubscriptionTimer = Timer.periodic(interval, (_) async {
+      try {
+        final isLoggedIn = await StorageService().isLoggedIn();
+        if (isLoggedIn) await MoneyFlyService.syncSubscription(ref);
+      } catch (_) {}
     });
   }
 
@@ -219,6 +234,7 @@ class ApplicationState extends ConsumerState<Application> {
   Future<void> dispose() async {
     linkManager.destroy();
     _autoUpdateProfilesTaskTimer?.cancel();
+    _autoSyncSubscriptionTimer?.cancel();
     await coreController.destroy();
     await ref.read(systemActionProvider.notifier).handleExit();
     super.dispose();

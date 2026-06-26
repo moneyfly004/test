@@ -80,6 +80,7 @@ class _ToolViewState extends ConsumerState<ToolsView> {
         const _ConfigItem(),
         const _AdvancedConfigItem(),
         const _SettingItem(),
+        const _AutoSyncSubscriptionItem(),
       ],
     );
   }
@@ -363,6 +364,50 @@ class _LogoutItem extends ConsumerWidget {
         // Clean up proxy config in background after navigating away
         unawaited(MoneyFlyService.cleanupAfterLogout(ref));
       },
+    );
+  }
+}
+
+class _AutoSyncSubscriptionItem extends ConsumerWidget {
+  const _AutoSyncSubscriptionItem();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final settings = ref.watch(appSettingProvider);
+    final enabled = settings.autoSyncSubscription;
+    final interval = settings.autoSyncIntervalMinutes;
+
+    return Column(
+      children: [
+        ListItem(
+          leading: const Icon(Icons.sync),
+          title: const Text('自动更新订阅'),
+          subtitle: Text(enabled ? '每 $interval 分钟自动同步' : '已关闭'),
+          trailing: Switch(
+            value: enabled,
+            onChanged: (v) {
+              ref.read(appSettingProvider.notifier)
+                  .update((s) => s.copyWith(autoSyncSubscription: v));
+            },
+          ),
+        ),
+        if (enabled)
+          ListItem<int>.options(
+            leading: const Icon(Icons.timer_outlined),
+            title: const Text('更新间隔'),
+            subtitle: Text('$interval 分钟'),
+            delegate: OptionsDelegate(
+              title: '更新间隔',
+              options: const [15, 30, 60, 120, 240],
+              value: interval as int?,
+              onChanged: (v) {
+                ref.read(appSettingProvider.notifier)
+                    .update((s) => s.copyWith(autoSyncIntervalMinutes: v));
+              },
+              textBuilder: (v) => '$v 分钟',
+            ),
+          ),
+      ],
     );
   }
 }
