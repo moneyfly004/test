@@ -4,7 +4,6 @@ import 'package:defer_pointer/defer_pointer.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
-import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/services/services.dart';
 import 'package:fl_clash/state.dart';
@@ -13,7 +12,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'widgets/start_button.dart';
-import 'widgets/widgets.dart';
 
 typedef _IsEditWidgetBuilder = Widget Function(bool isEdit);
 
@@ -90,8 +88,7 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
                           },
                         ),
                         onPressed: _handleConnection,
-                        icon: const Icon(Icons.check,
-                            fontWeight: FontWeight.w900),
+                        icon: const Icon(Icons.check, fontWeight: FontWeight.w900),
                       )
                     : FilledButton.icon(
                         key: ValueKey(coreStatus),
@@ -108,12 +105,12 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
                           foregroundColor: switch (coreStatus) {
                             CoreStatus.connecting => null,
                             CoreStatus.connected => switch (Theme.brightnessOf(
-                                context,
-                              )) {
-                                Brightness.light =>
-                                  context.colorScheme.onSurfaceVariant,
-                                Brightness.dark => null,
-                              },
+                              context,
+                            )) {
+                              Brightness.light =>
+                                context.colorScheme.onSurfaceVariant,
+                              Brightness.dark => null,
+                            },
                             CoreStatus.disconnected =>
                               context.colorScheme.onError,
                           },
@@ -123,21 +120,21 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
                           width: globalState.measure.bodyMediumHeight,
                           child: switch (coreStatus) {
                             CoreStatus.connecting => Padding(
-                                padding: const EdgeInsets.all(2),
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 3,
-                                  color: context.colorScheme.onPrimary,
-                                  backgroundColor: Colors.transparent,
-                                ),
+                              padding: const EdgeInsets.all(2),
+                              child: CircularProgressIndicator(
+                                strokeWidth: 3,
+                                color: context.colorScheme.onPrimary,
+                                backgroundColor: Colors.transparent,
                               ),
+                            ),
                             CoreStatus.connected => const Icon(
-                                Icons.check_sharp,
-                                fontWeight: FontWeight.w900,
-                              ),
+                              Icons.check_sharp,
+                              fontWeight: FontWeight.w900,
+                            ),
                             CoreStatus.disconnected => const Icon(
-                                Icons.restart_alt_sharp,
-                                fontWeight: FontWeight.w900,
-                              ),
+                              Icons.restart_alt_sharp,
+                              fontWeight: FontWeight.w900,
+                            ),
                           },
                         ),
                         label: Text(switch (coreStatus) {
@@ -222,7 +219,9 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
       final dashboardWidgets = currentState.children
           .map((item) => DashboardWidget.getDashboardWidget(item))
           .toList();
-      ref.read(appSettingProvider.notifier).update(
+      ref
+          .read(appSettingProvider.notifier)
+          .update(
             (state) => state.copyWith(dashboardWidgets: dashboardWidgets),
           );
     }
@@ -254,8 +253,7 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
       (isEdit) => CommonScaffold(
         title: context.appLocalizations.dashboard,
         actions: _buildActions(isEdit),
-        floatingActionButton:
-            isEdit || !system.isDesktop ? const StartButton() : null,
+        floatingActionButton: const StartButton(),
         body: Align(
           alignment: Alignment.topCenter,
           child: SingleChildScrollView(
@@ -279,21 +277,19 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
                       },
                     ),
                   )
-                : system.isDesktop
-                    ? const _DesktopDashboard()
-                    : Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          const _AccountInfoCard(),
-                          const SizedBox(height: 12),
-                          Grid(
-                            crossAxisCount: columns,
-                            crossAxisSpacing: spacing,
-                            mainAxisSpacing: spacing,
-                            children: children,
-                          ),
-                        ],
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const _AccountInfoCard(),
+                      const SizedBox(height: 12),
+                      Grid(
+                        crossAxisCount: columns,
+                        crossAxisSpacing: spacing,
+                        mainAxisSpacing: spacing,
+                        children: children,
                       ),
+                    ],
+                  ),
           ),
         ),
       ),
@@ -301,356 +297,123 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
   }
 }
 
-class _DesktopDashboard extends ConsumerWidget {
-  const _DesktopDashboard();
+// ── Account info card (expiry + device usage) ─────────────────────────────────
+
+class _AccountInfoCard extends ConsumerStatefulWidget {
+  const _AccountInfoCard();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final appLocalizations = context.appLocalizations;
-    final colorScheme = context.colorScheme;
-    final isStart = ref.watch(isStartProvider);
-    final coreStatus = ref.watch(coreStatusProvider);
-    final currentProfile = ref.watch(currentProfileProvider);
-    final traffics = ref.watch(trafficsProvider).list;
-    final currentTraffic = traffics.isEmpty ? const Traffic() : traffics.last;
-    final totalTraffic = ref.watch(totalTrafficProvider);
-    final groups = ref.watch(currentGroupsStateProvider).value;
-    final statusText = switch (coreStatus) {
-      CoreStatus.connected => appLocalizations.connected,
-      CoreStatus.connecting => appLocalizations.connecting,
-      CoreStatus.disconnected => appLocalizations.disconnected,
-    };
-    final statusColor = switch (coreStatus) {
-      CoreStatus.connected => Colors.green.harmonizeWith(colorScheme.primary),
-      CoreStatus.connecting => colorScheme.tertiary,
-      CoreStatus.disconnected => colorScheme.error,
-    };
-
-    return ConstrainedBox(
-      constraints: const BoxConstraints(maxWidth: 1180),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const _AccountInfoCard(),
-          const SizedBox(height: 16),
-          _DashboardHero(
-            isStart: isStart,
-            statusText: statusText,
-            statusColor: statusColor,
-            profileName: currentProfile?.label ?? appLocalizations.noInfo,
-            uploadSpeed: currentTraffic.up.traffic.show,
-            downloadSpeed: currentTraffic.down.traffic.show,
-          ),
-          const SizedBox(height: 16),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final isCompact = constraints.maxWidth < 900;
-              final metricCards = [
-                _MetricCard(
-                  icon: Icons.cloud_upload_outlined,
-                  label: appLocalizations.upload,
-                  value: totalTraffic.up.traffic.show,
-                  color: colorScheme.primary,
-                ),
-                _MetricCard(
-                  icon: Icons.cloud_download_outlined,
-                  label: appLocalizations.download,
-                  value: totalTraffic.down.traffic.show,
-                  color: colorScheme.secondary,
-                ),
-                _MetricCard(
-                  icon: Icons.account_tree_outlined,
-                  label: appLocalizations.proxyGroup,
-                  value: groups.length.toString(),
-                  color: colorScheme.tertiary,
-                ),
-              ];
-              return Flex(
-                direction: isCompact ? Axis.vertical : Axis.horizontal,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  for (var index = 0; index < metricCards.length; index++) ...[
-                    if (index > 0)
-                      SizedBox(
-                          width: isCompact ? 0 : 12,
-                          height: isCompact ? 12 : 0),
-                    Expanded(
-                        flex: isCompact ? 0 : 1, child: metricCards[index]),
-                  ],
-                ],
-              );
-            },
-          ),
-          const SizedBox(height: 16),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final isCompact = constraints.maxWidth < 900;
-              final children = [
-                const NetworkSpeed(),
-                const TrafficUsage(),
-              ];
-              return Flex(
-                direction: isCompact ? Axis.vertical : Axis.horizontal,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  for (var index = 0; index < children.length; index++) ...[
-                    if (index > 0)
-                      SizedBox(
-                          width: isCompact ? 0 : 16,
-                          height: isCompact ? 16 : 0),
-                    Expanded(flex: isCompact ? 0 : 1, child: children[index]),
-                  ],
-                ],
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
+  ConsumerState<_AccountInfoCard> createState() => _AccountInfoCardState();
 }
 
-class _DashboardHero extends ConsumerWidget {
-  final bool isStart;
-  final String statusText;
-  final Color statusColor;
-  final String profileName;
-  final String uploadSpeed;
-  final String downloadSpeed;
-
-  const _DashboardHero({
-    required this.isStart,
-    required this.statusText,
-    required this.statusColor,
-    required this.profileName,
-    required this.uploadSpeed,
-    required this.downloadSpeed,
-  });
+class _AccountInfoCardState extends ConsumerState<_AccountInfoCard> {
+  Map<String, dynamic>? _info;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final appLocalizations = context.appLocalizations;
-    final colorScheme = context.colorScheme;
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    try {
+      final info = await ApiService().getDashboard();
+      if (mounted) setState(() => _info = info);
+    } catch (_) {}
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_info == null) return const SizedBox.shrink();
+    final cs = context.colorScheme;
+    final expiry =
+        (_info!['expiry'] ?? _info!['expire_at'] ?? _info!['expired_at'] ?? '')
+            .toString();
+    final deviceUsed = _info!['device_used'] ?? _info!['devices_used'] ?? 0;
+    final deviceLimit = _info!['device_limit'] ?? _info!['devices_limit'] ?? 0;
+
+    bool isExpiringSoon = false;
+    bool isExpired = false;
+    if (expiry.length >= 10) {
+      try {
+        final d = DateTime.parse(expiry.substring(0, 10));
+        final now = DateTime.now();
+        isExpired = d.isBefore(now);
+        isExpiringSoon = !isExpired && d.difference(now).inDays <= 7;
+      } catch (_) {}
+    }
+
+    final warnColor = isExpired ? cs.error : Colors.orange;
+
     return Container(
-      padding: const EdgeInsets.all(28),
-      decoration: ShapeDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            colorScheme.primaryContainer.opacity80,
-            colorScheme.secondaryContainer.opacity60,
-            colorScheme.surfaceContainerHighest,
-          ],
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      decoration: BoxDecoration(
+        color: isExpired
+            ? cs.errorContainer.withAlpha(153)
+            : isExpiringSoon
+                ? Colors.orange.withAlpha(26)
+                : cs.surfaceContainerHighest.withAlpha(204),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isExpired
+              ? cs.error.withAlpha(153)
+              : isExpiringSoon
+                  ? Colors.orange.withAlpha(153)
+                  : cs.outlineVariant.withAlpha(153),
         ),
-        shape: RoundedSuperellipseBorder(
-          side: BorderSide(color: colorScheme.outlineVariant.opacity60),
-          borderRadius: BorderRadius.circular(32),
-        ),
-        shadows: [
-          BoxShadow(
-            color: colorScheme.shadow.opacity12,
-            blurRadius: 32,
-            offset: const Offset(0, 18),
-          ),
-        ],
       ),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final isCompact = constraints.maxWidth < 760;
-          return Flex(
-            direction: isCompact ? Axis.vertical : Axis.horizontal,
-            crossAxisAlignment: isCompact
-                ? CrossAxisAlignment.start
-                : CrossAxisAlignment.center,
-            children: [
-              Expanded(
-                flex: isCompact ? 0 : 1,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _StatusPill(text: statusText, color: statusColor),
-                    const SizedBox(height: 18),
-                    Text(
-                      isStart ? appLocalizations.start : appLocalizations.stop,
-                      style: context.textTheme.displaySmall?.copyWith(
-                        fontWeight: FontWeight.w800,
-                        color: colorScheme.onSurface,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      profileName,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: context.textTheme.titleMedium?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ),
+      child: Row(
+        children: [
+          if (expiry.length >= 10) ...[
+            Icon(
+              isExpired ? Icons.error_outline : Icons.calendar_today_outlined,
+              size: 16,
+              color: isExpired || isExpiringSoon ? warnColor : cs.onSurfaceVariant,
+            ),
+            const SizedBox(width: 6),
+            Text(
+              isExpired
+                  ? '套餐已到期'
+                  : '到期：${expiry.substring(0, 10)}${isExpiringSoon ? '（即将到期）' : ''}',
+              style: TextStyle(
+                fontSize: 13,
+                color: isExpired || isExpiringSoon ? warnColor : null,
+                fontWeight: isExpired || isExpiringSoon ? FontWeight.w600 : null,
               ),
-              SizedBox(width: isCompact ? 0 : 28, height: isCompact ? 24 : 0),
-              Wrap(
-                spacing: 12,
-                runSpacing: 12,
-                children: [
-                  _SpeedTile(
-                    icon: Icons.arrow_upward_rounded,
-                    label: appLocalizations.upload,
-                    value: '$uploadSpeed/s',
+            ),
+            if (isExpired || isExpiringSoon) ...[
+              const SizedBox(width: 6),
+              GestureDetector(
+                onTap: () => globalState.container
+                    .read(currentPageLabelProvider.notifier)
+                    .value = PageLabel.packages,
+                child: Text(
+                  '立即续费',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: cs.primary,
+                    fontWeight: FontWeight.w700,
                   ),
-                  _SpeedTile(
-                    icon: Icons.arrow_downward_rounded,
-                    label: appLocalizations.download,
-                    value: '$downloadSpeed/s',
-                  ),
-                  const StartButton(),
-                ],
+                ),
               ),
             ],
-          );
-        },
-      ),
-    );
-  }
-}
-
-class _StatusPill extends StatelessWidget {
-  final String text;
-  final Color color;
-
-  const _StatusPill({required this.text, required this.color});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: ShapeDecoration(
-        color: color.opacity15,
-        shape: const StadiumBorder(),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.circle, size: 10, color: color),
-          const SizedBox(width: 8),
-          Text(
-            text,
-            style: context.textTheme.labelLarge?.copyWith(
-              color: color,
-              fontWeight: FontWeight.w700,
+          ],
+          const Spacer(),
+          if (deviceLimit != 0) ...[
+            Icon(Icons.devices, size: 16, color: cs.onSurfaceVariant),
+            const SizedBox(width: 4),
+            Text(
+              '设备：$deviceUsed / $deviceLimit',
+              style: TextStyle(fontSize: 13, color: cs.onSurfaceVariant),
             ),
-          ),
+          ],
         ],
       ),
     );
   }
 }
 
-class _SpeedTile extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String value;
-
-  const _SpeedTile(
-      {required this.icon, required this.label, required this.value});
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = context.colorScheme;
-    return Container(
-      width: 168,
-      padding: const EdgeInsets.all(16),
-      decoration: ShapeDecoration(
-        color: colorScheme.surface.opacity80,
-        shape: RoundedSuperellipseBorder(
-          side: BorderSide(color: colorScheme.outlineVariant.opacity60),
-          borderRadius: BorderRadius.circular(22),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, color: colorScheme.primary),
-          const SizedBox(height: 14),
-          Text(label, style: context.textTheme.labelMedium?.toLighter),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: context.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _MetricCard extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String value;
-  final Color color;
-
-  const _MetricCard({
-    required this.icon,
-    required this.label,
-    required this.value,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = context.colorScheme;
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: ShapeDecoration(
-        color: colorScheme.surfaceContainerHighest.opacity80,
-        shape: RoundedSuperellipseBorder(
-          side: BorderSide(color: colorScheme.outlineVariant.opacity60),
-          borderRadius: BorderRadius.circular(24),
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 46,
-            height: 46,
-            decoration: ShapeDecoration(
-              color: color.opacity15,
-              shape: RoundedSuperellipseBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-            ),
-            child: Icon(icon, color: color),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(label, style: context.textTheme.labelMedium?.toLighter),
-                const SizedBox(height: 4),
-                Text(
-                  value,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: context.textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
+// ── Widget modal helpers ──────────────────────────────────────────────────────
 
 class _AddDashboardWidgetModal extends StatelessWidget {
   final List<GridItem> items;
@@ -741,135 +504,6 @@ class _AddedContainerState extends State<_AddedContainer> {
           ),
         ),
       ],
-    );
-  }
-}
-
-class _AccountInfoCard extends ConsumerStatefulWidget {
-  const _AccountInfoCard();
-
-  @override
-  ConsumerState<_AccountInfoCard> createState() => _AccountInfoCardState();
-}
-
-class _AccountInfoCardState extends ConsumerState<_AccountInfoCard> {
-  Map<String, dynamic>? _info;
-
-  @override
-  void initState() {
-    super.initState();
-    _load();
-  }
-
-  Future<void> _load() async {
-    try {
-      final info = await ApiService().getDashboard();
-      if (mounted) setState(() => _info = info);
-    } catch (_) {}
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (_info == null) return const SizedBox.shrink();
-    final cs = context.colorScheme;
-    final expiry =
-        (_info!['expiry'] ?? _info!['expire_at'] ?? _info!['expired_at'] ?? '')
-            .toString();
-    final deviceUsed =
-        _info!['device_used'] ?? _info!['devices_used'] ?? 0;
-    final deviceLimit =
-        _info!['device_limit'] ?? _info!['devices_limit'] ?? 0;
-
-    bool isExpiringSoon = false;
-    bool isExpired = false;
-    if (expiry.length >= 10) {
-      try {
-        final expiryDate = DateTime.parse(expiry.substring(0, 10));
-        final now = DateTime.now();
-        isExpired = expiryDate.isBefore(now);
-        isExpiringSoon =
-            !isExpired && expiryDate.difference(now).inDays <= 7;
-      } catch (_) {}
-    }
-
-    final warnColor =
-        isExpired ? cs.error : Colors.orange;
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      decoration: ShapeDecoration(
-        color: isExpired
-            ? cs.errorContainer.opacity60
-            : isExpiringSoon
-                ? Colors.orange.opacity15
-                : cs.surfaceContainerHighest.opacity80,
-        shape: RoundedSuperellipseBorder(
-          side: BorderSide(
-            color: isExpired
-                ? cs.error.opacity60
-                : isExpiringSoon
-                    ? Colors.orange.opacity60
-                    : cs.outlineVariant.opacity60,
-          ),
-          borderRadius: BorderRadius.circular(20),
-        ),
-      ),
-      child: Row(
-        children: [
-          if (expiry.length >= 10) ...[
-            Icon(
-              isExpired
-                  ? Icons.error_outline
-                  : Icons.calendar_today_outlined,
-              size: 18,
-              color: isExpired || isExpiringSoon
-                  ? warnColor
-                  : cs.onSurfaceVariant,
-            ),
-            const SizedBox(width: 8),
-            Text(
-              isExpired
-                  ? '套餐已到期'
-                  : '到期：${expiry.substring(0, 10)}${isExpiringSoon ? '（即将到期）' : ''}',
-              style: context.textTheme.bodyMedium?.copyWith(
-                color: isExpired || isExpiringSoon ? warnColor : null,
-                fontWeight: isExpired || isExpiringSoon
-                    ? FontWeight.w600
-                    : null,
-              ),
-            ),
-            if (isExpired || isExpiringSoon) ...[
-              const SizedBox(width: 8),
-              InkWell(
-                onTap: () => globalState.container
-                    .read(currentPageLabelProvider.notifier)
-                    .value = PageLabel.packages,
-                borderRadius: BorderRadius.circular(8),
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  child: Text(
-                    '立即续费',
-                    style: context.textTheme.labelMedium?.copyWith(
-                      color: cs.primary,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ],
-          const Spacer(),
-          if (deviceLimit != 0) ...[
-            Icon(Icons.devices, size: 18, color: cs.onSurfaceVariant),
-            const SizedBox(width: 6),
-            Text(
-              '设备：$deviceUsed / $deviceLimit',
-              style: context.textTheme.bodyMedium,
-            ),
-          ],
-        ],
-      ),
     );
   }
 }
