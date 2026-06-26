@@ -36,6 +36,16 @@ class MoneyFlyService {
     await StorageService().clearTokens();
   }
 
+  // Fire-and-forget cleanup used after already navigating to login
+  static Future<void> cleanupAfterLogout(WidgetRef ref) async {
+    try {
+      await ApiService().logout();
+    } catch (_) {}
+    try {
+      await _clearAccountData(ref);
+    } catch (_) {}
+  }
+
   static Future<Profile?> _syncSubscription(dynamic container) async {
     final subscriptionUrl = await ApiService().getSubscriptionUrl();
     if (subscriptionUrl == null || subscriptionUrl.isEmpty) return null;

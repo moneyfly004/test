@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:fl_clash/common/common.dart';
@@ -79,8 +80,15 @@ class _ToolViewState extends ConsumerState<ToolsView> {
         const _ConfigItem(),
         const _AdvancedConfigItem(),
         const _SettingItem(),
-        const _LogoutItem(),
       ],
+    );
+  }
+
+  // Logout is a separate section below settings — not inside settings
+  List<Widget> _getAccountSection() {
+    return generateSection(
+      title: '账户',
+      items: [const _LogoutItem()],
     );
   }
 
@@ -93,7 +101,7 @@ class _ToolViewState extends ConsumerState<ToolsView> {
     );
     final items = [
       Consumer(
-        builder: (_, ref, _) {
+        builder: (_, ref, __) {
           final state = ref.watch(moreToolsSelectorStateProvider);
           if (state.navigationItems.isEmpty) {
             return Container();
@@ -108,6 +116,7 @@ class _ToolViewState extends ConsumerState<ToolsView> {
       ),
       ..._getSettingList(),
       ..._getOtherList(vm2.b),
+      ..._getAccountSection(),
     ];
     return CommonScaffold(
       title: context.appLocalizations.tools,
@@ -344,13 +353,15 @@ class _LogoutItem extends ConsumerWidget {
           ),
         );
         if (confirmed != true || !context.mounted) return;
-        await MoneyFlyService.logout(ref);
-        if (context.mounted) {
-          Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (_) => const LoginPage()),
-            (_) => false,
-          );
-        }
+        // Clear tokens first, then navigate immediately — no UI blocking
+        await StorageService().clearTokens();
+        if (!context.mounted) return;
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => const LoginPage()),
+          (_) => false,
+        );
+        // Clean up proxy config in background after navigating away
+        unawaited(MoneyFlyService.cleanupAfterLogout(ref));
       },
     );
   }
