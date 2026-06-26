@@ -119,14 +119,67 @@ class ApiService {
   }
 
   Future<Map<String, dynamic>> getDashboard() async {
-    // Try dashboard-info first, fall back to /users/me
+    final result = <String, dynamic>{};
+
+    // 1. Get expiry/subscription info from known-working endpoint
     try {
-      final resp = await _dio.get('/users/dashboard-info');
+      final resp = await _dio.get('/subscriptions/user-subscription');
       final data = _data(resp);
-      if (data.isNotEmpty) return data;
+      // Try common expiry field names
+      final expiry = data['expire_at'] ?? data['expiry'] ?? data['expired_at'] ??
+          data['expire_time'] ?? data['end_at'] ?? data['end_time'] ??
+          data['expires_at'] ?? data['valid_until'];
+      if (expiry != null) result['expiry'] = expiry;
+      // Device limit
+      final limit = data['device_limit'] ?? data['devices_limit'] ?? data['max_devices'];
+      if (limit != null) result['device_limit'] = limit;
     } catch (_) {}
-    final resp = await _dio.get('/users/me');
-    return _data(resp);
+
+    // Also try /subscriptions list as fallback
+    if (!result.containsKey('expiry')) {
+      try {
+        final resp = await _dio.get('/subscriptions');
+        final data = _data(resp);
+        final list = data['subscriptions'] as List? ??
+            data['list'] as List? ??
+            (resp.data is List ? resp.data as List : null);
+        final first = list?.isNotEmpty == true ? list!.first as Map? : null;
+        if (first != null) {
+          final expiry = first['expire_at'] ?? first['expiry'] ?? first['expired_at'] ??
+              first['end_at'] ?? first['expires_at'] ?? first['valid_until'];
+          if (expiry != null) result['expiry'] = expiry;
+          final limit = first['device_limit'] ?? first['devices_limit'] ?? first['max_devices'];
+          if (limit != null) result['device_limit'] = limit;
+        }
+      } catch (_) {}
+    }
+
+    // 2. Get device count from devices endpoint
+    try {
+      final resp = await _dio.get('/subscriptions/devices');
+      final data = _data(resp);
+      final devices = data['devices'] as List? ??
+          data['list'] as List? ??
+          (resp.data is List ? resp.data as List : null);
+      if (devices != null) {
+        result['device_used'] = devices.length;
+        // If we don't have limit yet, try from this response
+        if (!result.containsKey('device_limit')) {
+          final limit = data['limit'] ?? data['max'] ?? data['device_limit'];
+          if (limit != null) result['device_limit'] = limit;
+        }
+      }
+    } catch (_) {}
+
+    // 3. Try /users/me for any remaining fields
+    if (result.isEmpty) {
+      try {
+        final resp = await _dio.get('/users/me');
+        result.addAll(_data(resp));
+      } catch (_) {}
+    }
+
+    return result;
   }
 
   // ── Subscription ─────────────────────────────────────
