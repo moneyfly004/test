@@ -76,87 +76,50 @@ class _StartButtonState extends ConsumerState<StartButton>
     }
     final suspend = ref.watch(suspendProvider);
     final theme = Theme.of(context);
-    final appLocalizations = context.appLocalizations;
     return RepaintBoundary(
       child: Theme(
         data: theme.copyWith(
           floatingActionButtonTheme: theme.floatingActionButtonTheme.copyWith(
-            sizeConstraints: const BoxConstraints(minWidth: 56, maxWidth: 200),
+            sizeConstraints: const BoxConstraints(minWidth: 64, maxWidth: 240),
           ),
         ),
         child: AnimatedBuilder(
           animation: _controller!.view,
           builder: (_, child) {
-            final textWidth = suspend
-                ? globalState.measure
-                          .computeTextSize(
-                            Text(
-                              appLocalizations.suspended,
-                              style: context.textTheme.titleMedium,
-                            ),
-                          )
-                          .width +
-                      24
-                : globalState.measure
-                          .computeTextSize(
-                            Text(
-                              utils.getTimeDifference(DateTime.now()),
-                              style: context.textTheme.titleMedium?.toSoftBold,
-                            ),
-                          )
-                          .width +
-                      16;
-            return FloatingActionButton(
+            return FloatingActionButton.extended(
               clipBehavior: Clip.antiAlias,
               materialTapTargetSize: MaterialTapTargetSize.padded,
               heroTag: null,
-              onPressed: () {
-                handleSwitchStart();
-              },
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    height: 56,
-                    padding: EdgeInsets.only(
-                      left: 16,
-                      right: 16 - 8 * _animation.value,
-                    ),
-                    alignment: Alignment.centerLeft,
-                    child: AnimatedIcon(
-                      icon: AnimatedIcons.play_pause,
-                      progress: _animation,
-                    ),
-                  ),
-                  SizedBox(width: textWidth * _animation.value, child: child!),
-                ],
+              onPressed: () { handleSwitchStart(); },
+              extendedPadding: const EdgeInsets.symmetric(horizontal: 20),
+              backgroundColor: isStart
+                  ? context.colorScheme.primary
+                  : context.colorScheme.primary,
+              icon: SizedBox(
+                width: 24,
+                height: 24,
+                child: AnimatedIcon(
+                  icon: AnimatedIcons.play_pause,
+                  progress: _animation,
+                ),
               ),
+              label: suspend
+                  ? const Text(
+                      '点击连接',
+                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                    )
+                  : Consumer(
+                      builder: (_, ref, __) {
+                        final runTime = ref.watch(runTimeProvider);
+                        final text = utils.getTimeText(runTime);
+                        return Text(
+                          text,
+                          style: context.textTheme.titleMedium?.toSoftBold,
+                        );
+                      },
+                    ),
             );
           },
-          child: suspend
-              ? Text(
-                  appLocalizations.suspended,
-                  maxLines: 1,
-                  overflow: TextOverflow.visible,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: context.colorScheme.onPrimaryContainer,
-                  ),
-                )
-              : Consumer(
-                  builder: (_, ref, _) {
-                    final runTime = ref.watch(runTimeProvider);
-                    final text = utils.getTimeText(runTime);
-                    return Text(
-                      text,
-                      maxLines: 1,
-                      overflow: TextOverflow.visible,
-                      style: Theme.of(context).textTheme.titleMedium?.toSoftBold
-                          .copyWith(
-                            color: context.colorScheme.onPrimaryContainer,
-                          ),
-                    );
-                  },
-                ),
         ),
       ),
     );
