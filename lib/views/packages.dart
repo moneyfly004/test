@@ -410,8 +410,8 @@ class _PaymentQrDialogState extends State<_PaymentQrDialog> {
           _pollTimer?.cancel();
           if (mounted) {
             setState(() => _paid = true);
-            await Future.delayed(const Duration(seconds: 2));
-            if (mounted) Navigator.of(widget.dialogContext).pop(true);
+            // Close immediately — parent handles sync + reload
+            Navigator.of(widget.dialogContext).pop(true);
           }
         }
       } catch (_) {}
