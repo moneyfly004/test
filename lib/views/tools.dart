@@ -399,7 +399,7 @@ class _AutoSyncSubscriptionItem extends ConsumerWidget {
             delegate: OptionsDelegate(
               title: '更新间隔',
               options: const [15, 30, 60, 120, 240],
-              value: interval as int?,
+              value: interval,
               onChanged: (v) {
                 ref.read(appSettingProvider.notifier)
                     .update((s) => s.copyWith(autoSyncIntervalMinutes: v));
