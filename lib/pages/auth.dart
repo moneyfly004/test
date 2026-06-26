@@ -193,6 +193,7 @@ class RegisterPage extends ConsumerStatefulWidget {
 }
 
 class _RegisterPageState extends ConsumerState<RegisterPage> {
+  bool _disposed = false;
   final _nameCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
   final _pwCtrl = TextEditingController();
@@ -224,9 +225,9 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   void _startCountdown() {
     Future.doWhile(() async {
       await Future.delayed(const Duration(seconds: 1));
-      if (!mounted || _countdown <= 0) return false;
+      if (!mounted || _disposed || _countdown <= 0) return false;
       setState(() => _countdown--);
-      return _countdown > 0;
+      return _countdown > 0 && !_disposed;
     });
   }
 
@@ -373,6 +374,7 @@ class ForgotPasswordPage extends ConsumerStatefulWidget {
 }
 
 class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
+  bool _disposed = false;
   final _emailCtrl = TextEditingController();
   final _codeCtrl = TextEditingController();
   final _pwCtrl = TextEditingController();
@@ -390,9 +392,9 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
         setState(() => _countdown = 60);
         Future.doWhile(() async {
           await Future.delayed(const Duration(seconds: 1));
-          if (!mounted || _countdown <= 0) return false;
+          if (!mounted || _disposed || _countdown <= 0) return false;
           setState(() => _countdown--);
-          return _countdown > 0;
+          return _countdown > 0 && !_disposed;
         });
       }
     } catch (e) {

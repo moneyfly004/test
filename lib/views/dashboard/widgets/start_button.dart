@@ -94,43 +94,29 @@ class _StartButtonState extends ConsumerState<StartButton>
             sizeConstraints: const BoxConstraints(minWidth: 64, maxWidth: 240),
           ),
         ),
-        child: AnimatedBuilder(
-          animation: _controller!.view,
-          builder: (_, child) {
-            return FloatingActionButton.extended(
-              clipBehavior: Clip.antiAlias,
-              materialTapTargetSize: MaterialTapTargetSize.padded,
-              heroTag: null,
-              onPressed: () { handleSwitchStart(); },
-              extendedPadding: const EdgeInsets.symmetric(horizontal: 20),
-              backgroundColor: isStart
-                  ? context.colorScheme.primary
-                  : context.colorScheme.primary,
-              icon: SizedBox(
-                width: 24,
-                height: 24,
-                child: AnimatedIcon(
-                  icon: AnimatedIcons.play_pause,
-                  progress: _animation,
-                ),
-              ),
-              label: suspend
-                  ? const Text(
-                      '点击连接',
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-                    )
-                  : Consumer(
-                      builder: (_, ref, __) {
-                        final runTime = ref.watch(runTimeProvider);
-                        final text = utils.getTimeText(runTime);
-                        return Text(
-                          text,
-                          style: context.textTheme.titleMedium?.toSoftBold,
-                        );
-                      },
-                    ),
-            );
-          },
+        child: FloatingActionButton.extended(
+          clipBehavior: Clip.antiAlias,
+          materialTapTargetSize: MaterialTapTargetSize.padded,
+          heroTag: null,
+          onPressed: handleSwitchStart,
+          extendedPadding: const EdgeInsets.symmetric(horizontal: 20),
+          backgroundColor: isStart ? Colors.green : context.colorScheme.primary,
+          foregroundColor: isStart ? Colors.white : context.colorScheme.onPrimary,
+          icon: SizedBox(
+            width: 24, height: 24,
+            child: AnimatedIcon(
+              icon: AnimatedIcons.play_pause,
+              progress: _animation,
+            ),
+          ),
+          label: Text(
+            suspend ? '点击连接' : utils.getTimeText(ref.read(runTimeProvider)),
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: isStart ? Colors.white : context.colorScheme.onPrimary,
+            ),
+          ),
         ),
       ),
     );

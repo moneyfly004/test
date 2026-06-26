@@ -16,6 +16,7 @@ class DevicesView extends ConsumerStatefulWidget {
 class _DevicesViewState extends ConsumerState<DevicesView> {
   List<dynamic> _devices = [];
   bool _loading = true;
+  final Map<String, TextEditingController> _remarkCtrls = {};
 
   @override
   void initState() {
@@ -23,8 +24,15 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
     _loadDevices();
   }
 
-  Future<void> _loadDevices() async {
-    setState(() => _loading = true);
+  @override
+  void dispose() {
+    for (final c in _remarkCtrls.values) { c.dispose(); }
+    _remarkCtrls.clear();
+    super.dispose();
+  }
+
+  Future<void> _loadDevices({bool silent = false}) async {
+    if (!silent) setState(() => _loading = true);
     try {
       final devices = await ApiService().getDevices();
       if (mounted) setState(() => _devices = devices);
@@ -87,7 +95,7 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
         IconButton(
           tooltip: '刷新',
           icon: const Icon(Icons.refresh),
-          onPressed: _loading ? null : _loadDevices,
+          onPressed: _loading ? null : () => _loadDevices(silent: true),
         ),
       ],
       body: _loading
@@ -157,7 +165,8 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
     final ip = (d['ip'] ?? d['ip_address'] ?? '').toString();
     final country = _parseCountry(d['location']);
     final remark = (d['remark'] ?? '').toString();
-    final remarkCtrl = TextEditingController(text: remark);
+    final remarkCtrl = _remarkCtrls[id] ??= TextEditingController(text: remark);
+    if (remarkCtrl.text != remark) { remarkCtrl.text = remark; }
     final lastSeen = (d['last_seen'] ?? d['last_access'] ?? d['updated_at'] ?? '').toString();
 
     return Container(
@@ -275,7 +284,8 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
         final country = _parseCountry(d['location']);
         final os = _parseOs(d);
         final remark = (d['remark'] ?? '').toString();
-        final remarkCtrl = TextEditingController(text: remark);
+        final remarkCtrl = _remarkCtrls[id] ??= TextEditingController(text: remark);
+        if (remarkCtrl.text != remark) { remarkCtrl.text = remark; }
         final lastSeen = (d['last_seen'] ?? d['last_access'] ?? d['updated_at'] ?? '').toString();
 
         return Card(

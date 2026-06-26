@@ -24,6 +24,7 @@ class DashboardView extends ConsumerStatefulWidget {
 
 class _DashboardViewState extends ConsumerState<DashboardView> {
   final key = GlobalKey<SuperGridState>();
+  final _accountInfoKey = GlobalKey(debugLabel: '_AccountInfoCard');
   final _isEditNotifier = ValueNotifier<bool>(false);
   final _addedWidgetsNotifier = ValueNotifier<List<GridItem>>([]);
 
@@ -280,7 +281,7 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
                 : Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const _AccountInfoCard(),
+                      _AccountInfoCard(key: _accountInfoKey),
                       const SizedBox(height: 12),
                       Grid(
                         crossAxisCount: columns,
