@@ -396,11 +396,9 @@ class _AccountInfoCardState extends ConsumerState<_AccountInfoCard> {
       );
     }
 
-    final expiry =
-        (_info!['expiry'] ?? _info!['expire_at'] ?? _info!['expired_at'] ?? '')
-            .toString();
-    final deviceUsed = _info!['device_used'] ?? _info!['devices_used'] ?? 0;
-    final deviceLimit = _info!['device_limit'] ?? _info!['devices_limit'] ?? 0;
+    final expiry = (_info!['expire_time'] ?? _info!['expiryDate'] ?? '').toString();
+    final deviceUsed = _info!['current_devices'] ?? _info!['device_used'] ?? 0;
+    final deviceLimit = _info!['device_limit'] ?? 0;
 
     bool isExpiringSoon = false;
     bool isExpired = false;
