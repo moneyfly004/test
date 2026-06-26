@@ -119,7 +119,13 @@ class ApiService {
   }
 
   Future<Map<String, dynamic>> getDashboard() async {
-    final resp = await _dio.get('/users/dashboard-info');
+    // Try dashboard-info first, fall back to /users/me
+    try {
+      final resp = await _dio.get('/users/dashboard-info');
+      final data = _data(resp);
+      if (data.isNotEmpty) return data;
+    } catch (_) {}
+    final resp = await _dio.get('/users/me');
     return _data(resp);
   }
 
