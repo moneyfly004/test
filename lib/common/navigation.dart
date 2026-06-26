@@ -39,13 +39,11 @@ class Navigation {
         builder: (_) =>
             const ToolsView(key: GlobalObjectKey(PageLabel.settings)),
       ),
-      // Devices moved to "more" — not a daily-use feature
       NavigationItem(
         icon: const Icon(Icons.devices),
         label: PageLabel.devices,
         builder: (_) =>
             const DevicesView(key: GlobalObjectKey(PageLabel.devices)),
-        modes: const [NavigationItemMode.more],
       ),
       NavigationItem(
         icon: const Icon(Icons.folder),

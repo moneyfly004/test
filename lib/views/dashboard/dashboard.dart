@@ -308,6 +308,7 @@ class _AccountInfoCard extends ConsumerStatefulWidget {
 
 class _AccountInfoCardState extends ConsumerState<_AccountInfoCard> {
   Map<String, dynamic>? _info;
+  bool _loading = true;
   bool _syncing = false;
 
   @override
@@ -317,10 +318,13 @@ class _AccountInfoCardState extends ConsumerState<_AccountInfoCard> {
   }
 
   Future<void> _load() async {
+    setState(() => _loading = true);
     try {
       final info = await ApiService().getDashboard();
-      if (mounted) setState(() => _info = info);
-    } catch (_) {}
+      if (mounted) setState(() { _info = info; _loading = false; });
+    } catch (_) {
+      if (mounted) setState(() => _loading = false);
+    }
   }
 
   Future<void> _syncSubscription() async {
@@ -341,8 +345,57 @@ class _AccountInfoCardState extends ConsumerState<_AccountInfoCard> {
 
   @override
   Widget build(BuildContext context) {
-    if (_info == null) return const SizedBox.shrink();
     final cs = context.colorScheme;
+
+    // Always show the card — loading/error/data states
+    if (_loading) {
+      return Container(
+        height: 44,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        decoration: BoxDecoration(
+          color: cs.surfaceContainerHighest.withAlpha(204),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: cs.outlineVariant.withAlpha(153)),
+        ),
+        child: const Row(
+          children: [
+            SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
+            SizedBox(width: 8),
+            Text('加载账户信息…', style: TextStyle(fontSize: 13)),
+          ],
+        ),
+      );
+    }
+
+    if (_info == null) {
+      return Container(
+        height: 44,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        decoration: BoxDecoration(
+          color: cs.surfaceContainerHighest.withAlpha(204),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: cs.outlineVariant.withAlpha(153)),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.info_outline, size: 16, color: cs.onSurfaceVariant),
+            const SizedBox(width: 6),
+            Text('账户信息不可用', style: TextStyle(fontSize: 13, color: cs.onSurfaceVariant)),
+            const Spacer(),
+            SizedBox(
+              width: 28, height: 28,
+              child: IconButton(
+                padding: EdgeInsets.zero,
+                tooltip: '更新订阅',
+                icon: const Icon(Icons.sync, size: 18),
+                onPressed: _syncSubscription,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     final expiry =
         (_info!['expiry'] ?? _info!['expire_at'] ?? _info!['expired_at'] ?? '')
             .toString();
