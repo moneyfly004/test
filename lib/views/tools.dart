@@ -18,8 +18,8 @@ import 'package:fl_clash/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:path/path.dart' show dirname, join;
-
 import 'config/advanced.dart';
 import 'developer.dart';
 import 'theme.dart';
@@ -81,6 +81,7 @@ class _ToolViewState extends ConsumerState<ToolsView> {
         const _AdvancedConfigItem(),
         const _SettingItem(),
         const _AutoSyncSubscriptionItem(),
+        const _OpenProfileDirItem(),
       ],
     );
   }
@@ -408,6 +409,24 @@ class _AutoSyncSubscriptionItem extends ConsumerWidget {
             ),
           ),
       ],
+    );
+  }
+}
+
+class _OpenProfileDirItem extends ConsumerWidget {
+  const _OpenProfileDirItem();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return ListItem(
+      leading: const Icon(Icons.folder_open),
+      title: const Text('配置文件目录'),
+      subtitle: const Text('查看和编辑代理配置文件'),
+      onTap: () async {
+        final path = await appPath.profilesPath;
+        final uri = Uri.directory(path);
+        launchUrl(uri, mode: LaunchMode.externalApplication);
+      },
     );
   }
 }
