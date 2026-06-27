@@ -248,14 +248,14 @@ class ApplicationState extends ConsumerState<Application> {
         );
       },
       child: FutureBuilder<bool>(
-        future: StorageService().isLoggedIn(),
+        // Always check saved credentials first — never skip login page
+        future: StorageService().shouldAutoLogin(),
         builder: (_, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
-          if (snapshot.data == true) {
-            return const HomePage();
-          }
+          // shouldAutoLogin=true AND credentials saved → LoginPage auto-fills and logs in
+          // shouldAutoLogin=false → LoginPage with empty fields
           return const LoginPage();
         },
       ),

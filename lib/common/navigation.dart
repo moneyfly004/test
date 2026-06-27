@@ -28,6 +28,12 @@ class Navigation {
             : [],
       ),
       NavigationItem(
+        icon: const Icon(Icons.folder),
+        label: PageLabel.profiles,
+        builder: (_) =>
+            const ProfilesView(key: GlobalObjectKey(PageLabel.profiles)),
+      ),
+      NavigationItem(
         icon: const Icon(Icons.shopping_bag_outlined),
         label: PageLabel.packages,
         builder: (_) =>
@@ -44,13 +50,6 @@ class Navigation {
         label: PageLabel.devices,
         builder: (_) =>
             const DevicesView(key: GlobalObjectKey(PageLabel.devices)),
-      ),
-      NavigationItem(
-        icon: const Icon(Icons.folder),
-        label: PageLabel.profiles,
-        builder: (_) =>
-            const ProfilesView(key: GlobalObjectKey(PageLabel.profiles)),
-        modes: const [NavigationItemMode.more],
       ),
       NavigationItem(
         icon: const Icon(Icons.construction),

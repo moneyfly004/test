@@ -29,6 +29,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       _accountCtrl.text = creds['account'] ?? '';
       _pwCtrl.text = creds['password'] ?? '';
       setState(() => _savePassword = true);
+      // Auto-login immediately if credentials are saved
+      _login();
     }
   }
 
