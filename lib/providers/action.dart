@@ -9,6 +9,7 @@ import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/plugins/app.dart';
 import 'package:fl_clash/plugins/service.dart';
 import 'package:fl_clash/providers/providers.dart';
+import 'package:fl_clash/services/services.dart';
 import 'package:fl_clash/state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -582,10 +583,26 @@ class SystemAction extends _$SystemAction {
       system.exit();
     });
     try {
+      // Stop proxy and clear config files before exit
+      if (proxy != null) proxy!.stopProxy();
+      // Delete MoneyFly profiles from disk
+      try {
+        final profiles = ref.read(profilesProvider);
+        for (final p in profiles) {
+          if (p.label == MoneyFlyService.profileLabel ||
+              p.url.contains(apiBaseUrl)) {
+            await ref
+                .read(profilesActionProvider.notifier)
+                .deleteProfile(p.id);
+          }
+        }
+      } catch (_) {}
+      // Clear tokens so next launch requires login
+      await StorageService().clearAll();
+
       await Future.wait([
         if (needSave) preferences.saveConfig(ref.read(configProvider)),
         if (macOS != null) macOS!.updateDns(true),
-        if (proxy != null) proxy!.stopProxy(),
         if (tray != null) tray!.destroy(),
       ]);
       await window?.close();
