@@ -579,25 +579,19 @@ class SystemAction extends _$SystemAction {
   }
 
   Future<void> handleExit([bool needSave = false]) async {
-    Future.delayed(const Duration(seconds: 3), () {
-      system.exit();
-    });
     try {
-      // Stop proxy and clear config files before exit
+      // Stop proxy first so no new connections
       if (proxy != null) proxy!.stopProxy();
-      // Delete MoneyFly profiles from disk
-      try {
-        final profiles = ref.read(profilesProvider);
-        for (final p in profiles) {
-          if (p.label == MoneyFlyService.profileLabel ||
-              p.url.contains(apiBaseUrl)) {
-            await ref
-                .read(profilesActionProvider.notifier)
-                .deleteProfile(p.id);
-          }
-        }
-      } catch (_) {}
-      // Clear tokens so next launch requires login
+      // Delete ALL profiles from disk — critical for security
+      final profiles = ref.read(profilesProvider);
+      final futures = <Future<void>>[];
+      for (final p in profiles) {
+        futures.add(
+          ref.read(profilesActionProvider.notifier).deleteProfile(p.id),
+        );
+      }
+      if (futures.isNotEmpty) await Future.wait(futures);
+      // Clear tokens + credentials
       await StorageService().clearAll();
 
       await Future.wait([

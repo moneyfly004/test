@@ -28,12 +28,6 @@ class Navigation {
             : [],
       ),
       NavigationItem(
-        icon: const Icon(Icons.folder),
-        label: PageLabel.profiles,
-        builder: (_) =>
-            const ProfilesView(key: GlobalObjectKey(PageLabel.profiles)),
-      ),
-      NavigationItem(
         icon: const Icon(Icons.shopping_bag_outlined),
         label: PageLabel.packages,
         builder: (_) =>

@@ -64,48 +64,15 @@ class ApplicationState extends ConsumerState<Application> {
   }
 
   Future<void> _fetchSubscriptionIfLoggedIn() async {
+    // Only clean stale profiles on startup — login+sync handled by LoginPage
     try {
-      var isLoggedIn = await StorageService().isLoggedIn();
-      // If no token, try re-login with saved credentials
-      if (!isLoggedIn) {
-        final creds = await StorageService().getSavedCredentials();
-        if (creds != null) {
-          try {
-            final result = await ApiService().login(
-              creds['account']!, creds['password']!,
-            );
-            await StorageService().saveToken(result['access_token'] ?? '');
-            await StorageService().saveRefreshToken(result['refresh_token'] ?? '');
-            isLoggedIn = true;
-          } catch (_) {
-            await StorageService().clearAll();
-          }
-        }
+      final profiles = ref.read(profilesProvider);
+      for (final p in List<dynamic>.from(profiles)) {
+         await ref
+              .read(profilesActionProvider.notifier)
+              .deleteProfile((p as dynamic).id as int);
       }
-      // Clear cached proxy config on every startup — fresh start
-      if (isLoggedIn) {
-        try {
-          final profiles = ref.read(profilesProvider);
-          for (final p in List<dynamic>.from(profiles)) {
-            final label = (p as dynamic).label as String? ?? '';
-            final url = (p as dynamic).url as String? ?? '';
-            if (label == MoneyFlyService.profileLabel ||
-                url.contains(apiBaseUrl)) {
-              await ref
-                  .read(profilesActionProvider.notifier)
-                  .deleteProfile((p as dynamic).id as int);
-            }
-          }
-          // Fetch fresh subscription from API — NOT cached
-          await MoneyFlyService.syncSubscription(ref);
-        } catch (_) {}
-      }
-    } catch (e) {
-      commonPrint.log(
-        'MoneyFly startup clean failed: $e',
-        logLevel: LogLevel.warning,
-      );
-    }
+    } catch (_) {}
   }
 
   void _initLink() {
@@ -247,18 +214,7 @@ class ApplicationState extends ConsumerState<Application> {
           },
         );
       },
-      child: FutureBuilder<bool>(
-        // Always check saved credentials first — never skip login page
-        future: StorageService().shouldAutoLogin(),
-        builder: (_, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          // shouldAutoLogin=true AND credentials saved → LoginPage auto-fills and logs in
-          // shouldAutoLogin=false → LoginPage with empty fields
-          return const LoginPage();
-        },
-      ),
+      child: const LoginPage(),
     );
   }
 
