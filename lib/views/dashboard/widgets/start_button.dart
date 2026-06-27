@@ -85,6 +85,7 @@ class _StartButtonState extends ConsumerState<StartButton>
     if (!hasProfile) {
       return Container();
     }
+    final runTime = ref.watch(runTimeProvider);
     final suspend = ref.watch(suspendProvider);
     final theme = Theme.of(context);
     return RepaintBoundary(
@@ -110,7 +111,7 @@ class _StartButtonState extends ConsumerState<StartButton>
             ),
           ),
           label: Text(
-            suspend ? '点击连接' : utils.getTimeText(ref.read(runTimeProvider)),
+            suspend ? '点击连接' : utils.getTimeText(runTime),
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,
