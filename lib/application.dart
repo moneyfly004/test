@@ -85,7 +85,6 @@ class ApplicationState extends ConsumerState<Application> {
       // Clear cached proxy config on every startup — fresh start
       if (isLoggedIn) {
         try {
-          // Read profiles as plain list, delete MoneyFly ones
           final profiles = ref.read(profilesProvider);
           for (final p in List<dynamic>.from(profiles)) {
             final label = (p as dynamic).label as String? ?? '';
@@ -97,6 +96,8 @@ class ApplicationState extends ConsumerState<Application> {
                   .deleteProfile((p as dynamic).id as int);
             }
           }
+          // Fetch fresh subscription from API — NOT cached
+          await MoneyFlyService.syncSubscription(ref);
         } catch (_) {}
       }
     } catch (e) {
