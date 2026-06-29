@@ -28,28 +28,10 @@ class Navigation {
             : [],
       ),
       NavigationItem(
-        icon: const Icon(Icons.shopping_bag_outlined),
-        label: PageLabel.packages,
+        icon: const Icon(Icons.folder),
+        label: PageLabel.profiles,
         builder: (_) =>
-            const PackagesView(key: GlobalObjectKey(PageLabel.packages)),
-      ),
-      NavigationItem(
-        icon: const Icon(Icons.settings),
-        label: PageLabel.settings,
-        builder: (_) =>
-            const ConfigView(key: GlobalObjectKey(PageLabel.settings)),
-      ),
-      NavigationItem(
-        icon: const Icon(Icons.devices),
-        label: PageLabel.devices,
-        builder: (_) =>
-            const DevicesView(key: GlobalObjectKey(PageLabel.devices)),
-      ),
-      NavigationItem(
-        icon: const Icon(Icons.construction),
-        label: PageLabel.tools,
-        builder: (_) => const ToolsView(key: GlobalObjectKey(PageLabel.tools)),
-        modes: const [NavigationItemMode.more],
+            const ProfilesView(key: GlobalObjectKey(PageLabel.profiles)),
       ),
       NavigationItem(
         icon: const Icon(Icons.view_timeline),
@@ -57,7 +39,7 @@ class Navigation {
         builder: (_) =>
             const RequestsView(key: GlobalObjectKey(PageLabel.requests)),
         description: 'requestsDesc',
-        modes: const [NavigationItemMode.more],
+        modes: [NavigationItemMode.desktop, NavigationItemMode.more],
       ),
       NavigationItem(
         icon: const Icon(Icons.ballot),
@@ -65,7 +47,7 @@ class Navigation {
         builder: (_) =>
             const ConnectionsView(key: GlobalObjectKey(PageLabel.connections)),
         description: 'connectionsDesc',
-        modes: const [NavigationItemMode.more],
+        modes: [NavigationItemMode.desktop, NavigationItemMode.more],
       ),
       NavigationItem(
         icon: const Icon(Icons.storage),
@@ -73,14 +55,22 @@ class Navigation {
         description: 'resourcesDesc',
         builder: (_) =>
             const ResourcesView(key: GlobalObjectKey(PageLabel.resources)),
-        modes: const [NavigationItemMode.more],
+        modes: [NavigationItemMode.more],
       ),
       NavigationItem(
         icon: const Icon(Icons.adb),
         label: PageLabel.logs,
         builder: (_) => const LogsView(key: GlobalObjectKey(PageLabel.logs)),
         description: 'logsDesc',
-        modes: openLogs ? [NavigationItemMode.more] : [],
+        modes: openLogs
+            ? [NavigationItemMode.desktop, NavigationItemMode.more]
+            : [],
+      ),
+      NavigationItem(
+        icon: const Icon(Icons.construction),
+        label: PageLabel.tools,
+        builder: (_) => const ToolsView(key: GlobalObjectKey(PageLabel.tools)),
+        modes: [NavigationItemMode.desktop, NavigationItemMode.mobile],
       ),
     ];
   }
