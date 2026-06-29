@@ -26,7 +26,9 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
 
   @override
   void dispose() {
-    for (final c in _remarkCtrls.values) { c.dispose(); }
+    for (final c in _remarkCtrls.values) {
+      c.dispose();
+    }
     _remarkCtrls.clear();
     super.dispose();
   }
@@ -38,8 +40,9 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
       if (mounted) setState(() => _devices = devices);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(e.toString())));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
       }
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -66,25 +69,39 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
       ),
     );
     if (confirmed != true) return;
-    setState(() =>
-        _devices.removeWhere((d) => (d['id'] ?? '').toString() == deviceId));
+    setState(
+      () => _devices.removeWhere((d) => (d['id'] ?? '').toString() == deviceId),
+    );
     try {
       await ApiService().deleteDevice(deviceId);
-    } catch (_) {
-      _loadDevices();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('删除失败：$e')));
+      }
+      await _loadDevices();
     }
   }
 
   void _saveRemark(String deviceId, String remark) {
     setState(() {
-      final idx =
-          _devices.indexWhere((d) => (d['id'] ?? '').toString() == deviceId);
+      final idx = _devices.indexWhere(
+        (d) => (d['id'] ?? '').toString() == deviceId,
+      );
       if (idx != -1) {
-        _devices[idx] =
-            Map<String, dynamic>.from(_devices[idx] as Map)..['remark'] = remark;
+        _devices[idx] = Map<String, dynamic>.from(_devices[idx] as Map)
+          ..['remark'] = remark;
       }
     });
-    ApiService().remarkDevice(deviceId, remark).catchError((_) => _loadDevices());
+    ApiService().remarkDevice(deviceId, remark).catchError((e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('保存备注失败：$e')));
+      }
+      return _loadDevices();
+    });
   }
 
   @override
@@ -101,21 +118,21 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _devices.isEmpty
-              ? RefreshIndicator(
-                  onRefresh: _loadDevices,
-                  child: ListView(
-                    children: [
-                      SizedBox(
-                        height: MediaQuery.sizeOf(context).height * 0.45,
-                        child: const Center(child: Text('暂无设备')),
-                      ),
-                    ],
+          ? RefreshIndicator(
+              onRefresh: _loadDevices,
+              child: ListView(
+                children: [
+                  SizedBox(
+                    height: MediaQuery.sizeOf(context).height * 0.45,
+                    child: const Center(child: Text('暂无设备')),
                   ),
-                )
-              : RefreshIndicator(
-                  onRefresh: _loadDevices,
-                  child: _buildDeviceTable(),
-                ),
+                ],
+              ),
+            )
+          : RefreshIndicator(
+              onRefresh: _loadDevices,
+              child: _buildDeviceTable(),
+            ),
     );
   }
 
@@ -133,16 +150,66 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
       padding: const EdgeInsets.all(12),
       children: [
         // Header
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
+        const Padding(
+          padding: EdgeInsets.fromLTRB(16, 8, 8, 8),
           child: Row(
             children: [
-              const Expanded(flex: 2, child: Text('设备名称', style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.w600))),
-              const Expanded(flex: 1, child: Text('类型', style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.w600))),
-              const SizedBox(width: 100, child: Text('IP / 地区', style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.w600))),
-              const SizedBox(width: 85, child: Text('更新时间', style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.w600))),
-              const SizedBox(width: 110, child: Text('备注', style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.w600))),
-              const SizedBox(width: 40),
+              Expanded(
+                flex: 2,
+                child: Text(
+                  '设备名称',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              Expanded(
+                flex: 1,
+                child: Text(
+                  '类型',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              SizedBox(
+                width: 100,
+                child: Text(
+                  'IP / 地区',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              SizedBox(
+                width: 85,
+                child: Text(
+                  '更新时间',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              SizedBox(
+                width: 110,
+                child: Text(
+                  '备注',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              SizedBox(width: 40),
             ],
           ),
         ),
@@ -166,8 +233,12 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
     final country = _parseCountry(d['location']);
     final remark = (d['remark'] ?? '').toString();
     final remarkCtrl = _remarkCtrls[id] ??= TextEditingController(text: remark);
-    if (remarkCtrl.text != remark) { remarkCtrl.text = remark; }
-    final lastSeen = (d['last_seen'] ?? d['last_access'] ?? d['updated_at'] ?? '').toString();
+    if (remarkCtrl.text != remark) {
+      remarkCtrl.text = remark;
+    }
+    final lastSeen =
+        (d['last_seen'] ?? d['last_access'] ?? d['updated_at'] ?? '')
+            .toString();
 
     return Container(
       color: index.isEven ? cs.surfaceContainerHighest.opacity30 : null,
@@ -182,11 +253,22 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(displayName, maxLines: 1, overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                  Text(
+                    displayName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                   if (_parseUa(d).isNotEmpty)
-                    Text(_parseUa(d), maxLines: 1, overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontSize: 10, color: Colors.grey)),
+                    Text(
+                      _parseUa(d),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontSize: 10, color: Colors.grey),
+                    ),
                 ],
               ),
             ),
@@ -199,7 +281,10 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(deviceType, style: const TextStyle(fontSize: 12)),
-                  Text(_parseOs(d), style: const TextStyle(fontSize: 10, color: Colors.grey)),
+                  Text(
+                    _parseOs(d),
+                    style: const TextStyle(fontSize: 10, color: Colors.grey),
+                  ),
                 ],
               ),
             ),
@@ -211,9 +296,17 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(ip, style: const TextStyle(fontSize: 12), maxLines: 1, overflow: TextOverflow.ellipsis),
+                  Text(
+                    ip,
+                    style: const TextStyle(fontSize: 12),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                   if (country.isNotEmpty)
-                    Text(country, style: const TextStyle(fontSize: 10, color: Colors.grey)),
+                    Text(
+                      country,
+                      style: const TextStyle(fontSize: 10, color: Colors.grey),
+                    ),
                 ],
               ),
             ),
@@ -243,13 +336,28 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
                     hintText: '输入备注…',
                     hintStyle: const TextStyle(fontSize: 11),
                     isDense: true,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(6), borderSide: BorderSide(color: cs.outlineVariant)),
-                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(6), borderSide: BorderSide(color: cs.outlineVariant.opacity30)),
-                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(6), borderSide: BorderSide(color: cs.primary)),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 6,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(6),
+                      borderSide: BorderSide(color: cs.outlineVariant),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(6),
+                      borderSide: BorderSide(
+                        color: cs.outlineVariant.opacity30,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(6),
+                      borderSide: BorderSide(color: cs.primary),
+                    ),
                   ),
                   onSubmitted: (v) => _saveRemark(id, v.trim()),
-                  onEditingComplete: () => _saveRemark(id, remarkCtrl.text.trim()),
+                  onEditingComplete: () =>
+                      _saveRemark(id, remarkCtrl.text.trim()),
                 ),
               ),
             ),
@@ -278,15 +386,23 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
         final id = (d['id'] ?? '').toString();
         final name = (d['device_name'] ?? d['name'] ?? '未知').toString();
         final software = (d['software_name'] ?? '').toString();
-        final displayName = software.isNotEmpty && !name.startsWith(software) ? '$software - $name' : name;
+        final displayName = software.isNotEmpty && !name.startsWith(software)
+            ? '$software - $name'
+            : name;
         final deviceType = _typeLabel(d);
         final ip = (d['ip'] ?? d['ip_address'] ?? '').toString();
         final country = _parseCountry(d['location']);
         final os = _parseOs(d);
         final remark = (d['remark'] ?? '').toString();
-        final remarkCtrl = _remarkCtrls[id] ??= TextEditingController(text: remark);
-        if (remarkCtrl.text != remark) { remarkCtrl.text = remark; }
-        final lastSeen = (d['last_seen'] ?? d['last_access'] ?? d['updated_at'] ?? '').toString();
+        final remarkCtrl = _remarkCtrls[id] ??= TextEditingController(
+          text: remark,
+        );
+        if (remarkCtrl.text != remark) {
+          remarkCtrl.text = remark;
+        }
+        final lastSeen =
+            (d['last_seen'] ?? d['last_access'] ?? d['updated_at'] ?? '')
+                .toString();
 
         return Card(
           margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
@@ -298,9 +414,15 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
                 Row(
                   children: [
                     Expanded(
-                      child: Text(displayName,
-                          maxLines: 2, overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                      child: Text(
+                        displayName,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ),
                     IconButton(
                       icon: const Icon(Icons.delete_outline, size: 20),
@@ -316,7 +438,12 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
                 if (ip.isNotEmpty) _infoRow('IP', ip),
                 if (country.isNotEmpty) _infoRow('地区', country),
                 if (lastSeen.isNotEmpty)
-                  _infoRow('更新', lastSeen.length >= 16 ? lastSeen.substring(5, 16) : lastSeen),
+                  _infoRow(
+                    '更新',
+                    lastSeen.length >= 16
+                        ? lastSeen.substring(5, 16)
+                        : lastSeen,
+                  ),
                 const SizedBox(height: 8),
                 SizedBox(
                   height: 34,
@@ -327,8 +454,13 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
                       hintText: '输入备注…',
                       hintStyle: const TextStyle(fontSize: 11),
                       isDense: true,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(6)),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 6,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(6),
+                      ),
                     ),
                     onSubmitted: (v) => _saveRemark(id, v.trim()),
                   ),
@@ -345,9 +477,9 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
     final t = (d['device_type'] ?? d['type'] ?? '').toString();
     return switch (t) {
       'desktop' => '桌面',
-      'mobile'  => '手机',
-      'tablet'  => '平板',
-      _         => t.isNotEmpty ? t : '未知',
+      'mobile' => '手机',
+      'tablet' => '平板',
+      _ => t.isNotEmpty ? t : '未知',
     };
   }
 
@@ -382,7 +514,13 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Row(
         children: [
-          SizedBox(width: 40, child: Text(label, style: const TextStyle(fontSize: 11, color: Colors.grey))),
+          SizedBox(
+            width: 40,
+            child: Text(
+              label,
+              style: const TextStyle(fontSize: 11, color: Colors.grey),
+            ),
+          ),
           Expanded(child: Text(value, style: const TextStyle(fontSize: 12))),
         ],
       ),

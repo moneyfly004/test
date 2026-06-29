@@ -38,7 +38,7 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
   Widget _buildIsEdit(_IsEditWidgetBuilder builder) {
     return ValueListenableBuilder(
       valueListenable: _isEditNotifier,
-      builder: (_, isEdit, __) {
+      builder: (_, isEdit, _) {
         return builder(isEdit);
       },
     );
@@ -64,7 +64,7 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
     return [
       if (!isEdit)
         Consumer(
-          builder: (_, ref, __) {
+          builder: (_, ref, _) {
             final coreStatus = ref.watch(coreStatusProvider);
             return Tooltip(
               message: appLocalizations.coreStatus,
@@ -89,7 +89,10 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
                           },
                         ),
                         onPressed: _handleConnection,
-                        icon: const Icon(Icons.check, fontWeight: FontWeight.w900),
+                        icon: const Icon(
+                          Icons.check,
+                          fontWeight: FontWeight.w900,
+                        ),
                       )
                     : FilledButton.icon(
                         key: ValueKey(coreStatus),
@@ -186,7 +189,7 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
       builder: (_) {
         return ValueListenableBuilder(
           valueListenable: _addedWidgetsNotifier,
-          builder: (_, value, __) {
+          builder: (_, value, _) {
             return AdaptiveSheetScaffold(
               body: _AddDashboardWidgetModal(
                 items: value,
@@ -322,7 +325,12 @@ class _AccountInfoCardState extends ConsumerState<_AccountInfoCard> {
     setState(() => _loading = true);
     try {
       final info = await ApiService().getDashboard();
-      if (mounted) setState(() { _info = info; _loading = false; });
+      if (mounted) {
+        setState(() {
+          _info = info;
+          _loading = false;
+        });
+      }
     } catch (_) {
       if (mounted) setState(() => _loading = false);
     }
@@ -332,10 +340,12 @@ class _AccountInfoCardState extends ConsumerState<_AccountInfoCard> {
     if (_syncing) return;
     setState(() => _syncing = true);
     try {
-      await MoneyFlyService.syncSubscription(ref);
+      final state = await MoneyFlyService.refreshAccountState(ref);
       await _load();
       if (mounted) {
-        globalState.showNotifier('订阅已更新');
+        globalState.showNotifier(
+          state.available ? '订阅已更新' : state.message ?? '当前账号不可用',
+        );
       }
     } catch (e) {
       if (mounted) globalState.showNotifier('更新失败：$e');
@@ -360,7 +370,11 @@ class _AccountInfoCardState extends ConsumerState<_AccountInfoCard> {
         ),
         child: const Row(
           children: [
-            SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
+            SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
             SizedBox(width: 8),
             Text('加载账户信息…', style: TextStyle(fontSize: 13)),
           ],
@@ -381,10 +395,14 @@ class _AccountInfoCardState extends ConsumerState<_AccountInfoCard> {
           children: [
             Icon(Icons.info_outline, size: 16, color: cs.onSurfaceVariant),
             const SizedBox(width: 6),
-            Text('账户信息不可用', style: TextStyle(fontSize: 13, color: cs.onSurfaceVariant)),
+            Text(
+              '账户信息不可用',
+              style: TextStyle(fontSize: 13, color: cs.onSurfaceVariant),
+            ),
             const Spacer(),
             SizedBox(
-              width: 28, height: 28,
+              width: 28,
+              height: 28,
               child: IconButton(
                 padding: EdgeInsets.zero,
                 tooltip: '更新订阅',
@@ -397,7 +415,8 @@ class _AccountInfoCardState extends ConsumerState<_AccountInfoCard> {
       );
     }
 
-    final expiry = (_info!['expire_time'] ?? _info!['expiryDate'] ?? '').toString();
+    final expiry = (_info!['expire_time'] ?? _info!['expiryDate'] ?? '')
+        .toString();
     final deviceUsed = _info!['current_devices'] ?? _info!['device_used'] ?? 0;
     final deviceLimit = _info!['device_limit'] ?? 0;
 
@@ -420,15 +439,15 @@ class _AccountInfoCardState extends ConsumerState<_AccountInfoCard> {
         color: isExpired
             ? cs.errorContainer.withAlpha(153)
             : isExpiringSoon
-                ? Colors.orange.withAlpha(26)
-                : cs.surfaceContainerHighest.withAlpha(204),
+            ? Colors.orange.withAlpha(26)
+            : cs.surfaceContainerHighest.withAlpha(204),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isExpired
               ? cs.error.withAlpha(153)
               : isExpiringSoon
-                  ? Colors.orange.withAlpha(153)
-                  : cs.outlineVariant.withAlpha(153),
+              ? Colors.orange.withAlpha(153)
+              : cs.outlineVariant.withAlpha(153),
         ),
       ),
       child: Stack(
@@ -437,9 +456,13 @@ class _AccountInfoCardState extends ConsumerState<_AccountInfoCard> {
             children: [
               if (expiry.length >= 10) ...[
                 Icon(
-                  isExpired ? Icons.error_outline : Icons.calendar_today_outlined,
+                  isExpired
+                      ? Icons.error_outline
+                      : Icons.calendar_today_outlined,
                   size: 16,
-                  color: isExpired || isExpiringSoon ? warnColor : cs.onSurfaceVariant,
+                  color: isExpired || isExpiringSoon
+                      ? warnColor
+                      : cs.onSurfaceVariant,
                 ),
                 const SizedBox(width: 6),
                 Text(
@@ -449,15 +472,19 @@ class _AccountInfoCardState extends ConsumerState<_AccountInfoCard> {
                   style: TextStyle(
                     fontSize: 13,
                     color: isExpired || isExpiringSoon ? warnColor : null,
-                    fontWeight: isExpired || isExpiringSoon ? FontWeight.w600 : null,
+                    fontWeight: isExpired || isExpiringSoon
+                        ? FontWeight.w600
+                        : null,
                   ),
                 ),
                 if (isExpired || isExpiringSoon) ...[
                   const SizedBox(width: 6),
                   GestureDetector(
-                    onTap: () => globalState.container
-                        .read(currentPageLabelProvider.notifier)
-                        .value = PageLabel.packages,
+                    onTap: () =>
+                        globalState.container
+                                .read(currentPageLabelProvider.notifier)
+                                .value =
+                            PageLabel.packages,
                     child: Text(
                       '立即续费',
                       style: TextStyle(

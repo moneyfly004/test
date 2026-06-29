@@ -44,6 +44,13 @@ class StorageService {
     await prefs.setBool('save_password', true);
   }
 
+  Future<void> clearCredentials() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('saved_account');
+    await prefs.remove('saved_password');
+    await prefs.setBool('save_password', false);
+  }
+
   Future<Map<String, String?>?> getSavedCredentials() async {
     final prefs = await SharedPreferences.getInstance();
     final savePassword = prefs.getBool('save_password') ?? false;

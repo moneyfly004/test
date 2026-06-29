@@ -7,40 +7,37 @@ class ApiService {
   factory ApiService() => _instance;
   ApiService._internal();
 
-  late final Dio _dio = Dio(
-    BaseOptions(
-      baseUrl: apiBaseUrl,
-      connectTimeout: apiTimeout,
-      receiveTimeout: apiTimeout,
-      headers: {
-        'Content-Type': 'application/json',
-        'User-Agent': appName,
-      },
-    ),
-  )..interceptors.add(
-      InterceptorsWrapper(
-        onRequest: (options, handler) async {
-          final token = await StorageService().getToken();
-          if (token != null && token.isNotEmpty) {
-            options.headers['Authorization'] = 'Bearer $token';
-          } else {
-            options.headers.remove('Authorization');
-          }
-          options.headers['X-App-Client'] = appName;
-          options.headers['X-App-Device-Id'] =
-              await StorageService().getDeviceId();
-          handler.next(options);
-        },
-        onError: (error, handler) {
-          handler.reject(_friendlyError(error));
-        },
-      ),
-    );
-
-  Future<void> _auth() async {
-    final token = await StorageService().getToken();
-    if (token != null) _dio.options.headers['Authorization'] = 'Bearer $token';
-  }
+  late final Dio _dio =
+      Dio(
+          BaseOptions(
+            baseUrl: apiBaseUrl,
+            connectTimeout: apiTimeout,
+            receiveTimeout: apiTimeout,
+            headers: {
+              'Content-Type': 'application/json',
+              'User-Agent': appName,
+            },
+          ),
+        )
+        ..interceptors.add(
+          InterceptorsWrapper(
+            onRequest: (options, handler) async {
+              final token = await StorageService().getToken();
+              if (token != null && token.isNotEmpty) {
+                options.headers['Authorization'] = 'Bearer $token';
+              } else {
+                options.headers.remove('Authorization');
+              }
+              options.headers['X-App-Client'] = appName;
+              options.headers['X-App-Device-Id'] = await StorageService()
+                  .getDeviceId();
+              handler.next(options);
+            },
+            onError: (error, handler) {
+              handler.reject(_friendlyError(error));
+            },
+          ),
+        );
 
   // ── Auth ──────────────────────────────────────────────
 
@@ -142,7 +139,8 @@ class ApiService {
     }
     final resp = await _dio.get('/subscriptions');
     final data = _data(resp);
-    final subscriptions = data['subscriptions'] as List? ??
+    final subscriptions =
+        data['subscriptions'] as List? ??
         data['list'] as List? ??
         (resp.data is List ? resp.data as List : null);
     if (subscriptions == null || subscriptions.isEmpty) return null;
@@ -162,7 +160,11 @@ class ApiService {
   }
 
   Future<void> deleteDevice(String deviceId) async {
-    await _dio.delete('/devices/$deviceId');
+    try {
+      await _dio.delete('/subscriptions/devices/$deviceId');
+    } on DioException {
+      await _dio.delete('/devices/$deviceId');
+    }
   }
 
   Future<void> remarkDevice(String deviceId, String remark) async {
@@ -260,7 +262,8 @@ class ApiService {
   DioException _friendlyError(DioException error) {
     final response = error.response;
     final statusCode = response?.statusCode;
-    final message = _messageFromBody(response?.data) ??
+    final message =
+        _messageFromBody(response?.data) ??
         _messageFromStatusCode(statusCode) ??
         error.message ??
         '网络请求失败，请检查网络后重试';

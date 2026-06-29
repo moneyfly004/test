@@ -272,7 +272,9 @@ class AppSidebarContainer extends ConsumerWidget {
                             child: const Text('取消'),
                           ),
                           FilledButton(
-                            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+                            style: FilledButton.styleFrom(
+                              backgroundColor: Colors.red,
+                            ),
                             onPressed: () => Navigator.of(ctx).pop(true),
                             child: const Text('退出'),
                           ),
@@ -280,7 +282,7 @@ class AppSidebarContainer extends ConsumerWidget {
                       ),
                     );
                     if (confirmed != true) return;
-                    await StorageService().clearAll();
+                    await StorageService().clearTokens();
                     final ctx = globalState.navigatorKey.currentContext;
                     if (ctx != null && ctx.mounted) {
                       Navigator.of(ctx).pushAndRemoveUntil(

@@ -5,7 +5,7 @@ import 'package:fl_clash/widgets/scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import "package:url_launcher/url_launcher.dart";
+import 'package:url_launcher/url_launcher.dart';
 
 class PackagesView extends ConsumerStatefulWidget {
   const PackagesView({super.key});
@@ -64,14 +64,26 @@ class _PackagesViewState extends ConsumerState<PackagesView> {
     );
 
     if (paid == true && mounted) {
-      // Sync in background — don't block the UI
-      MoneyFlyService.syncSubscription(ref).catchError((_) => null);
+      final state = await MoneyFlyService.refreshAccountState(ref);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              state.available ? '套餐已更新' : state.message ?? '套餐状态不可用',
+            ),
+          ),
+        );
+      }
       await _loadPackages();
     }
   }
 
   String _name(Map<String, dynamic> pkg) =>
-      (pkg['name'] ?? pkg['title'] ?? pkg['package_name'] ?? pkg['subject'] ?? '套餐')
+      (pkg['name'] ??
+              pkg['title'] ??
+              pkg['package_name'] ??
+              pkg['subject'] ??
+              '套餐')
           .toString();
 
   @override
@@ -89,137 +101,140 @@ class _PackagesViewState extends ConsumerState<PackagesView> {
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _error != null
-              ? Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.error_outline, size: 48, color: cs.error),
-                        const SizedBox(height: 16),
-                        Text('加载失败', style: TextStyle(color: cs.error)),
-                        const SizedBox(height: 8),
-                        Text(_error!,
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(fontSize: 12)),
-                        const SizedBox(height: 16),
-                        FilledButton(
-                            onPressed: _loadPackages, child: const Text('重试')),
-                      ],
+          ? Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.error_outline, size: 48, color: cs.error),
+                    const SizedBox(height: 16),
+                    Text('加载失败', style: TextStyle(color: cs.error)),
+                    const SizedBox(height: 8),
+                    Text(
+                      _error!,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(fontSize: 12),
                     ),
-                  ),
-                )
-              : RefreshIndicator(
-                  onRefresh: _loadPackages,
-                  child: _packages.isEmpty
-                      ? ListView(
-                          padding: const EdgeInsets.all(24),
-                          children: [
-                            SizedBox(
-                              height: MediaQuery.sizeOf(context).height * 0.45,
-                              child: const Center(child: Text('暂无可用套餐')),
-                            ),
-                          ],
-                        )
-                      : ListView.builder(
-                          padding: const EdgeInsets.all(16),
-                          itemCount: _packages.length,
-                          itemBuilder: (_, i) {
-                            final pkg = _packages[i] as Map<String, dynamic>;
-                            final desc = (pkg['description'] ??
+                    const SizedBox(height: 16),
+                    FilledButton(
+                      onPressed: _loadPackages,
+                      child: const Text('重试'),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          : RefreshIndicator(
+              onRefresh: _loadPackages,
+              child: _packages.isEmpty
+                  ? ListView(
+                      padding: const EdgeInsets.all(24),
+                      children: [
+                        SizedBox(
+                          height: MediaQuery.sizeOf(context).height * 0.45,
+                          child: const Center(child: Text('暂无可用套餐')),
+                        ),
+                      ],
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.all(16),
+                      itemCount: _packages.length,
+                      itemBuilder: (_, i) {
+                        final pkg = _packages[i] as Map<String, dynamic>;
+                        final desc =
+                            (pkg['description'] ??
                                     pkg['desc'] ??
                                     pkg['content'] ??
                                     '')
                                 .toString();
-                            final duration = (pkg['duration'] ??
-                                        pkg['period'] ??
-                                        pkg['days'])
-                                    ?.toString() ??
-                                '';
-                            final traffic = (pkg['traffic'] ??
-                                        pkg['bandwidth'] ??
-                                        pkg['flow'])
-                                    ?.toString() ??
-                                '';
-                            final price = pkg['price'] ??
-                                pkg['amount'] ??
-                                pkg['sale_price'] ??
-                                pkg['money'];
-                            return Card(
-                              margin: const EdgeInsets.only(bottom: 12),
-                              child: Padding(
-                                padding: const EdgeInsets.all(16),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      _name(pkg),
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .titleMedium
-                                          ?.copyWith(
-                                              fontWeight: FontWeight.bold),
+                        final duration =
+                            (pkg['duration'] ?? pkg['period'] ?? pkg['days'])
+                                ?.toString() ??
+                            '';
+                        final traffic =
+                            (pkg['traffic'] ?? pkg['bandwidth'] ?? pkg['flow'])
+                                ?.toString() ??
+                            '';
+                        final price =
+                            pkg['price'] ??
+                            pkg['amount'] ??
+                            pkg['sale_price'] ??
+                            pkg['money'];
+                        return Card(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  _name(pkg),
+                                  style: Theme.of(context).textTheme.titleMedium
+                                      ?.copyWith(fontWeight: FontWeight.bold),
+                                ),
+                                if (desc.isNotEmpty) ...[
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    desc,
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: cs.outline,
                                     ),
-                                    if (desc.isNotEmpty) ...[
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        desc,
-                                        style: TextStyle(
-                                            fontSize: 13, color: cs.outline),
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ],
-                                    if (duration.isNotEmpty ||
-                                        traffic.isNotEmpty) ...[
-                                      const SizedBox(height: 8),
-                                      Wrap(
-                                        spacing: 8,
-                                        children: [
-                                          if (duration.isNotEmpty)
-                                            _Tag(
-                                              icon: Icons.access_time,
-                                              label: '$duration天',
-                                            ),
-                                          if (traffic.isNotEmpty)
-                                            _Tag(
-                                              icon: Icons.data_usage,
-                                              label: '$traffic GB',
-                                            ),
-                                        ],
-                                      ),
-                                    ],
-                                    const SizedBox(height: 12),
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        if (price != null)
-                                          Text(
-                                            '¥$price',
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .titleLarge
-                                                ?.copyWith(
-                                                  color: cs.primary,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                          )
-                                        else
-                                          const SizedBox.shrink(),
-                                        FilledButton(
-                                          onPressed: () => _purchase(pkg),
-                                          child: const Text('立即购买'),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                                if (duration.isNotEmpty ||
+                                    traffic.isNotEmpty) ...[
+                                  const SizedBox(height: 8),
+                                  Wrap(
+                                    spacing: 8,
+                                    children: [
+                                      if (duration.isNotEmpty)
+                                        _Tag(
+                                          icon: Icons.access_time,
+                                          label: '$duration天',
                                         ),
-                                      ],
+                                      if (traffic.isNotEmpty)
+                                        _Tag(
+                                          icon: Icons.data_usage,
+                                          label: '$traffic GB',
+                                        ),
+                                    ],
+                                  ),
+                                ],
+                                const SizedBox(height: 12),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    if (price != null)
+                                      Text(
+                                        '¥$price',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .titleLarge
+                                            ?.copyWith(
+                                              color: cs.primary,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                      )
+                                    else
+                                      const SizedBox.shrink(),
+                                    FilledButton(
+                                      onPressed: () => _purchase(pkg),
+                                      child: const Text('立即购买'),
                                     ),
                                   ],
                                 ),
-                              ),
-                            );
-                          },
-                        ),
-                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+            ),
     );
   }
 }
@@ -243,8 +258,10 @@ class _Tag extends StatelessWidget {
         children: [
           Icon(icon, size: 12, color: cs.onSecondaryContainer),
           const SizedBox(width: 4),
-          Text(label,
-              style: TextStyle(fontSize: 12, color: cs.onSecondaryContainer)),
+          Text(
+            label,
+            style: TextStyle(fontSize: 12, color: cs.onSecondaryContainer),
+          ),
         ],
       ),
     );
@@ -255,8 +272,10 @@ class _PaymentMethodDialog extends StatefulWidget {
   final String packageName;
   final BuildContext dialogContext;
 
-  const _PaymentMethodDialog(
-      {required this.packageName, required this.dialogContext});
+  const _PaymentMethodDialog({
+    required this.packageName,
+    required this.dialogContext,
+  });
 
   @override
   State<_PaymentMethodDialog> createState() => _PaymentMethodDialogState();
@@ -281,15 +300,16 @@ class _PaymentMethodDialogState extends State<_PaymentMethodDialog> {
           _methods = methods;
           if (methods.isNotEmpty) {
             final first = methods.first as Map;
-            _selected =
-                (first['key'] ?? first['pay_type'] ?? first['id']).toString();
+            _selected = (first['key'] ?? first['pay_type'] ?? first['id'])
+                .toString();
           }
         });
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(e.toString())));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
       }
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -320,27 +340,29 @@ class _PaymentMethodDialogState extends State<_PaymentMethodDialog> {
                   )
                 else
                   for (final raw in _methods)
-                    Builder(builder: (_) {
-                      final m = raw as Map;
-                      final key =
-                          (m['key'] ?? m['pay_type'] ?? m['id']).toString();
-                      final name = (m['name'] ?? key).toString();
-                      final isSelected = key == _selected;
-                      return ListTile(
-                        dense: true,
-                        leading: Icon(
-                          isSelected
-                              ? Icons.radio_button_checked
-                              : Icons.radio_button_unchecked,
-                          color: isSelected
-                              ? Theme.of(context).colorScheme.primary
-                              : null,
-                        ),
-                        title: Text(name),
-                        trailing: const Icon(Icons.qr_code_2),
-                        onTap: () => setState(() => _selected = key),
-                      );
-                    }),
+                    Builder(
+                      builder: (_) {
+                        final m = raw as Map;
+                        final key = (m['key'] ?? m['pay_type'] ?? m['id'])
+                            .toString();
+                        final name = (m['name'] ?? key).toString();
+                        final isSelected = key == _selected;
+                        return ListTile(
+                          dense: true,
+                          leading: Icon(
+                            isSelected
+                                ? Icons.radio_button_checked
+                                : Icons.radio_button_unchecked,
+                            color: isSelected
+                                ? Theme.of(context).colorScheme.primary
+                                : null,
+                          ),
+                          title: Text(name),
+                          trailing: const Icon(Icons.qr_code_2),
+                          onTap: () => setState(() => _selected = key),
+                        );
+                      },
+                    ),
               ],
             ),
       actions: [
@@ -363,8 +385,10 @@ class _PaymentQrDialog extends StatefulWidget {
   final Future<Map<String, dynamic>> orderFuture;
   final BuildContext dialogContext;
 
-  const _PaymentQrDialog(
-      {required this.orderFuture, required this.dialogContext});
+  const _PaymentQrDialog({
+    required this.orderFuture,
+    required this.dialogContext,
+  });
 
   @override
   State<_PaymentQrDialog> createState() => _PaymentQrDialogState();
@@ -381,28 +405,31 @@ class _PaymentQrDialogState extends State<_PaymentQrDialog> {
   @override
   void initState() {
     super.initState();
-    widget.orderFuture.then((order) {
-      if (!mounted) return;
-      setState(() => _order = order);
-      _startPolling();
-      _startCountdown();
-    }).catchError((e) {
-      if (!mounted) return;
-      setState(() => _orderError = e.toString());
-    });
+    widget.orderFuture
+        .then((order) {
+          if (!mounted) return;
+          setState(() => _order = order);
+          _startPolling();
+          _startCountdown();
+        })
+        .catchError((e) {
+          if (!mounted) return;
+          setState(() => _orderError = e.toString());
+        });
   }
 
   void _startPolling() {
     _pollTimer = Timer.periodic(const Duration(seconds: 3), (_) async {
       try {
-        final orderId = (_order!['order_no'] ??
-                _order!['order_id'] ??
-                _order!['id'] ??
-                '')
-            .toString();
+        final order = _order;
+        if (order == null) return;
+        final orderId =
+            (order['order_no'] ?? order['order_id'] ?? order['id'] ?? '')
+                .toString();
         if (orderId.isEmpty) return;
         final status = await ApiService().getOrderStatus(orderId);
-        final isPaid = status['status'] == 'paid' ||
+        final isPaid =
+            status['status'] == 'paid' ||
             status['status'] == 'success' ||
             status['paid'] == true ||
             status['is_paid'] == true ||
@@ -412,11 +439,31 @@ class _PaymentQrDialogState extends State<_PaymentQrDialog> {
           if (mounted) {
             setState(() => _paid = true);
             // Close immediately — parent handles sync + reload
-            Navigator.of(widget.dialogContext).pop(true);
+            Navigator.of(context).pop(true);
           }
         }
       } catch (_) {}
     });
+  }
+
+  Future<void> _openPaymentUrl(String url) async {
+    try {
+      final opened = await launchUrl(
+        Uri.parse(url),
+        mode: LaunchMode.externalApplication,
+      );
+      if (!opened && mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('无法打开支付链接')));
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('无法打开支付链接：$e')));
+      }
+    }
   }
 
   void _startCountdown() {
@@ -482,20 +529,23 @@ class _PaymentQrDialogState extends State<_PaymentQrDialog> {
     }
 
     final order = _order!;
-    final qrData = (order['payment_qr_code'] ??
-            order['payment_url'] ??
-            order['qr_code'] ??
-            order['pay_url'] ??
-            order['qr_link'] ??
-            order['code_url'] ??
-            order['checkout_url'] ??
-            order['payment_link'] ??
-            order['pay_link'] ??
-            order['pay_info'])
-        ?.toString();
+    final qrData =
+        (order['payment_qr_code'] ??
+                order['payment_url'] ??
+                order['qr_code'] ??
+                order['pay_url'] ??
+                order['qr_link'] ??
+                order['code_url'] ??
+                order['checkout_url'] ??
+                order['payment_link'] ??
+                order['pay_link'] ??
+                order['pay_info'])
+            ?.toString();
     final isHttpUrl =
-        qrData != null && (qrData.startsWith('http://') || qrData.startsWith('https://'));
-    final isAlipayUrl = qrData != null &&
+        qrData != null &&
+        (qrData.startsWith('http://') || qrData.startsWith('https://'));
+    final isAlipayUrl =
+        qrData != null &&
         (qrData.startsWith('alipays://') || qrData.contains('qr.alipay.com'));
     final amount = (order['amount'] ?? order['price'] ?? '').toString();
     final orderId =
@@ -512,8 +562,7 @@ class _PaymentQrDialogState extends State<_PaymentQrDialog> {
                 children: [
                   Icon(Icons.check_circle, color: Colors.green, size: 64),
                   SizedBox(height: 12),
-                  Text('支付成功！正在更新套餐…',
-                      style: TextStyle(fontSize: 16)),
+                  Text('支付成功！正在更新套餐…', style: TextStyle(fontSize: 16)),
                 ],
               )
             : Column(
@@ -535,8 +584,7 @@ class _PaymentQrDialogState extends State<_PaymentQrDialog> {
                               children: [
                                 Icon(Icons.qr_code, size: 60),
                                 SizedBox(height: 8),
-                                Text('二维码加载中…',
-                                    style: TextStyle(fontSize: 12)),
+                                Text('二维码加载中…', style: TextStyle(fontSize: 12)),
                               ],
                             ),
                           ),
@@ -546,16 +594,14 @@ class _PaymentQrDialogState extends State<_PaymentQrDialog> {
                     FilledButton.icon(
                       icon: const Icon(Icons.account_balance_wallet, size: 18),
                       label: const Text('打开支付宝支付'),
-                      onPressed: () =>
-                          launchUrl(Uri.parse(qrData), mode: LaunchMode.externalApplication),
+                      onPressed: () => _openPaymentUrl(qrData),
                     ),
                   ] else if (isHttpUrl) ...[
                     const SizedBox(height: 8),
                     OutlinedButton.icon(
                       icon: const Icon(Icons.open_in_browser, size: 18),
                       label: const Text('浏览器中打开支付'),
-                      onPressed: () =>
-                          launchUrl(Uri.parse(qrData), mode: LaunchMode.externalApplication),
+                      onPressed: () => _openPaymentUrl(qrData),
                     ),
                   ],
                   const SizedBox(height: 12),
@@ -563,14 +609,15 @@ class _PaymentQrDialogState extends State<_PaymentQrDialog> {
                     Text(
                       '金额：¥$amount',
                       style: const TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.bold),
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   if (orderId.isNotEmpty) ...[
                     const SizedBox(height: 4),
                     Text(
                       '订单号：$orderId',
-                      style: const TextStyle(
-                          fontSize: 11, color: Colors.grey),
+                      style: const TextStyle(fontSize: 11, color: Colors.grey),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ],
@@ -578,13 +625,16 @@ class _PaymentQrDialogState extends State<_PaymentQrDialog> {
                   Text(
                     '剩余时间：$_timeLeft',
                     style: TextStyle(
-                        color: _secondsLeft < 60 ? Colors.red : null),
+                      color: _secondsLeft < 60 ? Colors.red : null,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   const LinearProgressIndicator(),
                   const SizedBox(height: 4),
-                  const Text('等待支付确认…',
-                      style: TextStyle(fontSize: 12, color: Colors.grey)),
+                  const Text(
+                    '等待支付确认…',
+                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
                 ],
               ),
       ),
@@ -593,14 +643,12 @@ class _PaymentQrDialogState extends State<_PaymentQrDialog> {
           FilledButton.icon(
             icon: const Icon(Icons.account_balance_wallet, size: 18),
             label: const Text('支付宝支付'),
-            onPressed: () =>
-                launchUrl(Uri.parse(qrData), mode: LaunchMode.externalApplication),
+            onPressed: () => _openPaymentUrl(qrData),
           ),
           const SizedBox(width: 8),
         ] else if (isHttpUrl) ...[
           FilledButton.tonal(
-            onPressed: () =>
-                launchUrl(Uri.parse(qrData), mode: LaunchMode.externalApplication),
+            onPressed: () => _openPaymentUrl(qrData),
             child: const Text('浏览器打开'),
           ),
           const SizedBox(width: 8),

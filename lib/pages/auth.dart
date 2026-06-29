@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:fl_clash/services/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -29,36 +27,44 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       _accountCtrl.text = creds['account'] ?? '';
       _pwCtrl.text = creds['password'] ?? '';
       setState(() => _savePassword = true);
-      // Auto-login immediately if credentials are saved
       _login();
     }
+  }
+
+  Future<void> _handleAuthSuccess(Map<String, dynamic> result) async {
+    final storage = StorageService();
+    await storage.saveToken(result['access_token'] ?? '');
+    await storage.saveRefreshToken(result['refresh_token'] ?? '');
+    final accountState = await MoneyFlyService.refreshAccountState(ref);
+    if (!accountState.available) {
+      await storage.clearTokens();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(accountState.message ?? '当前账号不可用')),
+      );
+      return;
+    }
+    if (!mounted) return;
+    Navigator.of(context).pushReplacementNamed('/home');
   }
 
   Future<void> _login() async {
     if (_accountCtrl.text.isEmpty || _pwCtrl.text.isEmpty) return;
     setState(() => _loading = true);
     try {
-      final result = await ApiService().login(
-        _accountCtrl.text.trim(),
-        _pwCtrl.text,
-      );
+      final account = _accountCtrl.text.trim();
+      final result = await ApiService().login(account, _pwCtrl.text);
       if (_savePassword) {
-        await StorageService().saveCredentials(
-          _accountCtrl.text.trim(),
-          _pwCtrl.text,
-        );
+        await StorageService().saveCredentials(account, _pwCtrl.text);
+      } else {
+        await StorageService().clearCredentials();
       }
-      await StorageService().saveToken(result['access_token'] ?? '');
-      await StorageService().saveRefreshToken(result['refresh_token'] ?? '');
-      if (mounted) {
-        Navigator.of(context).pushReplacementNamed('/home');
-        unawaited(MoneyFlyService.syncSubscription(ref).catchError((_) => null));
-      }
+      await _handleAuthSuccess(result);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
       }
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -71,7 +77,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     _pwCtrl.dispose();
     super.dispose();
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -88,16 +93,16 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 Text(
                   'MoneyFly',
                   style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: cs.primary,
-                      ),
+                    fontWeight: FontWeight.bold,
+                    color: cs.primary,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   '安全代理客户端',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: cs.outline,
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(color: cs.outline),
                 ),
                 const SizedBox(height: 40),
                 TextField(
@@ -142,8 +147,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 CheckboxListTile(
                   value: _savePassword,
                   onChanged: (v) => setState(() => _savePassword = v ?? false),
-                  title: const Text('记住密码',
-                      style: TextStyle(fontSize: 14)),
+                  title: const Text('记住密码', style: TextStyle(fontSize: 14)),
                   controlAffinity: ListTileControlAffinity.leading,
                   contentPadding: EdgeInsets.zero,
                   dense: true,
@@ -171,9 +175,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     TextButton(
                       onPressed: () => Navigator.push(
                         context,
-                        MaterialPageRoute(
-                          builder: (_) => const RegisterPage(),
-                        ),
+                        MaterialPageRoute(builder: (_) => const RegisterPage()),
                       ),
                       child: const Text('立即注册'),
                     ),
@@ -209,17 +211,17 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     try {
       await ApiService().sendVerificationCode(_emailCtrl.text.trim());
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('验证码已发送')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('验证码已发送')));
         setState(() => _countdown = 60);
         _startCountdown();
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
       }
     }
   }
@@ -247,20 +249,29 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
         email: _emailCtrl.text.trim(),
         password: _pwCtrl.text,
         verificationCode: _codeCtrl.text.trim(),
-        inviteCode:
-            _inviteCtrl.text.trim().isEmpty ? null : _inviteCtrl.text.trim(),
+        inviteCode: _inviteCtrl.text.trim().isEmpty
+            ? null
+            : _inviteCtrl.text.trim(),
       );
+      await StorageService().clearCredentials();
       await StorageService().saveToken(result['access_token'] ?? '');
       await StorageService().saveRefreshToken(result['refresh_token'] ?? '');
-      if (mounted) {
-        Navigator.of(context).pushReplacementNamed('/home');
-        unawaited(MoneyFlyService.syncSubscription(ref).catchError((_) => null));
+      final accountState = await MoneyFlyService.refreshAccountState(ref);
+      if (!accountState.available) {
+        await StorageService().clearTokens();
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(accountState.message ?? '当前账号不可用')),
+        );
+        return;
       }
+      if (!mounted) return;
+      Navigator.of(context).pushReplacementNamed('/home');
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
       }
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -269,6 +280,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
 
   @override
   void dispose() {
+    _disposed = true;
     _nameCtrl.dispose();
     _emailCtrl.dispose();
     _pwCtrl.dispose();
@@ -276,7 +288,6 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     _inviteCtrl.dispose();
     super.dispose();
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -388,9 +399,9 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
     try {
       await ApiService().sendForgotPasswordCode(_emailCtrl.text.trim());
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('验证码已发送')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('验证码已发送')));
         setState(() => _countdown = 60);
         Future.doWhile(() async {
           await Future.delayed(const Duration(seconds: 1));
@@ -401,9 +412,9 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
       }
     }
   }
@@ -425,17 +436,25 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
         _emailCtrl.text.trim(),
         _pwCtrl.text,
       );
+      await StorageService().clearCredentials();
       await StorageService().saveToken(result['access_token'] ?? '');
       await StorageService().saveRefreshToken(result['refresh_token'] ?? '');
-      if (mounted) {
-        Navigator.of(context).pushReplacementNamed('/home');
-        unawaited(MoneyFlyService.syncSubscription(ref).catchError((_) => null));
+      final accountState = await MoneyFlyService.refreshAccountState(ref);
+      if (!accountState.available) {
+        await StorageService().clearTokens();
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(accountState.message ?? '当前账号不可用')),
+        );
+        return;
       }
+      if (!mounted) return;
+      Navigator.of(context).pushReplacementNamed('/home');
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
       }
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -444,12 +463,12 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
 
   @override
   void dispose() {
+    _disposed = true;
     _emailCtrl.dispose();
     _codeCtrl.dispose();
     _pwCtrl.dispose();
     super.dispose();
   }
-
 
   @override
   Widget build(BuildContext context) {

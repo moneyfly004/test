@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/core/core.dart';
-import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/manager/hotkey_manager.dart';
 import 'package:fl_clash/manager/manager.dart';
@@ -58,21 +57,8 @@ class ApplicationState extends ConsumerState<Application> {
       _autoUpdateProfilesTask();
       _initLink();
       app?.initShortcuts();
-      _fetchSubscriptionIfLoggedIn();
       _startAutoSyncSubscription();
     });
-  }
-
-  Future<void> _fetchSubscriptionIfLoggedIn() async {
-    // Only clean stale profiles on startup — login+sync handled by LoginPage
-    try {
-      final profiles = ref.read(profilesProvider);
-      for (final p in List<dynamic>.from(profiles)) {
-         await ref
-              .read(profilesActionProvider.notifier)
-              .deleteProfile((p as dynamic).id as int);
-      }
-    } catch (_) {}
   }
 
   void _initLink() {
@@ -114,7 +100,12 @@ class ApplicationState extends ConsumerState<Application> {
     _autoSyncSubscriptionTimer = Timer.periodic(interval, (_) async {
       try {
         final isLoggedIn = await StorageService().isLoggedIn();
-        if (isLoggedIn) await MoneyFlyService.syncSubscription(ref);
+        if (isLoggedIn) {
+          final state = await MoneyFlyService.refreshAccountState(ref);
+          if (!state.available && state.message != null) {
+            globalState.showNotifier(state.message!);
+          }
+        }
       } catch (_) {}
     });
   }

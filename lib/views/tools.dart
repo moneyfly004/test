@@ -88,10 +88,7 @@ class _ToolViewState extends ConsumerState<ToolsView> {
 
   // Logout is a separate section below settings — not inside settings
   List<Widget> _getAccountSection() {
-    return generateSection(
-      title: '账户',
-      items: [const _LogoutItem()],
-    );
+    return generateSection(title: '账户', items: [const _LogoutItem()]);
   }
 
   @override
@@ -103,7 +100,7 @@ class _ToolViewState extends ConsumerState<ToolsView> {
     );
     final items = [
       Consumer(
-        builder: (_, ref, __) {
+        builder: (_, ref, _) {
           final state = ref.watch(moreToolsSelectorStateProvider);
           if (state.navigationItems.isEmpty) {
             return Container();
@@ -356,7 +353,7 @@ class _LogoutItem extends ConsumerWidget {
         );
         if (confirmed != true || !context.mounted) return;
         // Clear tokens first, then navigate immediately — no UI blocking
-        await StorageService().clearAll();
+        await StorageService().clearTokens();
         if (!context.mounted) return;
         Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(builder: (_) => const LoginPage()),
@@ -387,7 +384,8 @@ class _AutoSyncSubscriptionItem extends ConsumerWidget {
           trailing: Switch(
             value: enabled,
             onChanged: (v) {
-              ref.read(appSettingProvider.notifier)
+              ref
+                  .read(appSettingProvider.notifier)
                   .update((s) => s.copyWith(autoSyncSubscription: v));
             },
           ),
@@ -400,10 +398,13 @@ class _AutoSyncSubscriptionItem extends ConsumerWidget {
             delegate: OptionsDelegate(
               title: '更新间隔',
               options: const [15, 30, 60, 120, 240],
-              value: interval ?? 60,
+              value: interval,
               onChanged: (v) {
-                ref.read(appSettingProvider.notifier)
-                    .update((s) => s.copyWith(autoSyncIntervalMinutes: v ?? 60));
+                ref
+                    .read(appSettingProvider.notifier)
+                    .update(
+                      (s) => s.copyWith(autoSyncIntervalMinutes: v ?? 60),
+                    );
               },
               textBuilder: (int v) => '\$v 分钟',
             ),

@@ -37,7 +37,7 @@ class Navigation {
         icon: const Icon(Icons.settings),
         label: PageLabel.settings,
         builder: (_) =>
-            const ToolsView(key: GlobalObjectKey(PageLabel.settings)),
+            const ConfigView(key: GlobalObjectKey(PageLabel.settings)),
       ),
       NavigationItem(
         icon: const Icon(Icons.devices),

@@ -9,7 +9,6 @@ import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/plugins/app.dart';
 import 'package:fl_clash/plugins/service.dart';
 import 'package:fl_clash/providers/providers.dart';
-import 'package:fl_clash/services/services.dart';
 import 'package:fl_clash/state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -582,18 +581,6 @@ class SystemAction extends _$SystemAction {
     try {
       // Stop proxy first so no new connections
       if (proxy != null) proxy!.stopProxy();
-      // Delete ALL profiles from disk — critical for security
-      final profiles = ref.read(profilesProvider);
-      final futures = <Future<void>>[];
-      for (final p in profiles) {
-        futures.add(
-          ref.read(profilesActionProvider.notifier).deleteProfile(p.id),
-        );
-      }
-      if (futures.isNotEmpty) await Future.wait(futures);
-      // Clear tokens + credentials
-      await StorageService().clearAll();
-
       await Future.wait([
         if (needSave) preferences.saveConfig(ref.read(configProvider)),
         if (macOS != null) macOS!.updateDns(true),
