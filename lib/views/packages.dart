@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/services/services.dart';
 import 'package:fl_clash/widgets/scaffold.dart';
 import 'package:flutter/material.dart';
@@ -41,6 +42,7 @@ class _PackagesViewState extends ConsumerState<PackagesView> {
   }
 
   Future<void> _purchase(Map<String, dynamic> pkg) async {
+    final appLocalizations = context.appLocalizations;
     final method = await showDialog<String>(
       context: context,
       builder: (dialogContext) => _PaymentMethodDialog(
@@ -69,7 +71,9 @@ class _PackagesViewState extends ConsumerState<PackagesView> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              state.available ? '套餐已更新' : state.message ?? '套餐状态不可用',
+              state.available
+                  ? appLocalizations.packageUpdated
+                  : state.message ?? appLocalizations.packageStatusUnavailable,
             ),
           ),
         );
@@ -83,17 +87,18 @@ class _PackagesViewState extends ConsumerState<PackagesView> {
               pkg['title'] ??
               pkg['package_name'] ??
               pkg['subject'] ??
-              '套餐')
+              currentAppLocalizations.packageFallback)
           .toString();
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final appLocalizations = context.appLocalizations;
     return CommonScaffold(
-      title: '套餐购买',
+      title: appLocalizations.packages,
       actions: [
         IconButton(
-          tooltip: '刷新',
+          tooltip: appLocalizations.refresh,
           onPressed: _loading ? null : _loadPackages,
           icon: const Icon(Icons.refresh),
         ),
@@ -109,7 +114,10 @@ class _PackagesViewState extends ConsumerState<PackagesView> {
                   children: [
                     Icon(Icons.error_outline, size: 48, color: cs.error),
                     const SizedBox(height: 16),
-                    Text('加载失败', style: TextStyle(color: cs.error)),
+                    Text(
+                      appLocalizations.loadFailed,
+                      style: TextStyle(color: cs.error),
+                    ),
                     const SizedBox(height: 8),
                     Text(
                       _error!,
@@ -119,7 +127,7 @@ class _PackagesViewState extends ConsumerState<PackagesView> {
                     const SizedBox(height: 16),
                     FilledButton(
                       onPressed: _loadPackages,
-                      child: const Text('重试'),
+                      child: Text(appLocalizations.retry),
                     ),
                   ],
                 ),
@@ -133,7 +141,9 @@ class _PackagesViewState extends ConsumerState<PackagesView> {
                       children: [
                         SizedBox(
                           height: MediaQuery.sizeOf(context).height * 0.45,
-                          child: const Center(child: Text('暂无可用套餐')),
+                          child: Center(
+                            child: Text(appLocalizations.noPackages),
+                          ),
                         ),
                       ],
                     )
@@ -194,12 +204,16 @@ class _PackagesViewState extends ConsumerState<PackagesView> {
                                       if (duration.isNotEmpty)
                                         _Tag(
                                           icon: Icons.access_time,
-                                          label: '$duration天',
+                                          label: appLocalizations.daysUnit(
+                                            duration,
+                                          ),
                                         ),
                                       if (traffic.isNotEmpty)
                                         _Tag(
                                           icon: Icons.data_usage,
-                                          label: '$traffic GB',
+                                          label: appLocalizations.trafficGb(
+                                            traffic,
+                                          ),
                                         ),
                                     ],
                                   ),
@@ -224,7 +238,7 @@ class _PackagesViewState extends ConsumerState<PackagesView> {
                                       const SizedBox.shrink(),
                                     FilledButton(
                                       onPressed: () => _purchase(pkg),
-                                      child: const Text('立即购买'),
+                                      child: Text(appLocalizations.buyNow),
                                     ),
                                   ],
                                 ),
@@ -320,7 +334,7 @@ class _PaymentMethodDialogState extends State<_PaymentMethodDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text(
-        '购买「${widget.packageName}」',
+        context.appLocalizations.buyPackageTitle(widget.packageName),
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       ),
@@ -334,9 +348,9 @@ class _PaymentMethodDialogState extends State<_PaymentMethodDialog> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 if (_methods.isEmpty)
-                  const Padding(
-                    padding: EdgeInsets.all(16),
-                    child: Text('暂无可用支付方式'),
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Text(context.appLocalizations.noPaymentMethods),
                   )
                 else
                   for (final raw in _methods)
@@ -347,19 +361,24 @@ class _PaymentMethodDialogState extends State<_PaymentMethodDialog> {
                             .toString();
                         final name = (m['name'] ?? key).toString();
                         final isSelected = key == _selected;
-                        return ListTile(
-                          dense: true,
-                          leading: Icon(
-                            isSelected
-                                ? Icons.radio_button_checked
-                                : Icons.radio_button_unchecked,
-                            color: isSelected
-                                ? Theme.of(context).colorScheme.primary
-                                : null,
+                        return Semantics(
+                          selected: isSelected,
+                          button: true,
+                          child: ListTile(
+                            selected: isSelected,
+                            contentPadding: EdgeInsets.zero,
+                            leading: Icon(
+                              isSelected
+                                  ? Icons.radio_button_checked
+                                  : Icons.radio_button_unchecked,
+                              color: isSelected
+                                  ? Theme.of(context).colorScheme.primary
+                                  : null,
+                            ),
+                            title: Text(name),
+                            trailing: const Icon(Icons.qr_code_2),
+                            onTap: () => setState(() => _selected = key),
                           ),
-                          title: Text(name),
-                          trailing: const Icon(Icons.qr_code_2),
-                          onTap: () => setState(() => _selected = key),
                         );
                       },
                     ),
@@ -368,13 +387,13 @@ class _PaymentMethodDialogState extends State<_PaymentMethodDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(widget.dialogContext).pop(),
-          child: const Text('取消'),
+          child: Text(context.appLocalizations.cancel),
         ),
         FilledButton(
           onPressed: _selected == null
               ? null
               : () => Navigator.of(widget.dialogContext).pop(_selected),
-          child: const Text('确认'),
+          child: Text(context.appLocalizations.confirm),
         ),
       ],
     );
@@ -453,15 +472,23 @@ class _PaymentQrDialogState extends State<_PaymentQrDialog> {
         mode: LaunchMode.externalApplication,
       );
       if (!opened && mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('无法打开支付链接')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.appLocalizations.openPaymentLinkFailed),
+          ),
+        );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('无法打开支付链接：$e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              context.appLocalizations.openPaymentLinkFailedWithMessage(
+                e.toString(),
+              ),
+            ),
+          ),
+        );
       }
     }
   }
@@ -499,7 +526,7 @@ class _PaymentQrDialogState extends State<_PaymentQrDialog> {
     // Show loading while createOrder is in-flight (no gap between dialogs)
     if (_orderError != null) {
       return AlertDialog(
-        title: const Text('扫码支付'),
+        title: Text(context.appLocalizations.scanToPay),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -511,16 +538,16 @@ class _PaymentQrDialogState extends State<_PaymentQrDialog> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(widget.dialogContext).pop(false),
-            child: const Text('关闭'),
+            child: Text(context.appLocalizations.close),
           ),
         ],
       );
     }
 
     if (_order == null) {
-      return const AlertDialog(
-        title: Text('扫码支付'),
-        content: SizedBox(
+      return AlertDialog(
+        title: Text(context.appLocalizations.scanToPay),
+        content: const SizedBox(
           width: 200,
           height: 120,
           child: Center(child: CircularProgressIndicator()),
@@ -553,110 +580,132 @@ class _PaymentQrDialogState extends State<_PaymentQrDialog> {
             .toString();
 
     return AlertDialog(
-      title: const Text('扫码支付'),
+      title: Text(context.appLocalizations.scanToPay),
       content: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 320),
         child: _paid
-            ? const Column(
+            ? Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.check_circle, color: Colors.green, size: 64),
-                  SizedBox(height: 12),
-                  Text('支付成功！正在更新套餐…', style: TextStyle(fontSize: 16)),
+                  const Icon(Icons.check_circle, color: Colors.green, size: 64),
+                  const SizedBox(height: 12),
+                  Text(
+                    context.appLocalizations.paymentSuccessUpdatingPackage,
+                    style: const TextStyle(fontSize: 16),
+                    textAlign: TextAlign.center,
+                  ),
                 ],
               )
-            : Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 200,
-                    height: 200,
-                    color: Colors.white,
-                    child: qrData != null && qrData.isNotEmpty
-                        ? QrImageView(
-                            data: qrData,
-                            size: 200,
-                            backgroundColor: Colors.white,
-                          )
-                        : const Center(
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(Icons.qr_code, size: 60),
-                                SizedBox(height: 8),
-                                Text('二维码加载中…', style: TextStyle(fontSize: 12)),
-                              ],
+            : SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 200,
+                      height: 200,
+                      color: Colors.white,
+                      child: qrData != null && qrData.isNotEmpty
+                          ? Semantics(
+                              label: context.appLocalizations.scanToPay,
+                              image: true,
+                              child: QrImageView(
+                                data: qrData,
+                                size: 200,
+                                backgroundColor: Colors.white,
+                              ),
+                            )
+                          : Center(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(Icons.qr_code, size: 60),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    context.appLocalizations.qrCodeLoading,
+                                    style: const TextStyle(fontSize: 12),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                  ),
-                  if (isAlipayUrl) ...[
-                    const SizedBox(height: 8),
-                    FilledButton.icon(
-                      icon: const Icon(Icons.account_balance_wallet, size: 18),
-                      label: const Text('打开支付宝支付'),
-                      onPressed: () => _openPaymentUrl(qrData),
                     ),
-                  ] else if (isHttpUrl) ...[
+                    if (isAlipayUrl) ...[
+                      const SizedBox(height: 8),
+                      FilledButton.icon(
+                        icon: const Icon(
+                          Icons.account_balance_wallet,
+                          size: 18,
+                        ),
+                        label: Text(context.appLocalizations.openAlipay),
+                        onPressed: () => _openPaymentUrl(qrData),
+                      ),
+                    ] else if (isHttpUrl) ...[
+                      const SizedBox(height: 8),
+                      OutlinedButton.icon(
+                        icon: const Icon(Icons.open_in_browser, size: 18),
+                        label: Text(context.appLocalizations.openInBrowser),
+                        onPressed: () => _openPaymentUrl(qrData),
+                      ),
+                    ],
+                    const SizedBox(height: 12),
+                    if (amount.isNotEmpty)
+                      Text(
+                        context.appLocalizations.amountLabel(amount),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    if (orderId.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        context.appLocalizations.orderNoLabel(orderId),
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
                     const SizedBox(height: 8),
-                    OutlinedButton.icon(
-                      icon: const Icon(Icons.open_in_browser, size: 18),
-                      label: const Text('浏览器中打开支付'),
-                      onPressed: () => _openPaymentUrl(qrData),
-                    ),
-                  ],
-                  const SizedBox(height: 12),
-                  if (amount.isNotEmpty)
                     Text(
-                      '金额：¥$amount',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                      context.appLocalizations.remainingTime(_timeLeft),
+                      style: TextStyle(
+                        color: _secondsLeft < 60 ? Colors.red : null,
                       ),
                     ),
-                  if (orderId.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    LinearProgressIndicator(
+                      value: (_secondsLeft / 900).clamp(0, 1),
+                      semanticsLabel: context.appLocalizations.waitingPayment,
+                    ),
                     const SizedBox(height: 4),
                     Text(
-                      '订单号：$orderId',
-                      style: const TextStyle(fontSize: 11, color: Colors.grey),
-                      overflow: TextOverflow.ellipsis,
+                      context.appLocalizations.waitingPayment,
+                      style: const TextStyle(fontSize: 12, color: Colors.grey),
                     ),
                   ],
-                  const SizedBox(height: 8),
-                  Text(
-                    '剩余时间：$_timeLeft',
-                    style: TextStyle(
-                      color: _secondsLeft < 60 ? Colors.red : null,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  const LinearProgressIndicator(),
-                  const SizedBox(height: 4),
-                  const Text(
-                    '等待支付确认…',
-                    style: TextStyle(fontSize: 12, color: Colors.grey),
-                  ),
-                ],
+                ),
               ),
       ),
       actions: [
         if (isAlipayUrl) ...[
           FilledButton.icon(
             icon: const Icon(Icons.account_balance_wallet, size: 18),
-            label: const Text('支付宝支付'),
+            label: Text(context.appLocalizations.alipayPay),
             onPressed: () => _openPaymentUrl(qrData),
           ),
           const SizedBox(width: 8),
         ] else if (isHttpUrl) ...[
           FilledButton.tonal(
             onPressed: () => _openPaymentUrl(qrData),
-            child: const Text('浏览器打开'),
+            child: Text(context.appLocalizations.browserOpen),
           ),
           const SizedBox(width: 8),
         ],
         if (!_paid)
           TextButton(
             onPressed: () => Navigator.of(widget.dialogContext).pop(false),
-            child: const Text('取消'),
+            child: Text(context.appLocalizations.cancel),
           ),
       ],
     );

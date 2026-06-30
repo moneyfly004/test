@@ -4548,6 +4548,581 @@ class AppLocalizations {
       args: [],
     );
   }
+
+  /// `Refresh`
+  String get refresh {
+    return Intl.message('Refresh', name: 'refresh', desc: '', args: []);
+  }
+
+  /// `Load failed`
+  String get loadFailed {
+    return Intl.message('Load failed', name: 'loadFailed', desc: '', args: []);
+  }
+
+  /// `Retry`
+  String get retry {
+    return Intl.message('Retry', name: 'retry', desc: '', args: []);
+  }
+
+  /// `Close`
+  String get close {
+    return Intl.message('Close', name: 'close', desc: '', args: []);
+  }
+
+  /// `Package`
+  String get packageFallback {
+    return Intl.message('Package', name: 'packageFallback', desc: '', args: []);
+  }
+
+  /// `No packages available`
+  String get noPackages {
+    return Intl.message(
+      'No packages available',
+      name: 'noPackages',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Buy now`
+  String get buyNow {
+    return Intl.message('Buy now', name: 'buyNow', desc: '', args: []);
+  }
+
+  /// `Package updated`
+  String get packageUpdated {
+    return Intl.message(
+      'Package updated',
+      name: 'packageUpdated',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Package status unavailable`
+  String get packageStatusUnavailable {
+    return Intl.message(
+      'Package status unavailable',
+      name: 'packageStatusUnavailable',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{days} days`
+  String daysUnit(Object days) {
+    return Intl.message('$days days', name: 'daysUnit', desc: '', args: [days]);
+  }
+
+  /// `{traffic} GB`
+  String trafficGb(Object traffic) {
+    return Intl.message(
+      '$traffic GB',
+      name: 'trafficGb',
+      desc: '',
+      args: [traffic],
+    );
+  }
+
+  /// `Buy "{packageName}"`
+  String buyPackageTitle(Object packageName) {
+    return Intl.message(
+      'Buy "$packageName"',
+      name: 'buyPackageTitle',
+      desc: '',
+      args: [packageName],
+    );
+  }
+
+  /// `No payment methods available`
+  String get noPaymentMethods {
+    return Intl.message(
+      'No payment methods available',
+      name: 'noPaymentMethods',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Scan to pay`
+  String get scanToPay {
+    return Intl.message('Scan to pay', name: 'scanToPay', desc: '', args: []);
+  }
+
+  /// `Unable to open payment link`
+  String get openPaymentLinkFailed {
+    return Intl.message(
+      'Unable to open payment link',
+      name: 'openPaymentLinkFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Unable to open payment link: {message}`
+  String openPaymentLinkFailedWithMessage(Object message) {
+    return Intl.message(
+      'Unable to open payment link: $message',
+      name: 'openPaymentLinkFailedWithMessage',
+      desc: '',
+      args: [message],
+    );
+  }
+
+  /// `Payment successful. Updating package...`
+  String get paymentSuccessUpdatingPackage {
+    return Intl.message(
+      'Payment successful. Updating package...',
+      name: 'paymentSuccessUpdatingPackage',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Loading QR code...`
+  String get qrCodeLoading {
+    return Intl.message(
+      'Loading QR code...',
+      name: 'qrCodeLoading',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Open Alipay`
+  String get openAlipay {
+    return Intl.message('Open Alipay', name: 'openAlipay', desc: '', args: []);
+  }
+
+  /// `Open in browser`
+  String get openInBrowser {
+    return Intl.message(
+      'Open in browser',
+      name: 'openInBrowser',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Amount: ¥{amount}`
+  String amountLabel(Object amount) {
+    return Intl.message(
+      'Amount: ¥$amount',
+      name: 'amountLabel',
+      desc: '',
+      args: [amount],
+    );
+  }
+
+  /// `Order No: {orderNo}`
+  String orderNoLabel(Object orderNo) {
+    return Intl.message(
+      'Order No: $orderNo',
+      name: 'orderNoLabel',
+      desc: '',
+      args: [orderNo],
+    );
+  }
+
+  /// `Time left: {time}`
+  String remainingTime(Object time) {
+    return Intl.message(
+      'Time left: $time',
+      name: 'remainingTime',
+      desc: '',
+      args: [time],
+    );
+  }
+
+  /// `Waiting for payment confirmation...`
+  String get waitingPayment {
+    return Intl.message(
+      'Waiting for payment confirmation...',
+      name: 'waitingPayment',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Pay with Alipay`
+  String get alipayPay {
+    return Intl.message(
+      'Pay with Alipay',
+      name: 'alipayPay',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Open browser`
+  String get browserOpen {
+    return Intl.message(
+      'Open browser',
+      name: 'browserOpen',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Device name`
+  String get deviceName {
+    return Intl.message('Device name', name: 'deviceName', desc: '', args: []);
+  }
+
+  /// `Type`
+  String get deviceType {
+    return Intl.message('Type', name: 'deviceType', desc: '', args: []);
+  }
+
+  /// `IP / Region`
+  String get ipRegion {
+    return Intl.message('IP / Region', name: 'ipRegion', desc: '', args: []);
+  }
+
+  /// `Updated`
+  String get updatedAt {
+    return Intl.message('Updated', name: 'updatedAt', desc: '', args: []);
+  }
+
+  /// `Remark`
+  String get remark {
+    return Intl.message('Remark', name: 'remark', desc: '', args: []);
+  }
+
+  /// `Enter remark...`
+  String get inputRemark {
+    return Intl.message(
+      'Enter remark...',
+      name: 'inputRemark',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Delete device`
+  String get deleteDevice {
+    return Intl.message(
+      'Delete device',
+      name: 'deleteDevice',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Delete device "{deviceName}"?`
+  String confirmDeleteDevice(Object deviceName) {
+    return Intl.message(
+      'Delete device "$deviceName"?',
+      name: 'confirmDeleteDevice',
+      desc: '',
+      args: [deviceName],
+    );
+  }
+
+  /// `Delete failed: {message}`
+  String deleteFailed(Object message) {
+    return Intl.message(
+      'Delete failed: $message',
+      name: 'deleteFailed',
+      desc: '',
+      args: [message],
+    );
+  }
+
+  /// `Remark saved`
+  String get remarkSaved {
+    return Intl.message(
+      'Remark saved',
+      name: 'remarkSaved',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Failed to save remark: {message}`
+  String saveRemarkFailed(Object message) {
+    return Intl.message(
+      'Failed to save remark: $message',
+      name: 'saveRemarkFailed',
+      desc: '',
+      args: [message],
+    );
+  }
+
+  /// `No devices`
+  String get noDevices {
+    return Intl.message('No devices', name: 'noDevices', desc: '', args: []);
+  }
+
+  /// `Desktop`
+  String get desktopDevice {
+    return Intl.message('Desktop', name: 'desktopDevice', desc: '', args: []);
+  }
+
+  /// `Phone`
+  String get mobileDevice {
+    return Intl.message('Phone', name: 'mobileDevice', desc: '', args: []);
+  }
+
+  /// `Tablet`
+  String get tabletDevice {
+    return Intl.message('Tablet', name: 'tabletDevice', desc: '', args: []);
+  }
+
+  /// `Region`
+  String get region {
+    return Intl.message('Region', name: 'region', desc: '', args: []);
+  }
+
+  /// `Updated`
+  String get updated {
+    return Intl.message('Updated', name: 'updated', desc: '', args: []);
+  }
+
+  /// `Saving...`
+  String get saving {
+    return Intl.message('Saving...', name: 'saving', desc: '', args: []);
+  }
+
+  /// `Deleting...`
+  String get deleting {
+    return Intl.message('Deleting...', name: 'deleting', desc: '', args: []);
+  }
+
+  /// `Secure proxy client`
+  String get appTagline {
+    return Intl.message(
+      'Secure proxy client',
+      name: 'appTagline',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Email or username`
+  String get emailOrUsername {
+    return Intl.message(
+      'Email or username',
+      name: 'emailOrUsername',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Forgot password?`
+  String get forgotPassword {
+    return Intl.message(
+      'Forgot password?',
+      name: 'forgotPassword',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Remember password`
+  String get rememberPassword {
+    return Intl.message(
+      'Remember password',
+      name: 'rememberPassword',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Password is saved on this device for automatic login.`
+  String get rememberPasswordTip {
+    return Intl.message(
+      'Password is saved on this device for automatic login.',
+      name: 'rememberPasswordTip',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Log in`
+  String get login {
+    return Intl.message('Log in', name: 'login', desc: '', args: []);
+  }
+
+  /// `No account?`
+  String get noAccount {
+    return Intl.message('No account?', name: 'noAccount', desc: '', args: []);
+  }
+
+  /// `Register now`
+  String get registerNow {
+    return Intl.message(
+      'Register now',
+      name: 'registerNow',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Create account`
+  String get createAccount {
+    return Intl.message(
+      'Create account',
+      name: 'createAccount',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Username`
+  String get username {
+    return Intl.message('Username', name: 'username', desc: '', args: []);
+  }
+
+  /// `Email`
+  String get email {
+    return Intl.message('Email', name: 'email', desc: '', args: []);
+  }
+
+  /// `Verification code`
+  String get verificationCode {
+    return Intl.message(
+      'Verification code',
+      name: 'verificationCode',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Send`
+  String get send {
+    return Intl.message('Send', name: 'send', desc: '', args: []);
+  }
+
+  /// `Verification code sent`
+  String get codeSent {
+    return Intl.message(
+      'Verification code sent',
+      name: 'codeSent',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Register`
+  String get register {
+    return Intl.message('Register', name: 'register', desc: '', args: []);
+  }
+
+  /// `Invite code (optional)`
+  String get inviteCodeOptional {
+    return Intl.message(
+      'Invite code (optional)',
+      name: 'inviteCodeOptional',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Confirm password`
+  String get confirmPassword {
+    return Intl.message(
+      'Confirm password',
+      name: 'confirmPassword',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `New password`
+  String get newPassword {
+    return Intl.message(
+      'New password',
+      name: 'newPassword',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Reset password`
+  String get resetPassword {
+    return Intl.message(
+      'Reset password',
+      name: 'resetPassword',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Required`
+  String get fieldRequired {
+    return Intl.message('Required', name: 'fieldRequired', desc: '', args: []);
+  }
+
+  /// `Enter a valid email address`
+  String get emailInvalid {
+    return Intl.message(
+      'Enter a valid email address',
+      name: 'emailInvalid',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Password must be at least 8 characters`
+  String get passwordTooShort {
+    return Intl.message(
+      'Password must be at least 8 characters',
+      name: 'passwordTooShort',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Passwords do not match`
+  String get passwordMismatch {
+    return Intl.message(
+      'Passwords do not match',
+      name: 'passwordMismatch',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Username must be at least 2 characters`
+  String get usernameTooShort {
+    return Intl.message(
+      'Username must be at least 2 characters',
+      name: 'usernameTooShort',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Authentication failed`
+  String get authFailed {
+    return Intl.message(
+      'Authentication failed',
+      name: 'authFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Show password`
+  String get showPassword {
+    return Intl.message(
+      'Show password',
+      name: 'showPassword',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Hide password`
+  String get hidePassword {
+    return Intl.message(
+      'Hide password',
+      name: 'hidePassword',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<AppLocalizations> {

@@ -17,6 +17,8 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
   List<dynamic> _devices = [];
   bool _loading = true;
   final Map<String, TextEditingController> _remarkCtrls = {};
+  final Set<String> _savingRemarkIds = {};
+  final Set<String> _deletingDeviceIds = {};
 
   @override
   void initState() {
@@ -53,22 +55,26 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('删除设备'),
-        content: Text('确定要删除设备「$name」吗？'),
+        title: Text(context.appLocalizations.deleteDevice),
+        content: Text(context.appLocalizations.confirmDeleteDevice(name)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('取消'),
+            child: Text(context.appLocalizations.cancel),
           ),
           FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            style: FilledButton.styleFrom(
+              backgroundColor: context.colorScheme.error,
+              foregroundColor: context.colorScheme.onError,
+            ),
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('删除'),
+            child: Text(context.appLocalizations.delete),
           ),
         ],
       ),
     );
     if (confirmed != true) return;
+    setState(() => _deletingDeviceIds.add(deviceId));
     setState(
       () => _devices.removeWhere((d) => (d['id'] ?? '').toString() == deviceId),
     );
@@ -76,41 +82,62 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
       await ApiService().deleteDevice(deviceId);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('删除失败：$e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.appLocalizations.deleteFailed(e.toString())),
+          ),
+        );
       }
       await _loadDevices();
+    } finally {
+      if (mounted) setState(() => _deletingDeviceIds.remove(deviceId));
     }
   }
 
-  void _saveRemark(String deviceId, String remark) {
+  Future<void> _saveRemark(String deviceId, String remark) async {
+    final idx = _devices.indexWhere(
+      (d) => (d['id'] ?? '').toString() == deviceId,
+    );
+    if (idx != -1 && (_devices[idx]['remark'] ?? '').toString() == remark) {
+      return;
+    }
     setState(() {
-      final idx = _devices.indexWhere(
-        (d) => (d['id'] ?? '').toString() == deviceId,
-      );
       if (idx != -1) {
         _devices[idx] = Map<String, dynamic>.from(_devices[idx] as Map)
           ..['remark'] = remark;
       }
+      _savingRemarkIds.add(deviceId);
     });
-    ApiService().remarkDevice(deviceId, remark).catchError((e) {
+    try {
+      await ApiService().remarkDevice(deviceId, remark);
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('保存备注失败：$e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(context.appLocalizations.remarkSaved)),
+        );
       }
-      return _loadDevices();
-    });
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              context.appLocalizations.saveRemarkFailed(e.toString()),
+            ),
+          ),
+        );
+      }
+      await _loadDevices();
+    } finally {
+      if (mounted) setState(() => _savingRemarkIds.remove(deviceId));
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return CommonScaffold(
-      title: '设备管理',
+      title: context.appLocalizations.devices,
       actions: [
         IconButton(
-          tooltip: '刷新',
+          tooltip: context.appLocalizations.refresh,
           icon: const Icon(Icons.refresh),
           onPressed: _loading ? null : () => _loadDevices(silent: true),
         ),
@@ -124,7 +151,16 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
                 children: [
                   SizedBox(
                     height: MediaQuery.sizeOf(context).height * 0.45,
-                    child: const Center(child: Text('暂无设备')),
+                    child: Center(
+                      child: Text(context.appLocalizations.noDevices),
+                    ),
+                  ),
+                  Center(
+                    child: FilledButton.icon(
+                      onPressed: () => _loadDevices(silent: true),
+                      icon: const Icon(Icons.refresh),
+                      label: Text(context.appLocalizations.refresh),
+                    ),
                   ),
                 ],
               ),
@@ -150,15 +186,15 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
       padding: const EdgeInsets.all(12),
       children: [
         // Header
-        const Padding(
-          padding: EdgeInsets.fromLTRB(16, 8, 8, 8),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
           child: Row(
             children: [
               Expanded(
                 flex: 2,
                 child: Text(
-                  '设备名称',
-                  style: TextStyle(
+                  context.appLocalizations.deviceName,
+                  style: const TextStyle(
                     fontSize: 12,
                     color: Colors.grey,
                     fontWeight: FontWeight.w600,
@@ -168,8 +204,8 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
               Expanded(
                 flex: 1,
                 child: Text(
-                  '类型',
-                  style: TextStyle(
+                  context.appLocalizations.deviceType,
+                  style: const TextStyle(
                     fontSize: 12,
                     color: Colors.grey,
                     fontWeight: FontWeight.w600,
@@ -179,8 +215,8 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
               SizedBox(
                 width: 100,
                 child: Text(
-                  'IP / 地区',
-                  style: TextStyle(
+                  context.appLocalizations.ipRegion,
+                  style: const TextStyle(
                     fontSize: 12,
                     color: Colors.grey,
                     fontWeight: FontWeight.w600,
@@ -190,8 +226,8 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
               SizedBox(
                 width: 85,
                 child: Text(
-                  '更新时间',
-                  style: TextStyle(
+                  context.appLocalizations.updatedAt,
+                  style: const TextStyle(
                     fontSize: 12,
                     color: Colors.grey,
                     fontWeight: FontWeight.w600,
@@ -201,15 +237,15 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
               SizedBox(
                 width: 110,
                 child: Text(
-                  '备注',
-                  style: TextStyle(
+                  context.appLocalizations.remark,
+                  style: const TextStyle(
                     fontSize: 12,
                     color: Colors.grey,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
-              SizedBox(width: 40),
+              const SizedBox(width: 40),
             ],
           ),
         ),
@@ -223,7 +259,9 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
 
   Widget _buildWideRow(ColorScheme cs, Map<String, dynamic> d, int index) {
     final id = (d['id'] ?? '').toString();
-    final name = (d['device_name'] ?? d['name'] ?? '未知').toString();
+    final name =
+        (d['device_name'] ?? d['name'] ?? context.appLocalizations.unknown)
+            .toString();
     final software = (d['software_name'] ?? '').toString();
     final displayName = software.isNotEmpty && !name.startsWith(software)
         ? '$software - $name'
@@ -233,6 +271,8 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
     final country = _parseCountry(d['location']);
     final remark = (d['remark'] ?? '').toString();
     final remarkCtrl = _remarkCtrls[id] ??= TextEditingController(text: remark);
+    final isSavingRemark = _savingRemarkIds.contains(id);
+    final isDeleting = _deletingDeviceIds.contains(id);
     if (remarkCtrl.text != remark) {
       remarkCtrl.text = remark;
     }
@@ -333,7 +373,7 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
                   controller: remarkCtrl,
                   style: const TextStyle(fontSize: 12),
                   decoration: InputDecoration(
-                    hintText: '输入备注…',
+                    hintText: context.appLocalizations.inputRemark,
                     hintStyle: const TextStyle(fontSize: 11),
                     isDense: true,
                     contentPadding: const EdgeInsets.symmetric(
@@ -355,6 +395,7 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
                       borderSide: BorderSide(color: cs.primary),
                     ),
                   ),
+                  enabled: !isSavingRemark,
                   onSubmitted: (v) => _saveRemark(id, v.trim()),
                   onEditingComplete: () =>
                       _saveRemark(id, remarkCtrl.text.trim()),
@@ -364,12 +405,17 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
           ),
           SizedBox(
             width: 40,
-            child: IconButton(
-              icon: const Icon(Icons.delete_outline, size: 18),
-              color: cs.error,
-              tooltip: '删除设备',
-              onPressed: () => _deleteDevice(id, name),
-            ),
+            child: isDeleting
+                ? const Padding(
+                    padding: EdgeInsets.all(10),
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : IconButton(
+                    icon: const Icon(Icons.delete_outline, size: 18),
+                    color: cs.error,
+                    tooltip: context.appLocalizations.deleteDevice,
+                    onPressed: () => _deleteDevice(id, name),
+                  ),
           ),
         ],
       ),
@@ -384,7 +430,9 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
       itemBuilder: (_, i) {
         final d = _devices[i] as Map<String, dynamic>;
         final id = (d['id'] ?? '').toString();
-        final name = (d['device_name'] ?? d['name'] ?? '未知').toString();
+        final name =
+            (d['device_name'] ?? d['name'] ?? context.appLocalizations.unknown)
+                .toString();
         final software = (d['software_name'] ?? '').toString();
         final displayName = software.isNotEmpty && !name.startsWith(software)
             ? '$software - $name'
@@ -397,6 +445,8 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
         final remarkCtrl = _remarkCtrls[id] ??= TextEditingController(
           text: remark,
         );
+        final isSavingRemark = _savingRemarkIds.contains(id);
+        final isDeleting = _deletingDeviceIds.contains(id);
         if (remarkCtrl.text != remark) {
           remarkCtrl.text = remark;
         }
@@ -424,22 +474,33 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
                         ),
                       ),
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.delete_outline, size: 20),
-                      color: cs.error,
-                      visualDensity: VisualDensity.compact,
-                      onPressed: () => _deleteDevice(id, name),
+                    SizedBox(
+                      width: 44,
+                      height: 44,
+                      child: isDeleting
+                          ? const Padding(
+                              padding: EdgeInsets.all(10),
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : IconButton(
+                              icon: const Icon(Icons.delete_outline, size: 20),
+                              color: cs.error,
+                              tooltip: context.appLocalizations.deleteDevice,
+                              onPressed: () => _deleteDevice(id, name),
+                            ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 8),
-                _infoRow('类型', deviceType),
-                if (os.isNotEmpty) _infoRow('系统', os),
+                _infoRow(context.appLocalizations.deviceType, deviceType),
+                if (os.isNotEmpty)
+                  _infoRow(context.appLocalizations.system, os),
                 if (ip.isNotEmpty) _infoRow('IP', ip),
-                if (country.isNotEmpty) _infoRow('地区', country),
+                if (country.isNotEmpty)
+                  _infoRow(context.appLocalizations.region, country),
                 if (lastSeen.isNotEmpty)
                   _infoRow(
-                    '更新',
+                    context.appLocalizations.updated,
                     lastSeen.length >= 16
                         ? lastSeen.substring(5, 16)
                         : lastSeen,
@@ -451,18 +512,33 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
                     controller: remarkCtrl,
                     style: const TextStyle(fontSize: 12),
                     decoration: InputDecoration(
-                      hintText: '输入备注…',
+                      hintText: context.appLocalizations.inputRemark,
                       hintStyle: const TextStyle(fontSize: 11),
                       isDense: true,
                       contentPadding: const EdgeInsets.symmetric(
                         horizontal: 8,
                         vertical: 6,
                       ),
+                      suffixIcon: isSavingRemark
+                          ? const Padding(
+                              padding: EdgeInsets.all(10),
+                              child: SizedBox(
+                                width: 14,
+                                height: 14,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                            )
+                          : null,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(6),
                       ),
                     ),
+                    enabled: !isSavingRemark,
                     onSubmitted: (v) => _saveRemark(id, v.trim()),
+                    onEditingComplete: () =>
+                        _saveRemark(id, remarkCtrl.text.trim()),
                   ),
                 ),
               ],
@@ -476,10 +552,10 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
   String _typeLabel(Map<String, dynamic> d) {
     final t = (d['device_type'] ?? d['type'] ?? '').toString();
     return switch (t) {
-      'desktop' => '桌面',
-      'mobile' => '手机',
-      'tablet' => '平板',
-      _ => t.isNotEmpty ? t : '未知',
+      'desktop' => currentAppLocalizations.desktopDevice,
+      'mobile' => currentAppLocalizations.mobileDevice,
+      'tablet' => currentAppLocalizations.tabletDevice,
+      _ => t.isNotEmpty ? t : currentAppLocalizations.unknown,
     };
   }
 
@@ -491,7 +567,7 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
     return ua.length > 60 ? '${ua.substring(0, 60)}…' : ua;
   }
 
-  // location is a JSON string: {"country":"泰国","country_code":"TH",...}
+  // location is a JSON string: {"country":"Thailand","country_code":"TH",...}
   String _parseCountry(dynamic location) {
     if (location == null) return '';
     try {
