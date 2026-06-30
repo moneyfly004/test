@@ -311,20 +311,42 @@ class _AccountInfoCard extends ConsumerStatefulWidget {
 }
 
 class _AccountInfoCardState extends ConsumerState<_AccountInfoCard> {
+  static Map<String, dynamic>? _cachedInfo;
+  static DateTime? _lastLoadedAt;
+  static Future<Map<String, dynamic>?>? _pendingLoad;
+  static const _cacheDuration = Duration(minutes: 5);
+
   Map<String, dynamic>? _info;
-  bool _loading = true;
+  bool _loading = _cachedInfo == null;
   bool _syncing = false;
 
   @override
   void initState() {
     super.initState();
-    _load();
+    _info = _cachedInfo;
+    _loadIfStale();
   }
 
-  Future<void> _load() async {
-    setState(() => _loading = true);
+  bool get _hasFreshCache {
+    final lastLoadedAt = _lastLoadedAt;
+    return _cachedInfo != null &&
+        lastLoadedAt != null &&
+        DateTime.now().difference(lastLoadedAt) < _cacheDuration;
+  }
+
+  Future<void> _loadIfStale() async {
+    if (_hasFreshCache) return;
+    await _load();
+  }
+
+  Future<void> _load({bool force = false}) async {
+    if (!force && _hasFreshCache) {
+      if (mounted) setState(() => _info = _cachedInfo);
+      return;
+    }
+    if (mounted && _info == null) setState(() => _loading = true);
     try {
-      final info = await ApiService().getDashboard();
+      final info = await _getDashboardDeduped(force: force);
       if (mounted) {
         setState(() {
           _info = info;
@@ -336,12 +358,33 @@ class _AccountInfoCardState extends ConsumerState<_AccountInfoCard> {
     }
   }
 
+  static Future<Map<String, dynamic>?> _getDashboardDeduped({
+    required bool force,
+  }) {
+    if (!force && _pendingLoad != null) return _pendingLoad!;
+    final future = ApiService().getDashboard().then<Map<String, dynamic>?>((
+      info,
+    ) {
+      _cachedInfo = info;
+      _lastLoadedAt = DateTime.now();
+      return info;
+    });
+    _pendingLoad = future.whenComplete(() => _pendingLoad = null);
+    return _pendingLoad!;
+  }
+
   Future<void> _syncSubscription() async {
     if (_syncing) return;
     setState(() => _syncing = true);
     try {
       final state = await MoneyFlyService.refreshAccountState(ref);
-      await _load();
+      if (state.dashboard.isNotEmpty) {
+        _cachedInfo = state.dashboard;
+        _lastLoadedAt = DateTime.now();
+        if (mounted) setState(() => _info = state.dashboard);
+      } else {
+        await _load(force: true);
+      }
       if (mounted) {
         globalState.showNotifier(
           state.available

@@ -35,11 +35,20 @@ class Request {
     try {
       return await _clashDio.get<Uint8List>(
         url,
-        options: Options(responseType: ResponseType.bytes),
+        options: Options(
+          responseType: ResponseType.bytes,
+          connectTimeout: subscriptionDownloadTimeout,
+          receiveTimeout: subscriptionDownloadTimeout,
+        ),
       );
     } catch (e) {
       commonPrint.log('getFileResponseForUrl error ${e.toString()}');
       if (e is DioException) {
+        if (e.type == DioExceptionType.connectionTimeout ||
+            e.type == DioExceptionType.receiveTimeout ||
+            e.type == DioExceptionType.sendTimeout) {
+          throw '${currentAppLocalizations.networkException}: ${e.message}';
+        }
         if (e.type == DioExceptionType.unknown) {
           throw currentAppLocalizations.unknownNetworkError;
         } else if (e.type == DioExceptionType.badResponse) {
@@ -113,30 +122,30 @@ class Request {
 
       final future = dio
           .get<Map<String, dynamic>>(
-        source.key,
-        cancelToken: token,
-        options: Options(responseType: ResponseType.json),
-      )
+            source.key,
+            cancelToken: token,
+            options: Options(responseType: ResponseType.json),
+          )
           .timeout(const Duration(seconds: 10));
       future
           .then((res) {
-        if (res.statusCode == HttpStatus.ok && res.data != null) {
-          completer.complete(Result.success(source.value(res.data!)));
-          return;
-        }
-        commonPrint.log('checkIp data empty', logLevel: LogLevel.info);
-        failureCount++;
-        handleFailRes();
-      })
+            if (res.statusCode == HttpStatus.ok && res.data != null) {
+              completer.complete(Result.success(source.value(res.data!)));
+              return;
+            }
+            commonPrint.log('checkIp data empty', logLevel: LogLevel.info);
+            failureCount++;
+            handleFailRes();
+          })
           .catchError((e) {
-        failureCount++;
-        if (e is DioException && e.type == DioExceptionType.cancel) {
-          completer.complete(Result.error('cancelled'));
-          return;
-        }
-        commonPrint.log('checkIp error $e', logLevel: LogLevel.warning);
-        handleFailRes();
-      });
+            failureCount++;
+            if (e is DioException && e.type == DioExceptionType.cancel) {
+              completer.complete(Result.error('cancelled'));
+              return;
+            }
+            commonPrint.log('checkIp error $e', logLevel: LogLevel.warning);
+            handleFailRes();
+          });
       return completer.future;
     });
     final res = await Future.any(futures);
@@ -149,9 +158,9 @@ class Request {
     try {
       final response = await dio
           .get(
-        'http://$localhost:$helperPort/ping',
-        options: Options(responseType: ResponseType.plain),
-      )
+            'http://$localhost:$helperPort/ping',
+            options: Options(responseType: ResponseType.plain),
+          )
           .timeout(const Duration(milliseconds: 2000));
       if (response.statusCode != HttpStatus.ok) {
         return false;
@@ -166,10 +175,10 @@ class Request {
     try {
       final response = await dio
           .post(
-        'http://$localhost:$helperPort/start',
-        data: json.encode({'path': appPath.corePath, 'arg': arg}),
-        options: Options(responseType: ResponseType.plain),
-      )
+            'http://$localhost:$helperPort/start',
+            data: json.encode({'path': appPath.corePath, 'arg': arg}),
+            options: Options(responseType: ResponseType.plain),
+          )
           .timeout(const Duration(milliseconds: 2000));
       if (response.statusCode != HttpStatus.ok) {
         return false;
@@ -185,9 +194,9 @@ class Request {
     try {
       final response = await dio
           .post(
-        'http://$localhost:$helperPort/stop',
-        options: Options(responseType: ResponseType.plain),
-      )
+            'http://$localhost:$helperPort/stop',
+            options: Options(responseType: ResponseType.plain),
+          )
           .timeout(const Duration(milliseconds: 2000));
       if (response.statusCode != HttpStatus.ok) {
         return false;

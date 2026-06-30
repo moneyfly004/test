@@ -63,7 +63,6 @@ class MoneyFlyService {
     try {
       dashboard = await ApiService().getDashboard();
     } catch (e) {
-      await _clearAccountData(container);
       return MoneyFlyAccountState.unavailable(
         message: '账户状态校验失败：$e',
         dashboard: dashboard,
@@ -83,7 +82,6 @@ class MoneyFlyService {
     try {
       subscriptionUrl = await ApiService().getSubscriptionUrl();
     } catch (e) {
-      await _clearAccountData(container);
       return MoneyFlyAccountState.unavailable(
         message: '订阅不可用：$e',
         dashboard: dashboard,
@@ -108,7 +106,6 @@ class MoneyFlyService {
           .copyWith(label: profileLabel, url: subscriptionUrl)
           .update();
     } catch (e) {
-      await _clearAccountData(container);
       return MoneyFlyAccountState.unavailable(
         message: '订阅配置更新失败：$e',
         dashboard: dashboard,

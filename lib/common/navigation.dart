@@ -46,12 +46,24 @@ class Navigation {
             const PackagesView(key: GlobalObjectKey(PageLabel.packages)),
       ),
       NavigationItem(
+        icon: const Icon(Icons.settings),
+        label: PageLabel.settings,
+        builder: (_) =>
+            const ConfigView(key: GlobalObjectKey(PageLabel.settings)),
+      ),
+      NavigationItem(
+        icon: const Icon(Icons.construction),
+        label: PageLabel.tools,
+        builder: (_) => const ToolsView(key: GlobalObjectKey(PageLabel.tools)),
+        modes: const [NavigationItemMode.more],
+      ),
+      NavigationItem(
         icon: const Icon(Icons.view_timeline),
         label: PageLabel.requests,
         builder: (_) =>
             const RequestsView(key: GlobalObjectKey(PageLabel.requests)),
         description: 'requestsDesc',
-        modes: [NavigationItemMode.desktop, NavigationItemMode.more],
+        modes: const [NavigationItemMode.more],
       ),
       NavigationItem(
         icon: const Icon(Icons.ballot),
@@ -59,7 +71,7 @@ class Navigation {
         builder: (_) =>
             const ConnectionsView(key: GlobalObjectKey(PageLabel.connections)),
         description: 'connectionsDesc',
-        modes: [NavigationItemMode.desktop, NavigationItemMode.more],
+        modes: const [NavigationItemMode.more],
       ),
       NavigationItem(
         icon: const Icon(Icons.storage),
@@ -67,22 +79,14 @@ class Navigation {
         description: 'resourcesDesc',
         builder: (_) =>
             const ResourcesView(key: GlobalObjectKey(PageLabel.resources)),
-        modes: [NavigationItemMode.more],
+        modes: const [NavigationItemMode.more],
       ),
       NavigationItem(
         icon: const Icon(Icons.adb),
         label: PageLabel.logs,
         builder: (_) => const LogsView(key: GlobalObjectKey(PageLabel.logs)),
         description: 'logsDesc',
-        modes: openLogs
-            ? [NavigationItemMode.desktop, NavigationItemMode.more]
-            : [],
-      ),
-      NavigationItem(
-        icon: const Icon(Icons.construction),
-        label: PageLabel.tools,
-        builder: (_) => const ToolsView(key: GlobalObjectKey(PageLabel.tools)),
-        modes: [NavigationItemMode.desktop, NavigationItemMode.mobile],
+        modes: openLogs ? [NavigationItemMode.more] : [],
       ),
     ];
   }

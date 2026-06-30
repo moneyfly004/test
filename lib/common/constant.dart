@@ -136,6 +136,7 @@ const configJsonName = 'config.json';
 // MoneyFly API
 const apiBaseUrl = 'https://dy.moneyfly.top/api/v1';
 const apiTimeout = Duration(seconds: 20);
+const subscriptionDownloadTimeout = Duration(seconds: 60);
 const tokenKey = 'auth_token';
 const refreshTokenKey = 'refresh_token';
 const deviceIdKey = 'device_id';
