@@ -34,6 +34,18 @@ class Navigation {
             const ProfilesView(key: GlobalObjectKey(PageLabel.profiles)),
       ),
       NavigationItem(
+        icon: const Icon(Icons.devices),
+        label: PageLabel.devices,
+        builder: (_) =>
+            const DevicesView(key: GlobalObjectKey(PageLabel.devices)),
+      ),
+      NavigationItem(
+        icon: const Icon(Icons.shopping_bag_outlined),
+        label: PageLabel.packages,
+        builder: (_) =>
+            const PackagesView(key: GlobalObjectKey(PageLabel.packages)),
+      ),
+      NavigationItem(
         icon: const Icon(Icons.view_timeline),
         label: PageLabel.requests,
         builder: (_) =>
