@@ -561,6 +561,7 @@
   "retry": "重试",
   "close": "关闭",
   "packageFallback": "套餐",
+  "packageIdUnavailable": "套餐信息不完整，请刷新后重试",
   "noPackages": "暂无可用套餐",
   "buyNow": "立即购买",
   "packageUpdated": "套餐已更新",
@@ -572,6 +573,8 @@
   "scanToPay": "扫码支付",
   "openPaymentLinkFailed": "无法打开支付链接",
   "openPaymentLinkFailedWithMessage": "无法打开支付链接：{message}",
+  "invalidPaymentLink": "支付链接无效",
+  "paymentStatusCheckFailed": "无法检查支付状态：{message}",
   "paymentSuccessUpdatingPackage": "支付成功！正在更新套餐...",
   "qrCodeLoading": "二维码加载中...",
   "openAlipay": "打开支付宝支付",
@@ -605,7 +608,7 @@
   "emailOrUsername": "邮箱或用户名",
   "forgotPassword": "忘记密码？",
   "rememberPassword": "记住密码",
-  "rememberPasswordTip": "密码会保存在本设备，用于自动登录。",
+  "rememberPasswordTip": "密码会保存在本设备，下次自动填入表单。",
   "login": "登录",
   "noAccount": "没有账号？",
   "registerNow": "立即注册",
@@ -626,6 +629,7 @@
   "passwordMismatch": "两次输入的密码不一致",
   "usernameTooShort": "用户名至少需要 2 个字符",
   "authFailed": "认证失败",
+  "invalidLoginResponse": "登录响应无效",
   "showPassword": "显示密码",
   "hidePassword": "隐藏密码"
 }

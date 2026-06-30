@@ -77,21 +77,24 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m24(orderNo) => "Номер заказа: ${orderNo}";
 
-  static String m25(label) => "${label} должен быть числом от 1024 до 49151";
+  static String m25(message) =>
+      "Не удалось проверить статус оплаты: ${message}";
 
-  static String m26(time) => "Осталось: ${time}";
+  static String m26(label) => "${label} должен быть числом от 1024 до 49151";
 
-  static String m27(message) => "Не удалось сохранить примечание: ${message}";
+  static String m27(time) => "Осталось: ${time}";
 
-  static String m28(count) => "Выбрано ${count} элементов";
+  static String m28(message) => "Не удалось сохранить примечание: ${message}";
 
-  static String m29(traffic) => "${traffic} ГБ";
+  static String m29(count) => "Выбрано ${count} элементов";
 
-  static String m30(message) => "Ошибка обновления: ${message}";
+  static String m30(traffic) => "${traffic} ГБ";
 
-  static String m31(label) => "${label} должен быть URL";
+  static String m31(message) => "Ошибка обновления: ${message}";
 
-  static String m32(count) =>
+  static String m32(label) => "${label} должен быть URL";
+
+  static String m33(count) =>
       "${Intl.plural(count, one: '${count} год назад', few: '${count} года назад', many: '${count} лет назад', other: '${count} года назад')}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
@@ -561,6 +564,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "invalidBackupFile": MessageLookupByLibrary.simpleMessage(
       "Неверный файл резервной копии",
     ),
+    "invalidLoginResponse": MessageLookupByLibrary.simpleMessage(
+      "Недействительный ответ входа",
+    ),
+    "invalidPaymentLink": MessageLookupByLibrary.simpleMessage(
+      "Недействительная ссылка оплаты",
+    ),
     "invalidPolicy": m14,
     "invalidProxy": m15,
     "invalidProxyProvider": m16,
@@ -748,6 +757,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "packageExpired": MessageLookupByLibrary.simpleMessage("Пакет истек"),
     "packageFallback": MessageLookupByLibrary.simpleMessage("Пакет"),
+    "packageIdUnavailable": MessageLookupByLibrary.simpleMessage(
+      "Данные пакета неполные. Обновите и попробуйте снова.",
+    ),
     "packageStatusUnavailable": MessageLookupByLibrary.simpleMessage(
       "Статус пакета недоступен",
     ),
@@ -762,6 +774,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Пароль должен быть не короче 8 символов",
     ),
     "paste": MessageLookupByLibrary.simpleMessage("Вставить"),
+    "paymentStatusCheckFailed": m25,
     "paymentSuccessUpdatingPackage": MessageLookupByLibrary.simpleMessage(
       "Оплата успешна. Обновление пакета...",
     ),
@@ -781,7 +794,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "portConflictTip": MessageLookupByLibrary.simpleMessage(
       "Введите другой порт",
     ),
-    "portTip": m25,
+    "portTip": m26,
     "preferH3Desc": MessageLookupByLibrary.simpleMessage(
       "Приоритетное использование HTTP/3 для DOH",
     ),
@@ -875,14 +888,14 @@ class MessageLookup extends MessageLookupByLibrary {
     "region": MessageLookupByLibrary.simpleMessage("Регион"),
     "register": MessageLookupByLibrary.simpleMessage("Регистрация"),
     "registerNow": MessageLookupByLibrary.simpleMessage("Зарегистрироваться"),
-    "remainingTime": m26,
+    "remainingTime": m27,
     "remark": MessageLookupByLibrary.simpleMessage("Примечание"),
     "remarkSaved": MessageLookupByLibrary.simpleMessage("Примечание сохранено"),
     "rememberPassword": MessageLookupByLibrary.simpleMessage(
       "Запомнить пароль",
     ),
     "rememberPasswordTip": MessageLookupByLibrary.simpleMessage(
-      "Пароль будет сохранен на этом устройстве для автоматического входа.",
+      "Пароль будет сохранен на этом устройстве для заполнения формы в следующий раз.",
     ),
     "remote": MessageLookupByLibrary.simpleMessage("Удаленный"),
     "remoteBackupDesc": MessageLookupByLibrary.simpleMessage(
@@ -1067,7 +1080,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "ruleTarget": MessageLookupByLibrary.simpleMessage("Цель правила"),
     "save": MessageLookupByLibrary.simpleMessage("Сохранить"),
     "saveChanges": MessageLookupByLibrary.simpleMessage("Сохранить изменения?"),
-    "saveRemarkFailed": m27,
+    "saveRemarkFailed": m28,
     "saving": MessageLookupByLibrary.simpleMessage("Сохранение..."),
     "scanToPay": MessageLookupByLibrary.simpleMessage("Сканировать для оплаты"),
     "script": MessageLookupByLibrary.simpleMessage("Скрипт"),
@@ -1094,7 +1107,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Пожалуйста, выберите подправило",
     ),
     "selected": MessageLookupByLibrary.simpleMessage("Выбрано"),
-    "selectedCountTitle": m28,
+    "selectedCountTitle": m29,
     "send": MessageLookupByLibrary.simpleMessage("Отправить"),
     "settings": MessageLookupByLibrary.simpleMessage("Настройки"),
     "show": MessageLookupByLibrary.simpleMessage("Показать"),
@@ -1188,7 +1201,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "tonalSpotScheme": MessageLookupByLibrary.simpleMessage("Тональный акцент"),
     "tools": MessageLookupByLibrary.simpleMessage("Инструменты"),
     "tproxyPort": MessageLookupByLibrary.simpleMessage("Tproxy-порт"),
-    "trafficGb": m29,
+    "trafficGb": m30,
     "trafficUsage": MessageLookupByLibrary.simpleMessage(
       "Использование трафика",
     ),
@@ -1211,7 +1224,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "unnamed": MessageLookupByLibrary.simpleMessage("Без имени"),
     "update": MessageLookupByLibrary.simpleMessage("Обновить"),
-    "updateFailed": m30,
+    "updateFailed": m31,
     "updateSubscription": MessageLookupByLibrary.simpleMessage(
       "Обновить подписку",
     ),
@@ -1222,7 +1235,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "urlDesc": MessageLookupByLibrary.simpleMessage(
       "Получить профиль через URL",
     ),
-    "urlTip": m31,
+    "urlTip": m32,
     "useHosts": MessageLookupByLibrary.simpleMessage("Использовать hosts"),
     "useSystemHosts": MessageLookupByLibrary.simpleMessage(
       "Использовать системные hosts",
@@ -1255,7 +1268,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "whitelistMode": MessageLookupByLibrary.simpleMessage(
       "Режим белого списка",
     ),
-    "yearsAgo": m32,
+    "yearsAgo": m33,
     "zh_CN": MessageLookupByLibrary.simpleMessage("Упрощенный китайский"),
   };
 }

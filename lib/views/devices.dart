@@ -19,6 +19,8 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
   final Map<String, TextEditingController> _remarkCtrls = {};
   final Set<String> _savingRemarkIds = {};
   final Set<String> _deletingDeviceIds = {};
+  final Set<String> _editingRemarkIds = {};
+  final Map<String, int> _remarkSaveVersions = {};
 
   @override
   void initState() {
@@ -95,6 +97,8 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
   }
 
   Future<void> _saveRemark(String deviceId, String remark) async {
+    final saveVersion = (_remarkSaveVersions[deviceId] ?? 0) + 1;
+    _remarkSaveVersions[deviceId] = saveVersion;
     final idx = _devices.indexWhere(
       (d) => (d['id'] ?? '').toString() == deviceId,
     );
@@ -110,6 +114,7 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
     });
     try {
       await ApiService().remarkDevice(deviceId, remark);
+      if (!mounted || _remarkSaveVersions[deviceId] != saveVersion) return;
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(context.appLocalizations.remarkSaved)),
@@ -127,8 +132,23 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
       }
       await _loadDevices();
     } finally {
-      if (mounted) setState(() => _savingRemarkIds.remove(deviceId));
+      if (mounted && _remarkSaveVersions[deviceId] == saveVersion) {
+        setState(() => _savingRemarkIds.remove(deviceId));
+      }
     }
+  }
+
+  void _syncRemarkController(
+    String deviceId,
+    TextEditingController controller,
+    String remark,
+  ) {
+    if (_editingRemarkIds.contains(deviceId)) return;
+    if (controller.text == remark) return;
+    controller.value = TextEditingValue(
+      text: remark,
+      selection: TextSelection.collapsed(offset: remark.length),
+    );
   }
 
   @override
@@ -273,9 +293,7 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
     final remarkCtrl = _remarkCtrls[id] ??= TextEditingController(text: remark);
     final isSavingRemark = _savingRemarkIds.contains(id);
     final isDeleting = _deletingDeviceIds.contains(id);
-    if (remarkCtrl.text != remark) {
-      remarkCtrl.text = remark;
-    }
+    _syncRemarkController(id, remarkCtrl, remark);
     final lastSeen =
         (d['last_seen'] ?? d['last_access'] ?? d['updated_at'] ?? '')
             .toString();
@@ -396,9 +414,12 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
                     ),
                   ),
                   enabled: !isSavingRemark,
+                  onTap: () => _editingRemarkIds.add(id),
                   onSubmitted: (v) => _saveRemark(id, v.trim()),
-                  onEditingComplete: () =>
-                      _saveRemark(id, remarkCtrl.text.trim()),
+                  onEditingComplete: () {
+                    _editingRemarkIds.remove(id);
+                    _saveRemark(id, remarkCtrl.text.trim());
+                  },
                 ),
               ),
             ),
@@ -447,9 +468,7 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
         );
         final isSavingRemark = _savingRemarkIds.contains(id);
         final isDeleting = _deletingDeviceIds.contains(id);
-        if (remarkCtrl.text != remark) {
-          remarkCtrl.text = remark;
-        }
+        _syncRemarkController(id, remarkCtrl, remark);
         final lastSeen =
             (d['last_seen'] ?? d['last_access'] ?? d['updated_at'] ?? '')
                 .toString();
@@ -536,9 +555,12 @@ class _DevicesViewState extends ConsumerState<DevicesView> {
                       ),
                     ),
                     enabled: !isSavingRemark,
+                    onTap: () => _editingRemarkIds.add(id),
                     onSubmitted: (v) => _saveRemark(id, v.trim()),
-                    onEditingComplete: () =>
-                        _saveRemark(id, remarkCtrl.text.trim()),
+                    onEditingComplete: () {
+                      _editingRemarkIds.remove(id);
+                      _saveRemark(id, remarkCtrl.text.trim());
+                    },
                   ),
                 ),
               ],

@@ -4574,6 +4574,16 @@ class AppLocalizations {
     return Intl.message('Package', name: 'packageFallback', desc: '', args: []);
   }
 
+  /// `Package information is incomplete. Refresh and try again.`
+  String get packageIdUnavailable {
+    return Intl.message(
+      'Package information is incomplete. Refresh and try again.',
+      name: 'packageIdUnavailable',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `No packages available`
   String get noPackages {
     return Intl.message(
@@ -4664,6 +4674,26 @@ class AppLocalizations {
     return Intl.message(
       'Unable to open payment link: $message',
       name: 'openPaymentLinkFailedWithMessage',
+      desc: '',
+      args: [message],
+    );
+  }
+
+  /// `Invalid payment link`
+  String get invalidPaymentLink {
+    return Intl.message(
+      'Invalid payment link',
+      name: 'invalidPaymentLink',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Unable to check payment status: {message}`
+  String paymentStatusCheckFailed(Object message) {
+    return Intl.message(
+      'Unable to check payment status: $message',
+      name: 'paymentStatusCheckFailed',
       desc: '',
       args: [message],
     );
@@ -4929,10 +4959,10 @@ class AppLocalizations {
     );
   }
 
-  /// `Password is saved on this device for automatic login.`
+  /// `Password is saved on this device to fill the form next time.`
   String get rememberPasswordTip {
     return Intl.message(
-      'Password is saved on this device for automatic login.',
+      'Password is saved on this device to fill the form next time.',
       name: 'rememberPasswordTip',
       desc: '',
       args: [],
@@ -5099,6 +5129,16 @@ class AppLocalizations {
     return Intl.message(
       'Authentication failed',
       name: 'authFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Login response is invalid`
+  String get invalidLoginResponse {
+    return Intl.message(
+      'Login response is invalid',
+      name: 'invalidLoginResponse',
       desc: '',
       args: [],
     );

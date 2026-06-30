@@ -43,6 +43,13 @@ class _PackagesViewState extends ConsumerState<PackagesView> {
 
   Future<void> _purchase(Map<String, dynamic> pkg) async {
     final appLocalizations = context.appLocalizations;
+    final packageId = _packageId(pkg);
+    if (packageId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(appLocalizations.packageIdUnavailable)),
+      );
+      return;
+    }
     final method = await showDialog<String>(
       context: context,
       builder: (dialogContext) => _PaymentMethodDialog(
@@ -57,10 +64,7 @@ class _PackagesViewState extends ConsumerState<PackagesView> {
       context: context,
       barrierDismissible: false,
       builder: (dialogContext) => _PaymentQrDialog(
-        orderFuture: ApiService().createOrder(
-          pkg['id']?.toString() ?? '',
-          method,
-        ),
+        orderFuture: ApiService().createOrder(packageId, method),
         dialogContext: dialogContext,
       ),
     );
@@ -89,6 +93,20 @@ class _PackagesViewState extends ConsumerState<PackagesView> {
               pkg['subject'] ??
               currentAppLocalizations.packageFallback)
           .toString();
+
+  String? _packageId(Map<String, dynamic> pkg) {
+    for (final key in const [
+      'id',
+      'package_id',
+      'product_id',
+      'plan_id',
+      'goods_id',
+    ]) {
+      final value = pkg[key]?.toString().trim();
+      if (value != null && value.isNotEmpty) return value;
+    }
+    return null;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -420,6 +438,8 @@ class _PaymentQrDialogState extends State<_PaymentQrDialog> {
   int _secondsLeft = 900;
   Map<String, dynamic>? _order;
   String? _orderError;
+  String? _pollError;
+  int _pollFailures = 0;
 
   @override
   void initState() {
@@ -447,6 +467,10 @@ class _PaymentQrDialogState extends State<_PaymentQrDialog> {
                 .toString();
         if (orderId.isEmpty) return;
         final status = await ApiService().getOrderStatus(orderId);
+        _pollFailures = 0;
+        if (_pollError != null && mounted) {
+          setState(() => _pollError = null);
+        }
         final isPaid =
             status['status'] == 'paid' ||
             status['status'] == 'success' ||
@@ -457,20 +481,36 @@ class _PaymentQrDialogState extends State<_PaymentQrDialog> {
           _pollTimer?.cancel();
           if (mounted) {
             setState(() => _paid = true);
-            // Close immediately — parent handles sync + reload
-            Navigator.of(context).pop(true);
+            Future<void>.delayed(const Duration(milliseconds: 800), () {
+              if (mounted) Navigator.of(context).pop(true);
+            });
           }
         }
-      } catch (_) {}
+      } catch (e) {
+        _pollFailures++;
+        if (_pollFailures >= 3 && mounted) {
+          setState(
+            () => _pollError = context.appLocalizations
+                .paymentStatusCheckFailed(e.toString()),
+          );
+        }
+      }
     });
   }
 
   Future<void> _openPaymentUrl(String url) async {
+    final uri = Uri.tryParse(url);
+    if (uri == null ||
+        !const ['http', 'https', 'alipays'].contains(uri.scheme)) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(context.appLocalizations.invalidPaymentLink)),
+        );
+      }
+      return;
+    }
     try {
-      final opened = await launchUrl(
-        Uri.parse(url),
-        mode: LaunchMode.externalApplication,
-      );
+      final opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
       if (!opened && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -680,8 +720,14 @@ class _PaymentQrDialogState extends State<_PaymentQrDialog> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      context.appLocalizations.waitingPayment,
-                      style: const TextStyle(fontSize: 12, color: Colors.grey),
+                      _pollError ?? context.appLocalizations.waitingPayment,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: _pollError == null
+                            ? Colors.grey
+                            : Theme.of(context).colorScheme.error,
+                      ),
                     ),
                   ],
                 ),

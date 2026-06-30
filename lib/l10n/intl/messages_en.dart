@@ -78,21 +78,23 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m24(orderNo) => "Order No: ${orderNo}";
 
-  static String m25(label) => "${label} must be between 1024 and 49151";
+  static String m25(message) => "Unable to check payment status: ${message}";
 
-  static String m26(time) => "Time left: ${time}";
+  static String m26(label) => "${label} must be between 1024 and 49151";
 
-  static String m27(message) => "Failed to save remark: ${message}";
+  static String m27(time) => "Time left: ${time}";
 
-  static String m28(count) => "${count} items have been selected";
+  static String m28(message) => "Failed to save remark: ${message}";
 
-  static String m29(traffic) => "${traffic} GB";
+  static String m29(count) => "${count} items have been selected";
 
-  static String m30(message) => "Update failed: ${message}";
+  static String m30(traffic) => "${traffic} GB";
 
-  static String m31(label) => "${label} must be a url";
+  static String m31(message) => "Update failed: ${message}";
 
-  static String m32(count) =>
+  static String m32(label) => "${label} must be a url";
+
+  static String m33(count) =>
       "${Intl.plural(count, one: '1 year ago', other: '${count} years ago')}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
@@ -534,6 +536,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "invalidBackupFile": MessageLookupByLibrary.simpleMessage(
       "Invalid backup file",
     ),
+    "invalidLoginResponse": MessageLookupByLibrary.simpleMessage(
+      "Login response is invalid",
+    ),
+    "invalidPaymentLink": MessageLookupByLibrary.simpleMessage(
+      "Invalid payment link",
+    ),
     "invalidPolicy": m14,
     "invalidProxy": m15,
     "invalidProxyProvider": m16,
@@ -705,6 +713,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "packageExpired": MessageLookupByLibrary.simpleMessage("Package expired"),
     "packageFallback": MessageLookupByLibrary.simpleMessage("Package"),
+    "packageIdUnavailable": MessageLookupByLibrary.simpleMessage(
+      "Package information is incomplete. Refresh and try again.",
+    ),
     "packageStatusUnavailable": MessageLookupByLibrary.simpleMessage(
       "Package status unavailable",
     ),
@@ -719,6 +730,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Password must be at least 8 characters",
     ),
     "paste": MessageLookupByLibrary.simpleMessage("Paste"),
+    "paymentStatusCheckFailed": m25,
     "paymentSuccessUpdatingPackage": MessageLookupByLibrary.simpleMessage(
       "Payment successful. Updating package...",
     ),
@@ -738,7 +750,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "portConflictTip": MessageLookupByLibrary.simpleMessage(
       "Please enter a different port",
     ),
-    "portTip": m25,
+    "portTip": m26,
     "preferH3Desc": MessageLookupByLibrary.simpleMessage(
       "Prioritize the use of DOH\'s http/3",
     ),
@@ -828,14 +840,14 @@ class MessageLookup extends MessageLookupByLibrary {
     "region": MessageLookupByLibrary.simpleMessage("Region"),
     "register": MessageLookupByLibrary.simpleMessage("Register"),
     "registerNow": MessageLookupByLibrary.simpleMessage("Register now"),
-    "remainingTime": m26,
+    "remainingTime": m27,
     "remark": MessageLookupByLibrary.simpleMessage("Remark"),
     "remarkSaved": MessageLookupByLibrary.simpleMessage("Remark saved"),
     "rememberPassword": MessageLookupByLibrary.simpleMessage(
       "Remember password",
     ),
     "rememberPasswordTip": MessageLookupByLibrary.simpleMessage(
-      "Password is saved on this device for automatic login.",
+      "Password is saved on this device to fill the form next time.",
     ),
     "remote": MessageLookupByLibrary.simpleMessage("Remote"),
     "remoteBackupDesc": MessageLookupByLibrary.simpleMessage(
@@ -1010,7 +1022,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "saveChanges": MessageLookupByLibrary.simpleMessage(
       "Do you want to save the changes?",
     ),
-    "saveRemarkFailed": m27,
+    "saveRemarkFailed": m28,
     "saving": MessageLookupByLibrary.simpleMessage("Saving..."),
     "scanToPay": MessageLookupByLibrary.simpleMessage("Scan to pay"),
     "script": MessageLookupByLibrary.simpleMessage("Script"),
@@ -1037,7 +1049,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Please select sub rule",
     ),
     "selected": MessageLookupByLibrary.simpleMessage("Selected"),
-    "selectedCountTitle": m28,
+    "selectedCountTitle": m29,
     "send": MessageLookupByLibrary.simpleMessage("Send"),
     "settings": MessageLookupByLibrary.simpleMessage("Settings"),
     "show": MessageLookupByLibrary.simpleMessage("Show"),
@@ -1121,7 +1133,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "tonalSpotScheme": MessageLookupByLibrary.simpleMessage("TonalSpot"),
     "tools": MessageLookupByLibrary.simpleMessage("Tools"),
     "tproxyPort": MessageLookupByLibrary.simpleMessage("Tproxy Port"),
-    "trafficGb": m29,
+    "trafficGb": m30,
     "trafficUsage": MessageLookupByLibrary.simpleMessage("Traffic usage"),
     "tun": MessageLookupByLibrary.simpleMessage("TUN"),
     "tunDesc": MessageLookupByLibrary.simpleMessage(
@@ -1140,7 +1152,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "unnamed": MessageLookupByLibrary.simpleMessage("Unnamed"),
     "update": MessageLookupByLibrary.simpleMessage("Update"),
-    "updateFailed": m30,
+    "updateFailed": m31,
     "updateSubscription": MessageLookupByLibrary.simpleMessage(
       "Update subscription",
     ),
@@ -1151,7 +1163,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "urlDesc": MessageLookupByLibrary.simpleMessage(
       "Obtain profile through URL",
     ),
-    "urlTip": m31,
+    "urlTip": m32,
     "useHosts": MessageLookupByLibrary.simpleMessage("Use hosts"),
     "useSystemHosts": MessageLookupByLibrary.simpleMessage("Use system hosts"),
     "username": MessageLookupByLibrary.simpleMessage("Username"),
@@ -1180,7 +1192,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "WebDAV configuration",
     ),
     "whitelistMode": MessageLookupByLibrary.simpleMessage("Whitelist mode"),
-    "yearsAgo": m32,
+    "yearsAgo": m33,
     "zh_CN": MessageLookupByLibrary.simpleMessage("Simplified Chinese"),
   };
 }

@@ -561,6 +561,7 @@
   "retry": "Retry",
   "close": "Close",
   "packageFallback": "Package",
+  "packageIdUnavailable": "Package information is incomplete. Refresh and try again.",
   "noPackages": "No packages available",
   "buyNow": "Buy now",
   "packageUpdated": "Package updated",
@@ -572,6 +573,8 @@
   "scanToPay": "Scan to pay",
   "openPaymentLinkFailed": "Unable to open payment link",
   "openPaymentLinkFailedWithMessage": "Unable to open payment link: {message}",
+  "invalidPaymentLink": "Invalid payment link",
+  "paymentStatusCheckFailed": "Unable to check payment status: {message}",
   "paymentSuccessUpdatingPackage": "Payment successful. Updating package...",
   "qrCodeLoading": "Loading QR code...",
   "openAlipay": "Open Alipay",
@@ -605,7 +608,7 @@
   "emailOrUsername": "Email or username",
   "forgotPassword": "Forgot password?",
   "rememberPassword": "Remember password",
-  "rememberPasswordTip": "Password is saved on this device for automatic login.",
+  "rememberPasswordTip": "Password is saved on this device to fill the form next time.",
   "login": "Log in",
   "noAccount": "No account?",
   "registerNow": "Register now",
@@ -626,6 +629,7 @@
   "passwordMismatch": "Passwords do not match",
   "usernameTooShort": "Username must be at least 2 characters",
   "authFailed": "Authentication failed",
+  "invalidLoginResponse": "Login response is invalid",
   "showPassword": "Show password",
   "hidePassword": "Hide password"
 }

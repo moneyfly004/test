@@ -561,6 +561,7 @@
   "retry": "Повторить",
   "close": "Закрыть",
   "packageFallback": "Пакет",
+  "packageIdUnavailable": "Данные пакета неполные. Обновите и попробуйте снова.",
   "noPackages": "Нет доступных пакетов",
   "buyNow": "Купить сейчас",
   "packageUpdated": "Пакет обновлен",
@@ -572,6 +573,8 @@
   "scanToPay": "Сканировать для оплаты",
   "openPaymentLinkFailed": "Не удалось открыть ссылку оплаты",
   "openPaymentLinkFailedWithMessage": "Не удалось открыть ссылку оплаты: {message}",
+  "invalidPaymentLink": "Недействительная ссылка оплаты",
+  "paymentStatusCheckFailed": "Не удалось проверить статус оплаты: {message}",
   "paymentSuccessUpdatingPackage": "Оплата успешна. Обновление пакета...",
   "qrCodeLoading": "Загрузка QR-кода...",
   "openAlipay": "Открыть Alipay",
@@ -605,7 +608,7 @@
   "emailOrUsername": "Email или имя пользователя",
   "forgotPassword": "Забыли пароль?",
   "rememberPassword": "Запомнить пароль",
-  "rememberPasswordTip": "Пароль будет сохранен на этом устройстве для автоматического входа.",
+  "rememberPasswordTip": "Пароль будет сохранен на этом устройстве для заполнения формы в следующий раз.",
   "login": "Войти",
   "noAccount": "Нет аккаунта?",
   "registerNow": "Зарегистрироваться",
@@ -626,6 +629,7 @@
   "passwordMismatch": "Пароли не совпадают",
   "usernameTooShort": "Имя пользователя должно быть не короче 2 символов",
   "authFailed": "Ошибка аутентификации",
+  "invalidLoginResponse": "Недействительный ответ входа",
   "showPassword": "Показать пароль",
   "hidePassword": "Скрыть пароль"
 }

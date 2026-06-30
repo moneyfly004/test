@@ -71,21 +71,23 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m24(orderNo) => "注文番号: ${orderNo}";
 
-  static String m25(label) => "${label} は 1024 から 49151 の間でなければなりません";
+  static String m25(message) => "支払い状態を確認できません: ${message}";
 
-  static String m26(time) => "残り時間: ${time}";
+  static String m26(label) => "${label} は 1024 から 49151 の間でなければなりません";
 
-  static String m27(message) => "メモの保存に失敗しました: ${message}";
+  static String m27(time) => "残り時間: ${time}";
 
-  static String m28(count) => "${count} 項目が選択されています";
+  static String m28(message) => "メモの保存に失敗しました: ${message}";
 
-  static String m29(traffic) => "${traffic} GB";
+  static String m29(count) => "${count} 項目が選択されています";
 
-  static String m30(message) => "更新に失敗しました: ${message}";
+  static String m30(traffic) => "${traffic} GB";
 
-  static String m31(label) => "${label}はURLである必要があります";
+  static String m31(message) => "更新に失敗しました: ${message}";
 
-  static String m32(count) => "${count}年前";
+  static String m32(label) => "${label}はURLである必要があります";
+
+  static String m33(count) => "${count}年前";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -426,6 +428,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "interval": MessageLookupByLibrary.simpleMessage("インターバル"),
     "intranetIP": MessageLookupByLibrary.simpleMessage("イントラネットIP"),
     "invalidBackupFile": MessageLookupByLibrary.simpleMessage("無効なバックアップファイル"),
+    "invalidLoginResponse": MessageLookupByLibrary.simpleMessage("ログイン応答が無効です"),
+    "invalidPaymentLink": MessageLookupByLibrary.simpleMessage("支払いリンクが無効です"),
     "invalidPolicy": m14,
     "invalidProxy": m15,
     "invalidProxyProvider": m16,
@@ -567,6 +571,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "packageExpired": MessageLookupByLibrary.simpleMessage("パッケージの期限が切れています"),
     "packageFallback": MessageLookupByLibrary.simpleMessage("パッケージ"),
+    "packageIdUnavailable": MessageLookupByLibrary.simpleMessage(
+      "パッケージ情報が不完全です。更新して再試行してください",
+    ),
     "packageStatusUnavailable": MessageLookupByLibrary.simpleMessage(
       "パッケージ状態を利用できません",
     ),
@@ -579,6 +586,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "パスワードは8文字以上にしてください",
     ),
     "paste": MessageLookupByLibrary.simpleMessage("貼り付け"),
+    "paymentStatusCheckFailed": m25,
     "paymentSuccessUpdatingPackage": MessageLookupByLibrary.simpleMessage(
       "支払いが完了しました。パッケージを更新中...",
     ),
@@ -596,7 +604,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "port": MessageLookupByLibrary.simpleMessage("ポート"),
     "portConflictTip": MessageLookupByLibrary.simpleMessage("別のポートを入力してください"),
-    "portTip": m25,
+    "portTip": m26,
     "preferH3Desc": MessageLookupByLibrary.simpleMessage("DOHのHTTP/3を優先使用"),
     "prerequisites": MessageLookupByLibrary.simpleMessage("Prerequisites"),
     "pressKeyboard": MessageLookupByLibrary.simpleMessage("キーボードを押してください"),
@@ -672,12 +680,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "region": MessageLookupByLibrary.simpleMessage("地域"),
     "register": MessageLookupByLibrary.simpleMessage("登録"),
     "registerNow": MessageLookupByLibrary.simpleMessage("今すぐ登録"),
-    "remainingTime": m26,
+    "remainingTime": m27,
     "remark": MessageLookupByLibrary.simpleMessage("メモ"),
     "remarkSaved": MessageLookupByLibrary.simpleMessage("メモを保存しました"),
     "rememberPassword": MessageLookupByLibrary.simpleMessage("パスワードを保存"),
     "rememberPasswordTip": MessageLookupByLibrary.simpleMessage(
-      "自動ログインのため、このデバイスにパスワードを保存します。",
+      "次回フォームに入力するため、このデバイスにパスワードを保存します。",
     ),
     "remote": MessageLookupByLibrary.simpleMessage("リモート"),
     "remoteBackupDesc": MessageLookupByLibrary.simpleMessage(
@@ -826,7 +834,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "ruleTarget": MessageLookupByLibrary.simpleMessage("ルール対象"),
     "save": MessageLookupByLibrary.simpleMessage("保存"),
     "saveChanges": MessageLookupByLibrary.simpleMessage("変更を保存しますか？"),
-    "saveRemarkFailed": m27,
+    "saveRemarkFailed": m28,
     "saving": MessageLookupByLibrary.simpleMessage("保存中..."),
     "scanToPay": MessageLookupByLibrary.simpleMessage("スキャンして支払い"),
     "script": MessageLookupByLibrary.simpleMessage("スクリプト"),
@@ -849,7 +857,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "selectSubRule": MessageLookupByLibrary.simpleMessage("サブルールを選択してください"),
     "selected": MessageLookupByLibrary.simpleMessage("選択済み"),
-    "selectedCountTitle": m28,
+    "selectedCountTitle": m29,
     "send": MessageLookupByLibrary.simpleMessage("送信"),
     "settings": MessageLookupByLibrary.simpleMessage("設定"),
     "show": MessageLookupByLibrary.simpleMessage("表示"),
@@ -921,7 +929,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "tonalSpotScheme": MessageLookupByLibrary.simpleMessage("トーンスポット"),
     "tools": MessageLookupByLibrary.simpleMessage("ツール"),
     "tproxyPort": MessageLookupByLibrary.simpleMessage("Tproxyポート"),
-    "trafficGb": m29,
+    "trafficGb": m30,
     "trafficUsage": MessageLookupByLibrary.simpleMessage("トラフィック使用量"),
     "tun": MessageLookupByLibrary.simpleMessage("TUN"),
     "tunDesc": MessageLookupByLibrary.simpleMessage("管理者モードでのみ有効"),
@@ -936,14 +944,14 @@ class MessageLookup extends MessageLookupByLibrary {
     "unknownNetworkError": MessageLookupByLibrary.simpleMessage("不明なネットワークエラー"),
     "unnamed": MessageLookupByLibrary.simpleMessage("無題"),
     "update": MessageLookupByLibrary.simpleMessage("更新"),
-    "updateFailed": m30,
+    "updateFailed": m31,
     "updateSubscription": MessageLookupByLibrary.simpleMessage("サブスクリプションを更新"),
     "updated": MessageLookupByLibrary.simpleMessage("更新"),
     "updatedAt": MessageLookupByLibrary.simpleMessage("更新日時"),
     "upload": MessageLookupByLibrary.simpleMessage("アップロード"),
     "url": MessageLookupByLibrary.simpleMessage("URL"),
     "urlDesc": MessageLookupByLibrary.simpleMessage("URL経由でプロファイルを取得"),
-    "urlTip": m31,
+    "urlTip": m32,
     "useHosts": MessageLookupByLibrary.simpleMessage("ホストを使用"),
     "useSystemHosts": MessageLookupByLibrary.simpleMessage("システムホストを使用"),
     "username": MessageLookupByLibrary.simpleMessage("ユーザー名"),
@@ -964,7 +972,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "waitingPayment": MessageLookupByLibrary.simpleMessage("支払い確認を待っています..."),
     "webDAVConfiguration": MessageLookupByLibrary.simpleMessage("WebDAV設定"),
     "whitelistMode": MessageLookupByLibrary.simpleMessage("ホワイトリストモード"),
-    "yearsAgo": m32,
+    "yearsAgo": m33,
     "zh_CN": MessageLookupByLibrary.simpleMessage("簡体字中国語"),
   };
 }

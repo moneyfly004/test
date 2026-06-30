@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/services/services.dart';
 import 'package:flutter/material.dart';
@@ -32,14 +34,18 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       _accountCtrl.text = creds['account'] ?? '';
       _pwCtrl.text = creds['password'] ?? '';
       setState(() => _savePassword = true);
-      await _login(validate: false);
     }
   }
 
   Future<void> _handleAuthSuccess(Map<String, dynamic> result) async {
+    final invalidLoginResponse = context.appLocalizations.invalidLoginResponse;
     final storage = StorageService();
-    await storage.saveToken(result['access_token'] ?? '');
-    await storage.saveRefreshToken(result['refresh_token'] ?? '');
+    final accessToken = (result['access_token'] ?? '').toString();
+    if (accessToken.isEmpty) {
+      throw StateError(invalidLoginResponse);
+    }
+    await storage.saveToken(accessToken);
+    await storage.saveRefreshToken((result['refresh_token'] ?? '').toString());
     final accountState = await MoneyFlyService.refreshAccountState(ref);
     if (!accountState.available) {
       await storage.clearTokens();
@@ -239,6 +245,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   bool _obscureConfirm = true;
   int _countdown = 0;
   String? _formError;
+  Timer? _countdownTimer;
 
   Future<void> _sendCode() async {
     if (!_validateEmailOnly()) return;
@@ -263,11 +270,14 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   }
 
   void _startCountdown() {
-    Future.doWhile(() async {
-      await Future.delayed(const Duration(seconds: 1));
-      if (!mounted || _disposed || _countdown <= 0) return false;
+    _countdownTimer?.cancel();
+    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted || _disposed || _countdown <= 0) {
+        timer.cancel();
+        return;
+      }
       setState(() => _countdown--);
-      return _countdown > 0 && !_disposed;
+      if (_countdown <= 0) timer.cancel();
     });
   }
 
@@ -293,6 +303,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
 
   Future<void> _register() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
+    final invalidLoginResponse = context.appLocalizations.invalidLoginResponse;
     setState(() {
       _loading = true;
       _formError = null;
@@ -308,8 +319,14 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
             : _inviteCtrl.text.trim(),
       );
       await StorageService().clearCredentials();
-      await StorageService().saveToken(result['access_token'] ?? '');
-      await StorageService().saveRefreshToken(result['refresh_token'] ?? '');
+      final accessToken = (result['access_token'] ?? '').toString();
+      if (accessToken.isEmpty) {
+        throw StateError(invalidLoginResponse);
+      }
+      await StorageService().saveToken(accessToken);
+      await StorageService().saveRefreshToken(
+        (result['refresh_token'] ?? '').toString(),
+      );
       final accountState = await MoneyFlyService.refreshAccountState(ref);
       if (!accountState.available) {
         await StorageService().clearTokens();
@@ -331,6 +348,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   @override
   void dispose() {
     _disposed = true;
+    _countdownTimer?.cancel();
     _nameCtrl.dispose();
     _emailCtrl.dispose();
     _pwCtrl.dispose();
@@ -494,6 +512,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
   bool _obscureConfirm = true;
   int _countdown = 0;
   String? _formError;
+  Timer? _countdownTimer;
 
   Future<void> _sendCode() async {
     if (!_validateEmailOnly()) return;
@@ -518,11 +537,14 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
   }
 
   void _startCountdown() {
-    Future.doWhile(() async {
-      await Future.delayed(const Duration(seconds: 1));
-      if (!mounted || _disposed || _countdown <= 0) return false;
+    _countdownTimer?.cancel();
+    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted || _disposed || _countdown <= 0) {
+        timer.cancel();
+        return;
+      }
       setState(() => _countdown--);
-      return _countdown > 0 && !_disposed;
+      if (_countdown <= 0) timer.cancel();
     });
   }
 
@@ -548,6 +570,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
 
   Future<void> _reset() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
+    final invalidLoginResponse = context.appLocalizations.invalidLoginResponse;
     setState(() {
       _loading = true;
       _formError = null;
@@ -563,8 +586,14 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
         _pwCtrl.text,
       );
       await StorageService().clearCredentials();
-      await StorageService().saveToken(result['access_token'] ?? '');
-      await StorageService().saveRefreshToken(result['refresh_token'] ?? '');
+      final accessToken = (result['access_token'] ?? '').toString();
+      if (accessToken.isEmpty) {
+        throw StateError(invalidLoginResponse);
+      }
+      await StorageService().saveToken(accessToken);
+      await StorageService().saveRefreshToken(
+        (result['refresh_token'] ?? '').toString(),
+      );
       final accountState = await MoneyFlyService.refreshAccountState(ref);
       if (!accountState.available) {
         await StorageService().clearTokens();
@@ -586,6 +615,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
   @override
   void dispose() {
     _disposed = true;
+    _countdownTimer?.cancel();
     _emailCtrl.dispose();
     _codeCtrl.dispose();
     _pwCtrl.dispose();

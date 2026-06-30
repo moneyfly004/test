@@ -266,21 +266,21 @@ class ApiService {
         _messageFromBody(response?.data) ??
         _messageFromStatusCode(statusCode) ??
         error.message ??
-        '网络请求失败，请检查网络后重试';
+        'Network request failed. Check your connection and try again.';
     return error.copyWith(message: message);
   }
 
   String? _messageFromStatusCode(int? statusCode) {
     if (statusCode == null) return null;
     if (statusCode >= 500 && statusCode < 600) {
-      return '服务器暂时不可用，请稍后再试';
+      return 'Server is temporarily unavailable. Try again later.';
     }
     return switch (statusCode) {
-      400 => '请求参数不正确，请检查后重试',
-      401 => '登录已失效或账号密码错误，请重新登录',
-      403 => '当前账号无权执行此操作',
-      404 => '请求的资源不存在',
-      429 => '操作过于频繁，请稍后再试',
+      400 => 'Invalid request. Check your input and try again.',
+      401 => 'Session expired or credentials are incorrect. Sign in again.',
+      403 => 'This account is not allowed to perform this action.',
+      404 => 'The requested resource does not exist.',
+      429 => 'Too many requests. Try again later.',
       _ => null,
     };
   }

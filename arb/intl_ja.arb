@@ -561,6 +561,7 @@
   "retry": "再試行",
   "close": "閉じる",
   "packageFallback": "パッケージ",
+  "packageIdUnavailable": "パッケージ情報が不完全です。更新して再試行してください",
   "noPackages": "利用可能なパッケージはありません",
   "buyNow": "今すぐ購入",
   "packageUpdated": "パッケージを更新しました",
@@ -572,6 +573,8 @@
   "scanToPay": "スキャンして支払い",
   "openPaymentLinkFailed": "支払いリンクを開けません",
   "openPaymentLinkFailedWithMessage": "支払いリンクを開けません: {message}",
+  "invalidPaymentLink": "支払いリンクが無効です",
+  "paymentStatusCheckFailed": "支払い状態を確認できません: {message}",
   "paymentSuccessUpdatingPackage": "支払いが完了しました。パッケージを更新中...",
   "qrCodeLoading": "QRコードを読み込み中...",
   "openAlipay": "Alipayを開く",
@@ -605,7 +608,7 @@
   "emailOrUsername": "メールまたはユーザー名",
   "forgotPassword": "パスワードをお忘れですか？",
   "rememberPassword": "パスワードを保存",
-  "rememberPasswordTip": "自動ログインのため、このデバイスにパスワードを保存します。",
+  "rememberPasswordTip": "次回フォームに入力するため、このデバイスにパスワードを保存します。",
   "login": "ログイン",
   "noAccount": "アカウントがありませんか？",
   "registerNow": "今すぐ登録",
@@ -626,6 +629,7 @@
   "passwordMismatch": "パスワードが一致しません",
   "usernameTooShort": "ユーザー名は2文字以上にしてください",
   "authFailed": "認証に失敗しました",
+  "invalidLoginResponse": "ログイン応答が無効です",
   "showPassword": "パスワードを表示",
   "hidePassword": "パスワードを非表示"
 }
