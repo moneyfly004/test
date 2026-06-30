@@ -58,13 +58,24 @@ Future<List<Group>> _toGroupsTask(ComputeGroupsState state) async {
   final defaultTestUrl = state.defaultTestUrl;
   final proxies = proxiesData.proxies;
   if (proxies.isEmpty) return [];
+  bool isProxyGroup(Map proxy) {
+    final type = proxy['type'];
+    if (type == null) return false;
+    try {
+      GroupType.parse(type.toString());
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
   final groupsRaw = all
       .where((name) {
         final proxy = proxies[name] ?? {};
-        return GroupTypeExtension.valueList.contains(proxy['type']);
+        return isProxyGroup(proxy);
       })
       .map((groupName) {
-        final group = proxies[groupName];
+        final group = Map<String, dynamic>.from(proxies[groupName]);
         group['all'] = ((group['all'] ?? []) as List)
             .map((name) => proxies[name])
             .where((proxy) => proxy != null)

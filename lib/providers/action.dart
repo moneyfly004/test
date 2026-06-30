@@ -269,7 +269,7 @@ class SetupAction extends _$SetupAction {
   Future<void> applyProfile({
     bool silence = false,
     bool force = false,
-    VoidCallback? preloadInvoke,
+    FutureOr<void> Function()? preloadInvoke,
   }) async {
     await _setupConfig(
       force: force,
@@ -278,6 +278,10 @@ class SetupAction extends _$SetupAction {
       onUpdated: () async {
         await ref.read(proxiesActionProvider.notifier).updateGroups();
         await ref.read(providersProvider.notifier).syncProviders();
+        if (ref.read(groupsProvider).isEmpty) {
+          await ref.read(proxiesActionProvider.notifier).refreshProviders();
+          await ref.read(proxiesActionProvider.notifier).updateGroups();
+        }
       },
     );
   }
@@ -372,7 +376,7 @@ class SetupAction extends _$SetupAction {
   Future<void> _setupConfig({
     bool force = false,
     bool silence = false,
-    VoidCallback? preloadInvoke,
+    FutureOr<void> Function()? preloadInvoke,
     FutureOr Function()? onUpdated,
   }) async {
     var profile = ref.read(currentProfileProvider);
@@ -502,17 +506,22 @@ class CoreAction extends _$CoreAction {
 
   Future<void> connectCore() async {
     ref.read(coreStatusProvider.notifier).value = CoreStatus.connecting;
-    final result = await Future.wait([
-      coreController.preload(),
-      Future.delayed(const Duration(milliseconds: 300)),
-    ]);
-    final String message = result[0];
-    if (message.isNotEmpty) {
+    try {
+      final result = await Future.wait([
+        coreController.preload().timeout(const Duration(seconds: 15)),
+        Future.delayed(const Duration(milliseconds: 300)),
+      ]);
+      final String message = result[0];
+      if (message.isNotEmpty) {
+        ref.read(coreStatusProvider.notifier).value = CoreStatus.disconnected;
+        globalState.showNotifier(message);
+        return;
+      }
+      ref.read(coreStatusProvider.notifier).value = CoreStatus.connected;
+    } catch (e) {
       ref.read(coreStatusProvider.notifier).value = CoreStatus.disconnected;
-      globalState.showNotifier(message);
-      return;
+      globalState.showNotifier(e.toString());
     }
-    ref.read(coreStatusProvider.notifier).value = CoreStatus.connected;
   }
 
   Future<Result<bool>> requestAdmin(bool enableTun) async {
@@ -765,6 +774,14 @@ class ProxiesAction extends _$ProxiesAction {
       commonPrint.log('updateGroups error: $e');
       ref.read(groupsProvider.notifier).value = [];
     }
+  }
+
+  Future<void> refreshProviders() async {
+    final providers = await coreController.getExternalProviders();
+    final futures = providers
+        .where((provider) => provider.count == 0)
+        .map((provider) => updateProvider(provider));
+    await Future.wait(futures);
   }
 
   void updateCurrentGroupName(String groupName) {

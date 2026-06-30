@@ -1,9 +1,43 @@
 import 'package:fl_clash/common/compute.dart';
+import 'package:fl_clash/common/task.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
-import 'package:test/test.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  group('toGroupsTask', () {
+    test('accepts proxy group type values returned by core', () async {
+      final groups = await toGroupsTask(
+        const ComputeGroupsState(
+          proxiesData: ProxiesData(
+            all: ['Auto', 'Manual'],
+            proxies: {
+              'Auto': {
+                'name': 'Auto',
+                'type': 'url-test',
+                'all': ['HK'],
+              },
+              'Manual': {
+                'name': 'Manual',
+                'type': 'Selector',
+                'all': ['HK'],
+              },
+              'HK': {'name': 'HK', 'type': 'ss'},
+            },
+          ),
+          sortType: ProxiesSortType.none,
+          delayMap: {},
+          selectedMap: {},
+          defaultTestUrl: 'https://example.com',
+        ),
+      );
+
+      expect(groups.map((group) => group.name), ['Auto', 'Manual']);
+      expect(groups.first.type, GroupType.URLTest);
+      expect(groups.first.all.single.name, 'HK');
+    });
+  });
+
   group('computeRealSelectedProxyState', () {
     test('returns state unchanged when proxyName is empty', () {
       final state = computeRealSelectedProxyState(
