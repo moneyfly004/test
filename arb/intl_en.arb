@@ -539,5 +539,21 @@
   "editSsid": "Edit SSID",
   "authorized": "Authorized",
   "tapToAuthorize": "Tap to authorize",
-  "suspended": "Suspended..."
+  "suspended": "Suspended...",
+  "connectProxy": "Connect proxy",
+  "proxyConnected": "Proxy connected",
+  "proxyDisconnected": "Proxy disconnected",
+  "accountInfoLoading": "Loading account info...",
+  "accountInfoUnavailable": "Account info unavailable",
+  "updateSubscription": "Update subscription",
+  "subscriptionUpdated": "Subscription updated",
+  "accountUnavailable": "Account unavailable",
+  "updateFailed": "Update failed: {message}",
+  "packageExpired": "Package expired",
+  "expiresOn": "Expires: {date}",
+  "expiringSoon": "Expiring soon",
+  "renewNow": "Renew now",
+  "deviceUsage": "Devices: {used} / {limit}",
+  "testDelay": "Test delay",
+  "scrollToSelectedProxy": "Scroll to selected proxy"
 }

@@ -344,11 +344,17 @@ class _AccountInfoCardState extends ConsumerState<_AccountInfoCard> {
       await _load();
       if (mounted) {
         globalState.showNotifier(
-          state.available ? '订阅已更新' : state.message ?? '当前账号不可用',
+          state.available
+              ? context.appLocalizations.subscriptionUpdated
+              : state.message ?? context.appLocalizations.accountUnavailable,
         );
       }
     } catch (e) {
-      if (mounted) globalState.showNotifier('更新失败：$e');
+      if (mounted) {
+        globalState.showNotifier(
+          context.appLocalizations.updateFailed(e.toString()),
+        );
+      }
     } finally {
       if (mounted) setState(() => _syncing = false);
     }
@@ -368,15 +374,18 @@ class _AccountInfoCardState extends ConsumerState<_AccountInfoCard> {
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: cs.outlineVariant.withAlpha(153)),
         ),
-        child: const Row(
+        child: Row(
           children: [
-            SizedBox(
+            const SizedBox(
               width: 16,
               height: 16,
               child: CircularProgressIndicator(strokeWidth: 2),
             ),
-            SizedBox(width: 8),
-            Text('加载账户信息…', style: TextStyle(fontSize: 13)),
+            const SizedBox(width: 8),
+            Text(
+              context.appLocalizations.accountInfoLoading,
+              style: const TextStyle(fontSize: 13),
+            ),
           ],
         ),
       );
@@ -396,16 +405,15 @@ class _AccountInfoCardState extends ConsumerState<_AccountInfoCard> {
             Icon(Icons.info_outline, size: 16, color: cs.onSurfaceVariant),
             const SizedBox(width: 6),
             Text(
-              '账户信息不可用',
+              context.appLocalizations.accountInfoUnavailable,
               style: TextStyle(fontSize: 13, color: cs.onSurfaceVariant),
             ),
             const Spacer(),
             SizedBox(
-              width: 28,
-              height: 28,
+              width: 40,
+              height: 40,
               child: IconButton(
-                padding: EdgeInsets.zero,
-                tooltip: '更新订阅',
+                tooltip: context.appLocalizations.updateSubscription,
                 icon: const Icon(Icons.sync, size: 18),
                 onPressed: _syncSubscription,
               ),
@@ -450,82 +458,85 @@ class _AccountInfoCardState extends ConsumerState<_AccountInfoCard> {
               : cs.outlineVariant.withAlpha(153),
         ),
       ),
-      child: Stack(
+      child: Row(
         children: [
-          Row(
-            children: [
-              if (expiry.length >= 10) ...[
-                Icon(
-                  isExpired
-                      ? Icons.error_outline
-                      : Icons.calendar_today_outlined,
-                  size: 16,
-                  color: isExpired || isExpiringSoon
-                      ? warnColor
-                      : cs.onSurfaceVariant,
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  isExpired
-                      ? '套餐已到期'
-                      : '到期：${expiry.substring(0, 10)}${isExpiringSoon ? '（即将到期）' : ''}',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: isExpired || isExpiringSoon ? warnColor : null,
-                    fontWeight: isExpired || isExpiringSoon
-                        ? FontWeight.w600
-                        : null,
-                  ),
-                ),
-                if (isExpired || isExpiringSoon) ...[
-                  const SizedBox(width: 6),
-                  GestureDetector(
-                    onTap: () =>
-                        globalState.container
-                                .read(currentPageLabelProvider.notifier)
-                                .value =
-                            PageLabel.packages,
-                    child: Text(
-                      '立即续费',
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: cs.primary,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                ],
-              ],
-              const Spacer(),
-              if (deviceLimit != 0) ...[
-                Icon(Icons.devices, size: 16, color: cs.onSurfaceVariant),
-                const SizedBox(width: 4),
-                Text(
-                  '设备：$deviceUsed / $deviceLimit',
-                  style: TextStyle(fontSize: 13, color: cs.onSurfaceVariant),
-                ),
-                const SizedBox(width: 36),
-              ],
-            ],
-          ),
-          Positioned(
-            top: 0,
-            right: 0,
-            child: SizedBox(
-              width: 28,
-              height: 28,
-              child: _syncing
-                  ? const Padding(
-                      padding: EdgeInsets.all(4),
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : IconButton(
-                      padding: EdgeInsets.zero,
-                      tooltip: '更新订阅',
-                      icon: const Icon(Icons.sync, size: 18),
-                      onPressed: _syncSubscription,
-                    ),
+          if (expiry.length >= 10) ...[
+            Icon(
+              isExpired ? Icons.error_outline : Icons.calendar_today_outlined,
+              size: 16,
+              color: isExpired || isExpiringSoon
+                  ? warnColor
+                  : cs.onSurfaceVariant,
             ),
+            const SizedBox(width: 6),
+            Flexible(
+              child: Text(
+                isExpired
+                    ? context.appLocalizations.packageExpired
+                    : [
+                        context.appLocalizations.expiresOn(
+                          expiry.substring(0, 10),
+                        ),
+                        if (isExpiringSoon)
+                          context.appLocalizations.expiringSoon,
+                      ].join(' '),
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: isExpired || isExpiringSoon ? warnColor : null,
+                  fontWeight: isExpired || isExpiringSoon
+                      ? FontWeight.w600
+                      : null,
+                ),
+              ),
+            ),
+            if (isExpired || isExpiringSoon) ...[
+              const SizedBox(width: 6),
+              TextButton(
+                onPressed: () =>
+                    globalState.container
+                            .read(currentPageLabelProvider.notifier)
+                            .value =
+                        PageLabel.packages,
+                style: TextButton.styleFrom(
+                  minimumSize: const Size(44, 36),
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  tapTargetSize: MaterialTapTargetSize.padded,
+                  textStyle: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                child: Text(context.appLocalizations.renewNow),
+              ),
+            ],
+          ],
+          const Spacer(),
+          if (deviceLimit != 0) ...[
+            Icon(Icons.devices, size: 16, color: cs.onSurfaceVariant),
+            const SizedBox(width: 4),
+            Flexible(
+              child: Text(
+                context.appLocalizations.deviceUsage(deviceUsed, deviceLimit),
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontSize: 13, color: cs.onSurfaceVariant),
+              ),
+            ),
+            const SizedBox(width: 8),
+          ],
+          SizedBox(
+            width: 40,
+            height: 40,
+            child: _syncing
+                ? const Padding(
+                    padding: EdgeInsets.all(10),
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : IconButton(
+                    tooltip: context.appLocalizations.updateSubscription,
+                    icon: const Icon(Icons.sync, size: 18),
+                    onPressed: _syncSubscription,
+                  ),
           ),
         ],
       ),
@@ -612,11 +623,11 @@ class _AddedContainerState extends State<_AddedContainer> {
           right: -8,
           child: DeferPointer(
             child: SizedBox(
-              width: 24,
-              height: 24,
+              width: 40,
+              height: 40,
               child: IconButton.filled(
                 iconSize: 20,
-                padding: const EdgeInsets.all(2),
+                tooltip: context.appLocalizations.add,
                 onPressed: _handleAdd,
                 icon: const Icon(Icons.add),
               ),

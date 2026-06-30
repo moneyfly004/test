@@ -539,5 +539,21 @@
   "editSsid": "编辑SSID",
   "authorized": "已授权",
   "tapToAuthorize": "点击授权",
-  "suspended": "挂起中..."
+  "suspended": "挂起中...",
+  "connectProxy": "连接代理",
+  "proxyConnected": "代理已连接",
+  "proxyDisconnected": "代理已断开",
+  "accountInfoLoading": "加载账户信息...",
+  "accountInfoUnavailable": "账户信息不可用",
+  "updateSubscription": "更新订阅",
+  "subscriptionUpdated": "订阅已更新",
+  "accountUnavailable": "当前账号不可用",
+  "updateFailed": "更新失败：{message}",
+  "packageExpired": "套餐已到期",
+  "expiresOn": "到期：{date}",
+  "expiringSoon": "即将到期",
+  "renewNow": "立即续费",
+  "deviceUsage": "设备：{used} / {limit}",
+  "testDelay": "测试延迟",
+  "scrollToSelectedProxy": "定位到当前代理"
 }

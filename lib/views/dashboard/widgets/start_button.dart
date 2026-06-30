@@ -56,9 +56,14 @@ class _StartButtonState extends ConsumerState<StartButton>
       // Show connection status notification
       final context = globalState.navigatorKey.currentContext;
       if (context != null) {
+        final appLocalizations = context.appLocalizations;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(isStart ? '代理已连接' : '代理已断开'),
+            content: Text(
+              isStart
+                  ? appLocalizations.proxyConnected
+                  : appLocalizations.proxyDisconnected,
+            ),
             duration: const Duration(seconds: 2),
             behavior: SnackBarBehavior.floating,
           ),
@@ -88,6 +93,12 @@ class _StartButtonState extends ConsumerState<StartButton>
     final runTime = ref.watch(runTimeProvider);
     final suspend = ref.watch(suspendProvider);
     final theme = Theme.of(context);
+    final disableAnimations =
+        MediaQuery.disableAnimationsOf(context) ||
+        MediaQuery.accessibleNavigationOf(context);
+    if (disableAnimations) {
+      _controller?.value = isStart ? 1 : 0;
+    }
     return RepaintBoundary(
       child: Theme(
         data: theme.copyWith(
@@ -95,27 +106,40 @@ class _StartButtonState extends ConsumerState<StartButton>
             sizeConstraints: const BoxConstraints(minWidth: 64, maxWidth: 240),
           ),
         ),
-        child: FloatingActionButton.extended(
-          clipBehavior: Clip.antiAlias,
-          materialTapTargetSize: MaterialTapTargetSize.padded,
-          heroTag: null,
-          onPressed: handleSwitchStart,
-          extendedPadding: const EdgeInsets.symmetric(horizontal: 20),
-          backgroundColor: isStart ? Colors.green : context.colorScheme.primary,
-          foregroundColor: isStart ? Colors.white : context.colorScheme.onPrimary,
-          icon: SizedBox(
-            width: 24, height: 24,
-            child: AnimatedIcon(
-              icon: AnimatedIcons.play_pause,
-              progress: _animation,
+        child: Semantics(
+          button: true,
+          label: suspend
+              ? context.appLocalizations.connectProxy
+              : context.appLocalizations.connected,
+          child: FloatingActionButton.extended(
+            clipBehavior: Clip.antiAlias,
+            materialTapTargetSize: MaterialTapTargetSize.padded,
+            heroTag: null,
+            onPressed: handleSwitchStart,
+            extendedPadding: const EdgeInsets.symmetric(horizontal: 20),
+            backgroundColor: isStart
+                ? Colors.green
+                : context.colorScheme.primary,
+            foregroundColor: isStart
+                ? Colors.white
+                : context.colorScheme.onPrimary,
+            icon: SizedBox(
+              width: 24,
+              height: 24,
+              child: AnimatedIcon(
+                icon: AnimatedIcons.play_pause,
+                progress: _animation,
+              ),
             ),
-          ),
-          label: Text(
-            suspend ? '点击连接' : utils.getTimeText(runTime),
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: isStart ? Colors.white : context.colorScheme.onPrimary,
+            label: Text(
+              suspend
+                  ? context.appLocalizations.connectProxy
+                  : utils.getTimeText(runTime),
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: isStart ? Colors.white : context.colorScheme.onPrimary,
+              ),
             ),
           ),
         ),

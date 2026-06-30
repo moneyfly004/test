@@ -539,5 +539,21 @@
   "editSsid": "Изменить SSID",
   "authorized": "Разрешено",
   "tapToAuthorize": "Нажмите, чтобы разрешить",
-  "suspended": "Приостановлено..."
+  "suspended": "Приостановлено...",
+  "connectProxy": "Подключить прокси",
+  "proxyConnected": "Прокси подключен",
+  "proxyDisconnected": "Прокси отключен",
+  "accountInfoLoading": "Загрузка данных аккаунта...",
+  "accountInfoUnavailable": "Данные аккаунта недоступны",
+  "updateSubscription": "Обновить подписку",
+  "subscriptionUpdated": "Подписка обновлена",
+  "accountUnavailable": "Текущий аккаунт недоступен",
+  "updateFailed": "Ошибка обновления: {message}",
+  "packageExpired": "Пакет истек",
+  "expiresOn": "Истекает: {date}",
+  "expiringSoon": "Скоро истекает",
+  "renewNow": "Продлить сейчас",
+  "deviceUsage": "Устройства: {used} / {limit}",
+  "testDelay": "Проверить задержку",
+  "scrollToSelectedProxy": "Перейти к выбранному прокси"
 }

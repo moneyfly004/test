@@ -96,12 +96,22 @@ class AppLocalizations {
 
   /// `Device Management`
   String get devices {
-    return Intl.message('Device Management', name: 'devices', desc: '', args: []);
+    return Intl.message(
+      'Device Management',
+      name: 'devices',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Package Purchase`
   String get packages {
-    return Intl.message('Package Purchase', name: 'packages', desc: '', args: []);
+    return Intl.message(
+      'Package Purchase',
+      name: 'packages',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Logs`
@@ -4387,6 +4397,156 @@ class AppLocalizations {
   /// `Suspended...`
   String get suspended {
     return Intl.message('Suspended...', name: 'suspended', desc: '', args: []);
+  }
+
+  /// `Connect proxy`
+  String get connectProxy {
+    return Intl.message(
+      'Connect proxy',
+      name: 'connectProxy',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Proxy connected`
+  String get proxyConnected {
+    return Intl.message(
+      'Proxy connected',
+      name: 'proxyConnected',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Proxy disconnected`
+  String get proxyDisconnected {
+    return Intl.message(
+      'Proxy disconnected',
+      name: 'proxyDisconnected',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Loading account info...`
+  String get accountInfoLoading {
+    return Intl.message(
+      'Loading account info...',
+      name: 'accountInfoLoading',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Account info unavailable`
+  String get accountInfoUnavailable {
+    return Intl.message(
+      'Account info unavailable',
+      name: 'accountInfoUnavailable',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Update subscription`
+  String get updateSubscription {
+    return Intl.message(
+      'Update subscription',
+      name: 'updateSubscription',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Subscription updated`
+  String get subscriptionUpdated {
+    return Intl.message(
+      'Subscription updated',
+      name: 'subscriptionUpdated',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Account unavailable`
+  String get accountUnavailable {
+    return Intl.message(
+      'Account unavailable',
+      name: 'accountUnavailable',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Update failed: {message}`
+  String updateFailed(Object message) {
+    return Intl.message(
+      'Update failed: $message',
+      name: 'updateFailed',
+      desc: '',
+      args: [message],
+    );
+  }
+
+  /// `Package expired`
+  String get packageExpired {
+    return Intl.message(
+      'Package expired',
+      name: 'packageExpired',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Expires: {date}`
+  String expiresOn(Object date) {
+    return Intl.message(
+      'Expires: $date',
+      name: 'expiresOn',
+      desc: '',
+      args: [date],
+    );
+  }
+
+  /// `Expiring soon`
+  String get expiringSoon {
+    return Intl.message(
+      'Expiring soon',
+      name: 'expiringSoon',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Renew now`
+  String get renewNow {
+    return Intl.message('Renew now', name: 'renewNow', desc: '', args: []);
+  }
+
+  /// `Devices: {used} / {limit}`
+  String deviceUsage(Object used, Object limit) {
+    return Intl.message(
+      'Devices: $used / $limit',
+      name: 'deviceUsage',
+      desc: '',
+      args: [used, limit],
+    );
+  }
+
+  /// `Test delay`
+  String get testDelay {
+    return Intl.message('Test delay', name: 'testDelay', desc: '', args: []);
+  }
+
+  /// `Scroll to selected proxy`
+  String get scrollToSelectedProxy {
+    return Intl.message(
+      'Scroll to selected proxy',
+      name: 'scrollToSelectedProxy',
+      desc: '',
+      args: [],
+    );
   }
 }
 

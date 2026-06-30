@@ -539,5 +539,21 @@
   "editSsid": "SSIDを編集",
   "authorized": "許可済み",
   "tapToAuthorize": "タップして許可",
-  "suspended": "一時停止中..."
+  "suspended": "一時停止中...",
+  "connectProxy": "プロキシに接続",
+  "proxyConnected": "プロキシに接続しました",
+  "proxyDisconnected": "プロキシを切断しました",
+  "accountInfoLoading": "アカウント情報を読み込み中...",
+  "accountInfoUnavailable": "アカウント情報を利用できません",
+  "updateSubscription": "サブスクリプションを更新",
+  "subscriptionUpdated": "サブスクリプションを更新しました",
+  "accountUnavailable": "現在のアカウントは利用できません",
+  "updateFailed": "更新に失敗しました: {message}",
+  "packageExpired": "パッケージの期限が切れています",
+  "expiresOn": "期限: {date}",
+  "expiringSoon": "まもなく期限切れ",
+  "renewNow": "今すぐ更新",
+  "deviceUsage": "デバイス: {used} / {limit}",
+  "testDelay": "遅延をテスト",
+  "scrollToSelectedProxy": "選択中のプロキシへ移動"
 }

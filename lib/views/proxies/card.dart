@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
@@ -31,8 +33,9 @@ class ProxyCard extends StatelessWidget {
   }
 
   Widget _buildDelayText() {
-    return SizedBox(
-      height: measure.labelSmallHeight,
+    final buttonSize = max(measure.labelSmallHeight, 36.0);
+    return ConstrainedBox(
+      constraints: BoxConstraints(minWidth: buttonSize, minHeight: buttonSize),
       child: Consumer(
         builder: (context, ref, _) {
           final delay = ref.watch(
@@ -43,25 +46,39 @@ class ProxyCard extends StatelessWidget {
                 ? Alignment.centerLeft
                 : Alignment.centerRight,
             child: delay == 0 || delay == null
-                ? SizedBox(
-                    height: measure.labelSmallHeight,
-                    width: measure.labelSmallHeight,
-                    child: delay == 0
-                        ? const CircularProgressIndicator(strokeWidth: 2)
-                        : IconButton(
-                            icon: const Icon(Icons.bolt),
-                            iconSize: globalState.measure.labelSmallHeight,
-                            padding: EdgeInsets.zero,
-                            onPressed: _handleTestCurrentDelay,
-                          ),
+                ? Center(
+                    child: SizedBox(
+                      height: measure.labelSmallHeight,
+                      width: measure.labelSmallHeight,
+                      child: delay == 0
+                          ? const CircularProgressIndicator(strokeWidth: 2)
+                          : IconButton(
+                              tooltip: context.appLocalizations.testDelay,
+                              icon: const Icon(Icons.bolt),
+                              iconSize: globalState.measure.labelSmallHeight,
+                              padding: EdgeInsets.zero,
+                              onPressed: _handleTestCurrentDelay,
+                            ),
+                    ),
                   )
-                : GestureDetector(
-                    onTap: _handleTestCurrentDelay,
-                    child: Text(
-                      delay > 0 ? '$delay ms' : 'Timeout',
-                      style: context.textTheme.labelSmall?.copyWith(
-                        overflow: TextOverflow.ellipsis,
-                        color: utils.getDelayColor(delay),
+                : TextButton(
+                    onPressed: _handleTestCurrentDelay,
+                    style: TextButton.styleFrom(
+                      minimumSize: Size(buttonSize, buttonSize),
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      tapTargetSize: MaterialTapTargetSize.padded,
+                      visualDensity: VisualDensity.compact,
+                    ),
+                    child: TooltipText(
+                      text: Text(
+                        delay > 0
+                            ? '$delay ms'
+                            : context.appLocalizations.timeout,
+                        maxLines: 1,
+                        style: context.textTheme.labelSmall?.copyWith(
+                          overflow: TextOverflow.ellipsis,
+                          color: utils.getDelayColor(delay),
+                        ),
                       ),
                     ),
                   ),

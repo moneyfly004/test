@@ -554,12 +554,13 @@ class _ListHeaderState extends State<ListHeader> {
                 if (isExpand) ...[
                   IconButton(
                     visualDensity: VisualDensity.compact,
-                    padding: const EdgeInsets.all(2),
+                    tooltip: context.appLocalizations.scrollToSelectedProxy,
                     onPressed: () {
                       widget.onScrollToSelected(groupName);
                     },
                     style: const ButtonStyle(
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      minimumSize: WidgetStatePropertyAll(Size(40, 40)),
+                      tapTargetSize: MaterialTapTargetSize.padded,
                     ),
                     iconSize: 19,
                     icon: const Icon(Icons.adjust),
@@ -568,10 +569,11 @@ class _ListHeaderState extends State<ListHeader> {
                   IconButton(
                     iconSize: 20,
                     visualDensity: VisualDensity.compact,
-                    padding: const EdgeInsets.all(2),
+                    tooltip: context.appLocalizations.testDelay,
                     onPressed: _delayTest,
                     style: const ButtonStyle(
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      minimumSize: WidgetStatePropertyAll(Size(40, 40)),
+                      tapTargetSize: MaterialTapTargetSize.padded,
                     ),
                     icon: const Icon(Icons.network_ping),
                   ),
@@ -580,10 +582,10 @@ class _ListHeaderState extends State<ListHeader> {
                   const SizedBox(width: 6),
                 IconButton.filledTonal(
                   visualDensity: VisualDensity.compact,
-                  padding: const EdgeInsets.all(2),
                   iconSize: 24,
                   style: const ButtonStyle(
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    minimumSize: WidgetStatePropertyAll(Size(40, 40)),
+                    tapTargetSize: MaterialTapTargetSize.padded,
                   ),
                   onPressed: () {
                     _handleChange(groupName);
