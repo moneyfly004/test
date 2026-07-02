@@ -199,7 +199,6 @@ class AppSidebarContainer extends ConsumerWidget {
       return child;
     }
     final currentIndex = navigationState.currentIndex;
-    final showLabel = ref.watch(appSettingProvider).showLabel;
     return Row(
       children: [
         _buildBackground(
@@ -244,11 +243,9 @@ class AppSidebarContainer extends ConsumerWidget {
                             onDestinationSelected: (index) {
                               _handleToPage(navigationItems[index].label);
                             },
-                            extended: false,
+                            extended: true,
                             selectedIndex: currentIndex,
-                            labelType: showLabel
-                                ? NavigationRailLabelType.all
-                                : NavigationRailLabelType.none,
+                            labelType: NavigationRailLabelType.none,
                           ),
                         ),
                       ],
